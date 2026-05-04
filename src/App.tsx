@@ -15,6 +15,7 @@ import BookingModal from "./components/BookingModal";
 import PropertiesJournal from "./pages/PropertiesJournal";
 import PropertyDetails from "./pages/PropertyDetails";
 import AllReviews from "./pages/AllReviews";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function HomePage({ onBookClick }: { onBookClick: () => void }) {
   return (
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/properties" element={<PropertiesJournal onBookClick={() => setIsBookingOpen(true)} />} />
           <Route path="/property/:id" element={<PropertyDetails onBookClick={() => setIsBookingOpen(true)} />} />
           <Route path="/reviews" element={<AllReviews onBookClick={() => setIsBookingOpen(true)} />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
         
         <BookingModal 
