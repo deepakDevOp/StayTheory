@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600&display=swap');
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+}
+
 @theme {
   --color-surface: #fff8f5;
   --color-surface-dim: #e1d8d4;
@@ -32,6 +36,11 @@
   body {
     @apply bg-background text-on-surface font-sans antialiased;
     scroll-behavior: smooth;
+    caret-color: transparent;
+  }
+
+  input, textarea, [contenteditable="true"] {
+    caret-color: auto;
   }
   
   h1, .text-headline-xl {
@@ -54,4 +63,12 @@
 .font-serif-italic {
   font-family: "Noto Serif", serif;
   font-style: italic;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
+import PropertyCollection from "./components/PropertyCollection";
 import FeatureSection from "./components/FeatureSection";
 import TactileSection from "./components/TactileSection";
 import LandscapeSection from "./components/LandscapeSection";
@@ -12,12 +13,15 @@ import Footer from "./components/Footer";
 import MobileNav from "./components/MobileNav";
 import BookingModal from "./components/BookingModal";
 import PropertiesJournal from "./pages/PropertiesJournal";
+import PropertyDetails from "./pages/PropertyDetails";
+import AllReviews from "./pages/AllReviews";
 
 function HomePage({ onBookClick }: { onBookClick: () => void }) {
   return (
     <>
       <Navbar onBookClick={onBookClick} />
       <Hero />
+      <PropertyCollection />
       <FeatureSection />
       <TactileSection />
       <LandscapeSection />
@@ -39,10 +43,12 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <main className="bg-background min-h-screen selection:bg-[#ffb59e] selection:text-[#3a0b00]">
+      <main className="bg-background min-h-screen selection:bg-[#ffb59e] selection:text-[#3a0b00] overflow-x-hidden w-full relative pt-[72px]">
         <Routes>
           <Route path="/" element={<HomePage onBookClick={() => setIsBookingOpen(true)} />} />
-          <Route path="/journal" element={<PropertiesJournal onBookClick={() => setIsBookingOpen(true)} />} />
+          <Route path="/properties" element={<PropertiesJournal onBookClick={() => setIsBookingOpen(true)} />} />
+          <Route path="/property/:id" element={<PropertyDetails onBookClick={() => setIsBookingOpen(true)} />} />
+          <Route path="/reviews" element={<AllReviews onBookClick={() => setIsBookingOpen(true)} />} />
         </Routes>
         
         <BookingModal 

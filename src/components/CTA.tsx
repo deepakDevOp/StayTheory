@@ -24,10 +24,10 @@ export default function CTA({ onBookClick }: CTAProps) {
             Check Availability
           </button>
           <Link 
-            to="/journal"
-            className="border border-white text-white px-12 py-5 rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 transition-colors inline-block"
+            to="/properties"
+            className="border border-white text-white px-12 py-5 rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center justify-center"
           >
-            View Journal
+            View Properties
           </Link>
         </div>
       </FocusBox>

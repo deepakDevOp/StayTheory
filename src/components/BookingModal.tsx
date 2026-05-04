@@ -1,9 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Minus, Plus, Users, Mail, Phone, Info } from 'lucide-react';
+import { X, Minus, Plus, Users, Mail, Phone, Info, Home, ChevronDown, Check } from 'lucide-react';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, addDays, differenceInCalendarDays } from 'date-fns';
 import 'react-day-picker/dist/style.css';
+
+const availableProperties = [
+  {
+    id: "tuscan",
+    title: "The Tuscan Retreat",
+    subtitle: "Experience the art of stillness.",
+    price: 3100,
+    image: "https://lh3.googleusercontent.com/aida/ADBb0uhSbpgiJ1xfRVN3Lz8MCmkhVVNylX1cL-jByrRWafl7ngRiF6AETvBrljpqbJJX2E5DEvScBaruojpkmmZlj6ajrMqW-jpp_29MNezvab0DAa24JPQM7mQzQsNhUPnxYJI_3jbXsMvKqT7fNJPJP_vU4Q3goc-wgE0GtSEhPLifS8KFr5CczuBAktCs_HO-SQJQ0tU8TMRq3OKXbgcjKBGTs3KPd1bLfm_4_08uKsh_5JLrLVFnSpyQCsrIo1XPjY2HzLNV81Wf"
+  },
+  {
+    id: "ocean",
+    title: "Ocean Sanctuary",
+    subtitle: "Where the rhythm of waves sets the pace.",
+    price: 4200,
+    image: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=1920&q=80"
+  },
+  {
+    id: "forest",
+    title: "Forest Cabin",
+    subtitle: "Immerse yourself in ancient wisdom.",
+    price: 2800,
+    image: "https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=1920&q=80"
+  },
+  {
+    id: "desert",
+    title: "Desert Oasis",
+    subtitle: "Find clarity in the vast expanse.",
+    price: 3500,
+    image: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1920&q=80"
+  }
+];
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -11,6 +42,9 @@ interface BookingModalProps {
 }
 
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [isPropertyDropdownOpen, setIsPropertyDropdownOpen] = useState(false);
+
   const [range, setRange] = useState<DateRange | undefined>({
     from: new Date(2026, 4, 16),
     to: addDays(new Date(2026, 4, 16), 3),
@@ -29,8 +63,20 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
   const [showGuestPicker, setShowGuestPicker] = useState(false);
 
+  // Clear form state when the modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedPropertyId(null);
+      setIsPropertyDropdownOpen(false);
+      setShowGuestPicker(false);
+      setContact({ email: '', phone: '' });
+    }
+  }, [isOpen]);
+
+  const selectedProperty = availableProperties.find(p => p.id === selectedPropertyId);
+  const pricePerNight = selectedProperty ? selectedProperty.price : 0;
+
   const totalGuests = guests.adults + guests.children;
-  const pricePerNight = 3100;
   
   const nights = range?.from && range?.to 
     ? differenceInCalendarDays(range.to, range.from) 
@@ -81,38 +127,84 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
           >
             <button 
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-full transition-colors z-10"
+              className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-full transition-colors z-10 bg-white/50 backdrop-blur-md"
             >
-              <X className="w-5 h-5 text-stone-500" />
+              <X className="w-5 h-5 text-stone-700" />
             </button>
 
             {/* Left Side: Info & Hero Image */}
-            <div className="hidden lg:block lg:w-1/3 relative bg-stone-100">
-              <img 
-                src="https://lh3.googleusercontent.com/aida/ADBb0uhSbpgiJ1xfRVN3Lz8MCmkhVVNylX1cL-jByrRWafl7ngRiF6AETvBrljpqbJJX2E5DEvScBaruojpkmmZlj6ajrMqW-jpp_29MNezvab0DAa24JPQM7mQzQsNhUPnxYJI_3jbXsMvKqT7fNJPJP_vU4Q3goc-wgE0GtSEhPLifS8KFr5CczuBAktCs_HO-SQJQ0tU8TMRq3OKXbgcjKBGTs3KPd1bLfm_4_08uKsh_5JLrLVFnSpyQCsrIo1XPjY2HzLNV81Wf"
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-                alt="Retreat main"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 to-transparent flex flex-col justify-end p-8">
-                <h3 className="text-white text-2xl font-serif italic mb-2">The Sanctuary</h3>
-                <p className="text-white/80 text-sm mb-6">Experience the art of stillness.</p>
-                
-                <div className="space-y-3 pt-6 border-t border-white/20">
-                  <div className="flex justify-between text-white/70 text-xs">
-                    <span>Rate</span>
-                    <span>₹{pricePerNight.toLocaleString()} / night</span>
-                  </div>
-                  {nights > 0 && (
-                    <>
-                      <div className="flex justify-between text-white/90 text-sm font-medium">
-                        <span>Total for {nights} night{nights > 1 ? 's' : ''}</span>
-                        <span>₹{totalAmount.toLocaleString()}</span>
-                      </div>
-                      <p className="text-[10px] text-white/50 italic">* Taxes & fees included</p>
-                    </>
+            <div className="hidden lg:block lg:w-1/3 relative bg-stone-100 overflow-hidden">
+              <AnimatePresence mode="wait">
+                {selectedProperty ? (
+                  <motion.img 
+                    key={selectedProperty.id}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    src={selectedProperty.image}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                    alt={selectedProperty.title}
+                  />
+                ) : (
+                  <motion.img 
+                    key="template"
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80"
+                    className="absolute inset-0 w-full h-full object-cover grayscale opacity-60"
+                    referrerPolicy="no-referrer"
+                    alt="Select a sanctuary"
+                  />
+                )}
+              </AnimatePresence>
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/30 to-transparent flex flex-col justify-end p-8 z-10 pointer-events-none">
+                <AnimatePresence mode="wait">
+                  {selectedProperty ? (
+                    <motion.div
+                      key={`text-${selectedProperty.id}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <h3 className="text-white text-3xl font-serif italic mb-2 leading-tight">{selectedProperty.title}</h3>
+                      <p className="text-white/80 text-sm mb-6 leading-relaxed">{selectedProperty.subtitle}</p>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="text-template"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <h3 className="text-white text-3xl font-serif italic mb-2 leading-tight drop-shadow-md">Choose Your Escape</h3>
+                      <p className="text-white/80 text-sm mb-6 leading-relaxed drop-shadow-sm">Please select a sanctuary from the menu to view availability and specific rates.</p>
+                    </motion.div>
                   )}
-                </div>
+                </AnimatePresence>
+                
+                {selectedProperty && (
+                  <div className="space-y-3 pt-6 border-t border-white/20 pointer-events-auto">
+                    <div className="flex justify-between text-white/70 text-xs">
+                      <span>Rate</span>
+                      <span>₹{pricePerNight.toLocaleString()} / night</span>
+                    </div>
+                    {nights > 0 && (
+                      <>
+                        <div className="flex justify-between text-white/90 text-sm font-medium">
+                          <span>Total for {nights} night{nights > 1 ? 's' : ''}</span>
+                          <span>₹{totalAmount.toLocaleString()}</span>
+                        </div>
+                        <p className="text-[10px] text-white/50 italic">* Taxes & fees included</p>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -124,6 +216,71 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               </header>
 
               <div className="space-y-6">
+                {/* Property Selection */}
+                <div className="space-y-3 relative">
+                  <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400">Select Sanctuary</label>
+                  <div className="relative">
+                    <button 
+                      onClick={() => setIsPropertyDropdownOpen(!isPropertyDropdownOpen)}
+                      className={`w-full p-3 bg-white border ${!selectedProperty ? 'border-accent/50 ring-1 ring-accent/30' : 'border-stone-200'} rounded-xl focus:ring-1 focus:ring-accent focus:border-accent outline-none transition-all shadow-sm flex items-center justify-between hover:border-accent/40 relative z-20`}
+                    >
+                      {selectedProperty ? (
+                        <div className="flex items-center gap-4">
+                          <img src={selectedProperty.image} alt={selectedProperty.title} className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" />
+                          <div className="text-left">
+                            <div className="font-serif italic font-medium text-stone-800 text-base md:text-lg">{selectedProperty.title}</div>
+                            <div className="text-[10px] md:text-xs text-stone-500 tracking-wide">₹{selectedProperty.price.toLocaleString()} / night</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-4 py-2 pl-2">
+                           <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center">
+                             <Home className="w-4 h-4 text-stone-400" />
+                           </div>
+                           <div className="text-left">
+                             <div className="font-medium text-stone-800 text-base">Select a property...</div>
+                             <div className="text-[10px] text-accent tracking-wide uppercase font-semibold">Required for booking</div>
+                           </div>
+                        </div>
+                      )}
+                      <ChevronDown className={`w-5 h-5 text-stone-400 transition-transform ${isPropertyDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {isPropertyDropdownOpen && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setIsPropertyDropdownOpen(false)} />
+                          <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute top-full left-0 w-full mt-2 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden z-30 p-1"
+                          >
+                            {availableProperties.map(prop => (
+                              <button
+                                key={prop.id}
+                                onClick={() => {
+                                  setSelectedPropertyId(prop.id);
+                                  setIsPropertyDropdownOpen(false);
+                                }}
+                                className={`w-full p-3 flex items-center gap-4 rounded-lg hover:bg-stone-50 transition-colors ${selectedPropertyId === prop.id ? 'bg-stone-50' : ''}`}
+                              >
+                                <img src={prop.image} className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" />
+                                <div className="text-left flex-1">
+                                  <div className={`font-serif italic text-sm md:text-base ${selectedPropertyId === prop.id ? 'text-accent font-semibold' : 'text-stone-800'}`}>{prop.title}</div>
+                                  <div className="text-[10px] md:text-xs text-stone-500 tracking-wide">₹{prop.price.toLocaleString()} / night</div>
+                                </div>
+                                {selectedPropertyId === prop.id && <Check className="w-5 h-5 text-accent" />}
+                              </button>
+                            ))}
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
                 {/* Date Picker Section */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -149,6 +306,16 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       }
                       .rdp-day_hidden {
                         visibility: hidden !important;
+                      }
+                      .rdp-months {
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        gap: 1rem;
+                      }
+                      @media (max-width: 768px) {
+                        .booking-calendar {
+                          --rdp-cell-size: 36px;
+                        }
                       }
                     `}</style>
                     <DayPicker
@@ -311,9 +478,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   <p className="text-2xl font-serif italic text-accent tracking-tight">₹{totalAmount.toLocaleString()}</p>
                 </div>
                 <button 
-                  onClick={() => alert(`Request received for ${contact.email || 'guest'}. Total: ₹${totalAmount.toLocaleString()}`)}
-                  disabled={!contact.email || !contact.phone || nights === 0}
-                  className="w-full md:w-auto px-12 py-4 bg-accent text-white rounded-full font-serif italic text-lg hover:bg-[#723a28] transition-all shadow-lg active:scale-95 disabled:bg-stone-300 disabled:shadow-none"
+                  onClick={() => alert(`Booking Request for ${selectedProperty?.title || 'Unknown'}\nGuest: ${contact.email || 'N/A'}\nTotal: ₹${totalAmount.toLocaleString()}`)}
+                  disabled={!contact.email || !contact.phone || nights === 0 || !selectedProperty}
+                  className="w-full md:w-auto px-12 py-4 bg-accent text-white rounded-full font-serif italic text-lg hover:bg-[#723a28] transition-all shadow-lg active:scale-95 disabled:bg-stone-300 disabled:shadow-none disabled:cursor-not-allowed"
                 >
                   Send Booking Request
                 </button>
