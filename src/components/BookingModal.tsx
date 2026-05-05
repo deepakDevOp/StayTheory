@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Minus, Plus, Users, Mail, Phone, Info, Home, ChevronDown, Check } from 'lucide-react';
 import { DayPicker, DateRange } from 'react-day-picker';

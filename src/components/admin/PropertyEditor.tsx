@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Save, Calendar, ShieldCheck, Image as ImageIcon, CheckCircle2 } from "lucide-react";
 
@@ -14,24 +14,89 @@ interface PropertyEditorProps {
   property?: any;
 }
 
+import { adminService } from "../../services/adminService";
+
 export default function PropertyEditor({ isOpen, onClose, property }: PropertyEditorProps) {
   const [activeTab, setActiveTab] = useState("general");
+  const [loading, setLoading] = useState(false);
 
-  // Shared Management States
-  const [blockedDates, setBlockedDates] = useState<number[]>([12, 13, 14]);
-  const [amenities, setAmenities] = useState<string[]>([
-    "High Speed Wifi", "Private Pool", "Kitchen Suite", "Parking Space"
-  ]);
-  const [rules, setRules] = useState<string[]>([
-    "No smoking indoors", "Check-in after 2:00 PM", "Check-out before 11:00 AM"
-  ]);
-  const [newRule, setNewRule] = useState("");
-  const [photos, setPhotos] = useState<{ [key: string]: number[] }>({
-    main: [1, 2],
-    bedroom: [3],
-    living: [4],
-    exterior: [5]
+  // Unified Form State
+  const [formData, setFormData] = useState({
+    title: property?.title || "",
+    subtitle: property?.subtitle || "",
+    description: property?.description || "",
+    base_nightly_rate: property?.base_nightly_rate || "0",
+    max_guests: property?.max_guests || 2,
+    bedrooms: property?.bedrooms || 1,
+    bathrooms: property?.bathrooms || 1,
+    beds: property?.beds || 1,
+    property_type: property?.property_type || "Villa",
+    city: property?.city || "",
+    address: property?.address || "",
+    google_maps_url: property?.google_maps_url || "",
+    map_image: property?.map_image || "",
+    amenities: property?.amenities || [],
+    rules: property?.rules || [],
+    images: property?.images || [] // This will be an array of {url: string}
   });
+
+  useEffect(() => {
+    if (property) {
+      setFormData({
+        ...formData,
+        ...property,
+        base_nightly_rate: property.base_nightly_rate ? String(property.base_nightly_rate) : "0",
+        beds: property.beds || property.bedrooms || 1
+      });
+    }
+  }, [property]);
+
+  const handlePhotoUpload = async (file: File, category: string) => {
+    try {
+      const { url } = await adminService.uploadMedia(file);
+      if (category === 'map_internal') {
+        setFormData(prev => ({ ...prev, map_image: url }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, { url, category }]
+        }));
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Failed to upload image.");
+    }
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const slug = formData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+
+      const payload = {
+        ...formData,
+        slug,
+        base_nightly_rate: parseFloat(formData.base_nightly_rate) || 0,
+        max_guests: parseInt(String(formData.max_guests)) || 1,
+        bedrooms: parseInt(String(formData.bedrooms)) || 1,
+        bathrooms: parseInt(String(formData.bathrooms)) || 1,
+        beds: parseInt(String(formData.beds)) || 1,
+      };
+
+      console.log("Static mode: Simulating save for", payload);
+      alert("Static Mode: Changes simulated successfully (not saved to database).");
+      onClose();
+    } catch (error: any) {
+      console.error("Save failed:", error);
+      const errorMsg = error.response?.data?.detail?.[0]?.msg || "Check console for details.";
+      alert(`Failed to save property: ${errorMsg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -85,31 +150,32 @@ export default function PropertyEditor({ isOpen, onClose, property }: PropertyEd
           <div className="flex-grow overflow-y-auto p-12 bg-stone-50/30 no-scrollbar">
             {activeTab === "general" && (
               <EditorGeneral
-                property={property}
-                photos={photos}
-                onAddPhoto={(cat) => setPhotos(p => ({ ...p, [cat]: [...p[cat], Math.random()] }))}
-                onRemovePhoto={(cat, id) => setPhotos(p => ({ ...p, [cat]: p[cat].filter(x => x !== id) }))}
+                formData={formData}
+                setFormData={setFormData}
+                onPhotoUpload={handlePhotoUpload}
               />
             )}
             {activeTab === "availability" && (
               <EditorAvailability
-                blockedDates={blockedDates}
-                onToggleDate={(day) => setBlockedDates(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day])}
+                blockedDates={[]} // Future: wire this
+                onToggleDate={() => {}} 
               />
             )}
             {activeTab === "amenities" && (
               <EditorAmenities
-                selectedAmenities={amenities}
-                onToggle={(item) => setAmenities(prev => prev.includes(item) ? prev.filter(a => a !== item) : [...prev, item])}
-                onAdd={(item) => setAmenities(prev => [...prev, item])}
+                selectedAmenities={formData.amenities}
+                onToggle={(item) => setFormData(prev => ({
+                  ...prev,
+                  amenities: prev.amenities.includes(item) ? prev.amenities.filter(a => a !== item) : [...prev.amenities, item]
+                }))}
+                onAdd={(item) => setFormData(prev => ({ ...prev, amenities: [...prev.amenities, item] }))}
               />
             )}
             {activeTab === "rules" && (
               <EditorRules
-                rules={rules} newRule={newRule}
-                onNewRuleChange={setNewRule}
-                onAddRule={() => { if (newRule.trim()) { setRules(r => [...r, newRule]); setNewRule(""); } }}
-                onRemoveRule={(i) => setRules(r => r.filter((_, idx) => idx !== i))}
+                rules={formData.rules} 
+                onAddRule={(rule) => setFormData(prev => ({ ...prev, rules: [...prev.rules, rule] }))}
+                onRemoveRule={(i) => setFormData(prev => ({ ...prev, rules: prev.rules.filter((_, idx) => idx !== i) }))}
               />
             )}
           </div>
@@ -117,8 +183,12 @@ export default function PropertyEditor({ isOpen, onClose, property }: PropertyEd
           {/* Footer */}
           <div className="px-12 py-10 border-t border-stone-100 bg-white flex justify-between items-center">
             <button onClick={onClose} className="text-[10px] font-bold uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors">Discard Changes</button>
-            <button className="flex items-center gap-3 bg-primary text-white px-12 py-4 rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-primary/30">
-              <Save className="w-4 h-4" /> Save Sanctuary
+            <button 
+              onClick={handleSave}
+              disabled={loading}
+              className={`flex items-center gap-3 bg-primary text-white px-12 py-4 rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-primary/30 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {loading ? "Saving..." : <><Save className="w-4 h-4" /> Save Sanctuary</>}
             </button>
           </div>
         </motion.div>

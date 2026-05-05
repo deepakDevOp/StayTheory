@@ -1,38 +1,101 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { MapPin, Star, Check, Info, ArrowLeft, Users, ChevronRight, Bed, Bath, Square } from "lucide-react";
-import { propertiesData } from "../data/properties";
+import { MapPin, Star, Check, Info, ArrowLeft, Users, ChevronRight, Bed, Bath, Square, ArrowRight } from "lucide-react";
+import { publicService } from "../services/publicService";
 import { DayPicker, DateRange } from "react-day-picker";
-import { addDays, differenceInCalendarDays } from "date-fns";
+import { addDays, differenceInCalendarDays, parseISO } from "date-fns";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import MobileNav from "../components/MobileNav";
 
-export default function PropertyDetails({ onBookClick }: { onBookClick?: () => void }) {
-  const { id } = useParams();
-  const property = propertiesData.find(p => p.id === id);
+import { propertiesData } from "../data/properties";
 
-  const [activeGalleryTab, setActiveGalleryTab] = useState<keyof typeof property.images>("bedrooms");
+export default function PropertyDetails({ onBookClick }: { onBookClick?: () => void }) {
+  const { id: slug } = useParams();
+  const navigate = useNavigate();
+  const [property, setProperty] = useState<any>(null);
+  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [bookingLoading, setBookingLoading] = useState(false);
   const [range, setRange] = useState<DateRange | undefined>({
     from: new Date(),
     to: addDays(new Date(), 3),
   });
+  const [activeGalleryCategory, setActiveGalleryCategory] = useState("all");
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [id]);
+    const fetchData = async () => {
+      if (!slug) return;
+      setLoading(true);
+      try {
+        // Find property from static data
+        const prop = propertiesData.find(p => p.id === slug);
+        if (prop) {
+          // but here we just use it as is.
+          setProperty(prop);
+          setBlockedDates([]); // No blocked dates in static data
+        }
+      } catch (error) {
+        console.error("Failed to load static property data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [slug]);
+
+  const handleBooking = async () => {
+    if (!range?.from || !range?.to || !property) return;
+    setBookingLoading(true);
+    try {
+      await publicService.createBooking({
+        property_id: property.id,
+        check_in: range.from.toISOString().split('T')[0],
+        check_out: range.to.toISOString().split('T')[0],
+        guests: 1 // Default to 1 for now
+      });
+      alert("Booking request submitted! We will contact you soon.");
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        alert("Please login to book a stay.");
+      } else {
+        alert(error.response?.data?.detail || "Booking failed. Please try again.");
+      }
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  const normalizedImages = useMemo(() => {
+    if (!property?.images) return [];
+    if (Array.isArray(property.images)) return property.images;
+    // Handle static object structure
+    return Object.entries(property.images).flatMap(([category, urls]: [string, any]) => {
+      if (!Array.isArray(urls)) return [];
+      return urls.map((url: string) => ({ url, category }));
+    });
+  }, [property]);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-2xl font-serif italic text-stone-400">Opening sanctuary doors...</div>
+      </div>
+    );
+  }
 
   if (!property) {
     return <div className="h-screen flex items-center justify-center text-stone-500 font-serif">Property not found.</div>;
   }
 
   const nights = range?.from && range?.to ? differenceInCalendarDays(range.to, range.from) : 0;
-  const totalAmount = nights * property.price;
+  const rawPrice = property.price || property.base_nightly_rate || 0;
+  const price = typeof rawPrice === 'string' ? parseFloat(rawPrice.replace(/,/g, '')) : rawPrice;
+  const totalAmount = (nights || 0) * (price || 0);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  const galleryTabs = Object.keys(property.images) as Array<keyof typeof property.images>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,7 +103,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
       
       {/* Hero Section */}
       <div className="relative h-[60vh] md:h-[70vh] w-full">
-        <img src={property.coverImage} alt={property.title} className="w-full h-full object-cover" />
+        <img src={property.coverImage || normalizedImages[0]?.url} alt={property.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/20 to-transparent flex flex-col justify-end p-8 md:p-16">
           <Link to="/properties" className="flex items-center gap-2 text-white/70 hover:text-white mb-6 w-fit transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -54,9 +117,18 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-xl md:text-2xl text-white/90 font-light max-w-2xl"
+            className="text-xl md:text-2xl text-white/90 font-light max-w-2xl flex flex-wrap items-center gap-x-4"
           >
-            {property.subtitle}
+            <span>{property.subtitle || `${property.property_type || 'Sanctuary'} in ${property.city || 'Goa'}`}</span>
+            <a 
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.title + " " + (property.city || 'Udaipur'))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs uppercase tracking-[0.2em] font-bold text-white/60 hover:text-white flex items-center gap-2 border border-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm transition-all"
+            >
+              <MapPin className="w-3 h-3" />
+              View on Maps
+            </a>
           </motion.p>
         </div>
       </div>
@@ -67,104 +139,121 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
           
           {/* Categorized Image Gallery */}
           <section>
-            <div className="flex flex-wrap gap-2 md:gap-4 mb-6">
-              {galleryTabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveGalleryTab(tab)}
-                  className={`px-5 py-2 md:px-6 md:py-2 rounded-full uppercase tracking-widest text-[10px] font-bold transition-all ${
-                    activeGalleryTab === tab ? "bg-accent text-white shadow-md" : "bg-stone-100 text-stone-500 hover:bg-stone-200"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
+            <div className="flex justify-between items-end mb-8">
+              <h3 className="text-2xl font-serif text-stone-800 italic">The Gallery</h3>
+              <div className="flex gap-4">
+                {["all", ...new Set(normalizedImages.map((img: any) => img.category))].map((cat: any) => (
+                  <button 
+                    key={cat}
+                    onClick={() => setActiveGalleryCategory(cat)}
+                    className={`text-[10px] font-bold uppercase tracking-widest pb-1 border-b-2 transition-all ${activeGalleryCategory === cat ? 'border-primary text-primary' : 'border-transparent text-stone-400'}`}
+                  >
+                    {cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {property.images[activeGalleryTab].map((img, idx) => (
-                <motion.img
-                  key={`${activeGalleryTab}-${idx}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4 }}
-                  src={img}
-                  className="w-full h-64 object-cover rounded-2xl shadow-sm"
-                  alt={`${activeGalleryTab} ${idx}`}
-                />
-              ))}
+              {normalizedImages
+                .filter((img: any) => activeGalleryCategory === 'all' || img.category === activeGalleryCategory)
+                .map((img: any, idx: number) => (
+                  <motion.img
+                    key={img.url || idx}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4 }}
+                    src={img.url}
+                    className="w-full h-64 object-cover rounded-2xl shadow-sm hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
+                    alt={`Property Image ${idx + 1}`}
+                  />
+                ))}
             </div>
           </section>
 
           {/* Stats & Overview */}
           <section className="flex flex-wrap gap-8 text-stone-600 bg-stone-50/50 p-6 rounded-2xl border border-stone-100">
-            {property.stats && (
-              <>
-                <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-accent" />
-                  <span className="font-medium text-stone-800">{property.stats.guests} Guests</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Bed className="w-5 h-5 text-accent" />
-                  <span className="font-medium text-stone-800">{property.stats.bedrooms} Bedrooms</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Bath className="w-5 h-5 text-accent" />
-                  <span className="font-medium text-stone-800">{property.stats.baths} Baths</span>
-                </div>
-              </>
-            )}
+            <div className="flex items-center gap-3">
+              <Users className="w-5 h-5 text-accent" />
+              <span className="font-medium text-stone-800">Up to {property.stats?.guests || property.max_guests} Guests</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Bed className="w-5 h-5 text-accent" />
+              <span className="font-medium text-stone-800">{property.stats?.bedrooms || property.bedrooms} Bedrooms</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Bath className="w-5 h-5 text-accent" />
+              <span className="font-medium text-stone-800">{property.stats?.baths || property.bathrooms} Baths</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Square className="w-5 h-5 text-accent" />
+              <span className="font-medium text-stone-800">{property.stats?.beds || property.beds} Beds</span>
+            </div>
           </section>
 
           {/* Description */}
           <section>
             <h2 className="text-3xl font-serif text-stone-800 mb-6">The Space</h2>
-            <p className="text-stone-600 leading-relaxed text-lg">{property.description}</p>
+            <p className="text-stone-600 leading-relaxed text-lg whitespace-pre-line">
+              {property.description || "No description available for this sanctuary yet."}
+            </p>
           </section>
 
           <hr className="border-stone-200" />
 
-          {/* Amenities & Rules */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <section>
-              <h3 className="text-2xl font-serif text-stone-800 mb-6">Amenities</h3>
-              <ul className="space-y-3">
-                {property.amenities.map((item, idx) => (
+          {/* Amenities */}
+          <section>
+            <h3 className="text-2xl font-serif text-stone-800 mb-6">Amenities</h3>
+            {property.amenities && property.amenities.length > 0 ? (
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {property.amenities.map((item: string, idx: number) => (
                   <li key={idx} className="flex items-center gap-3 text-stone-600">
                     <div className="p-1 rounded-full bg-accent/10"><Check className="w-3 h-3 text-accent" /></div>
                     {item}
                   </li>
                 ))}
               </ul>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-serif text-stone-800 mb-6">House Rules</h3>
-              <ul className="space-y-3">
-                {property.rules.map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-3 text-stone-600">
-                    <div className="p-1 rounded-full bg-stone-100"><Info className="w-3 h-3 text-stone-400" /></div>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
+            ) : (
+              <div className="p-8 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-center">
+                <p className="text-stone-400 italic font-serif">No specific amenities listed yet. Please contact us for details.</p>
+              </div>
+            )}
+          </section>
 
           <hr className="border-stone-200" />
 
-          {/* Nearby Places */}
+          {/* Location */}
           <section>
-            <h3 className="text-2xl font-serif text-stone-800 mb-6">Nearby Places</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {property.nearby.map((place, idx) => (
-                <div key={idx} className="p-4 rounded-xl border border-stone-100 bg-white flex items-start gap-4">
-                  <MapPin className="w-5 h-5 text-accent mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-stone-800">{place.name}</h4>
-                    <p className="text-sm text-stone-500">{place.distance}</p>
-                  </div>
+            <div className="flex justify-between items-center mb-10">
+              <h3 className="text-2xl font-serif text-stone-800 italic">Location</h3>
+              <a 
+                href={property.google_maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.title + " " + (property.city || 'Udaipur'))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-bold uppercase tracking-widest text-accent hover:underline flex items-center gap-2"
+              >
+                Open in Google Maps
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+            
+            <div className="relative group cursor-pointer overflow-hidden rounded-[2.5rem] border border-stone-100 shadow-sm aspect-[21/9]">
+              <img 
+                src={property.map_image || "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=2000"} 
+                alt="Property Location Map"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out"
+              />
+              <div className="absolute inset-0 bg-stone-900/5 group-hover:bg-transparent transition-colors duration-500" />
+              
+              <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-md p-6 rounded-2xl border border-white shadow-xl max-w-sm">
+                <div className="flex items-center gap-3 mb-2 text-primary">
+                  <MapPin className="w-5 h-5" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Sanctuary Address</span>
                 </div>
-              ))}
+                <p className="text-on-surface font-medium text-sm leading-relaxed">
+                  {property.address || `${property.city || 'Udaipur'}, Rajasthan, India`}
+                </p>
+              </div>
             </div>
           </section>
 
@@ -172,21 +261,33 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
 
           {/* Reviews */}
           <section>
-            <h3 className="text-2xl font-serif text-stone-800 mb-8">Guest Reviews</h3>
-            <div className="space-y-6">
-              {property.reviews.map((review, idx) => (
-                <div key={idx} className="p-6 rounded-2xl bg-stone-50/50 border border-stone-100">
-                  <div className="flex items-center gap-2 mb-3">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                    ))}
-                  </div>
-                  <p className="text-stone-700 italic mb-4">"{review.text}"</p>
-                  <p className="text-sm font-bold text-stone-400 uppercase tracking-wider">{review.author}</p>
-                </div>
-              ))}
+            <div className="flex justify-between items-center mb-10">
+              <h3 className="text-2xl font-serif text-stone-800 italic">Guest Experiences</h3>
+              <Link to={`/reviews?property=${property.id}`} className="text-xs font-bold uppercase tracking-widest text-accent hover:underline">View All Reviews</Link>
             </div>
+            {property.reviews && property.reviews.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                {property.reviews.slice(0, 2).map((review: any, idx: number) => (
+                  <div key={idx} className="p-6 bg-stone-50/50 rounded-2xl border border-stone-100">
+                    <div className="flex gap-1 mb-3">
+                      {[...Array(Number(review.rating) || 0)].map((_, i) => (
+                        <Star key={i} className="w-3 h-3 fill-accent text-accent" />
+                      ))}
+                    </div>
+                    <p className="text-stone-600 italic text-sm mb-4 leading-relaxed">"{review.text}"</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">— {review.author}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-12 bg-stone-50 rounded-3xl border border-dashed border-stone-200 text-center">
+                <p className="text-stone-400 italic font-serif">Be the first to experience this sanctuary and leave a story.</p>
+              </div>
+            )}
           </section>
+
+          <hr className="border-stone-200" />
+
 
         </div>
 
@@ -194,7 +295,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
         <div className="w-full md:w-[350px] lg:w-[400px] shrink-0">
           <div className="sticky top-24 bg-white rounded-3xl shadow-xl border border-stone-100 p-6 lg:p-8">
             <div className="mb-6">
-              <span className="text-3xl font-serif italic text-stone-800">₹{property.price.toLocaleString()}</span>
+              <span className="text-3xl font-serif italic text-stone-800">₹{price.toLocaleString()}</span>
               <span className="text-stone-500 text-sm"> / night</span>
             </div>
 
@@ -205,26 +306,11 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
               </div>
 
               <div className="border border-stone-200 rounded-xl bg-white overflow-hidden flex justify-center w-full">
-                <style>{`
-                  .custom-calendar {
-                    --rdp-cell-size: 40px;
-                    margin: 0;
-                    padding: 16px;
-                  }
-                  .custom-calendar .rdp-day_selected { background-color: #8A4630; color: white; }
-                  .custom-calendar .rdp-caption { color: #8A4630; font-family: serif; font-style: italic; }
-                  .custom-calendar .rdp-head_cell { color: #A8A29E; font-size: 0.75rem; font-weight: normal; }
-                  @media (max-width: 400px) {
-                    .custom-calendar {
-                      --rdp-cell-size: 32px;
-                    }
-                  }
-                `}</style>
                 <DayPicker
                   mode="range"
                   selected={range}
                   onSelect={setRange}
-                  disabled={{ before: today }}
+                  disabled={[{ before: today }, ...blockedDates]}
                   className="custom-calendar"
                 />
               </div>
@@ -237,7 +323,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
                 className="mb-6 space-y-3"
               >
                 <div className="flex justify-between text-sm text-stone-600">
-                  <span>₹{property.price.toLocaleString()} × {nights} nights</span>
+                  <span>₹{price.toLocaleString()} × {nights} nights</span>
                   <span>₹{totalAmount.toLocaleString()}</span>
                 </div>
                 <div className="pt-3 border-t border-stone-100 flex justify-between font-medium text-lg text-stone-800">
@@ -249,10 +335,10 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
 
             <button 
               className="w-full py-4 rounded-xl bg-accent text-white font-serif italic text-lg hover:bg-[#723a28] transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={nights === 0}
-              onClick={() => alert(`Reserved ${property.title} for ${nights} nights. Total: ₹${totalAmount.toLocaleString()}`)}
+              disabled={nights === 0 || bookingLoading}
+              onClick={handleBooking}
             >
-              Reserve Sanctuary
+              {bookingLoading ? "Requesting..." : "Reserve Sanctuary"}
             </button>
             <p className="text-center text-[10px] text-stone-400 mt-4 uppercase tracking-widest">You won't be charged yet</p>
           </div>

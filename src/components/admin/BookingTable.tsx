@@ -31,45 +31,61 @@ export default function BookingTable({ requests, onConfirm, onCancel, onRowClick
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-50 cursor-pointer">
-            {requests.map((req) => (
-              <tr 
-                key={req.id} 
-                onClick={() => onRowClick(req)}
-                className="hover:bg-stone-50/30 transition-colors group"
-              >
-                <td className="px-8 py-6">
-                  <p className="font-medium text-on-surface">{req.guest}</p>
-                </td>
-                <td className="px-8 py-6">
-                  <span className="text-sm text-stone-600 bg-stone-100 px-3 py-1 rounded-lg">{req.property}</span>
-                </td>
-                <td className="px-8 py-6">
-                  <div className="flex items-center gap-2 text-stone-500">
-                    <Clock className="w-3.5 h-3.5 text-primary/60" />
-                    <span className="text-sm">{req.dates}</span>
-                  </div>
-                </td>
-                <td className="px-8 py-6 font-semibold text-primary">{req.amount}</td>
-                <td className="px-8 py-6">
-                  <div className="flex justify-end gap-3">
-                    <button 
-                      onClick={() => onCancel(req.id)}
-                      className="p-2 text-stone-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                      title="Decline Request"
-                    >
-                      <XCircle className="w-5 h-5" />
-                    </button>
-                    <button 
-                      onClick={() => onConfirm(req.id)}
-                      className="flex items-center gap-2 bg-primary/5 text-primary px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm hover:shadow-primary/20"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Approve
-                    </button>
+            {requests.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-20">
+                  <div className="flex flex-col items-center justify-center text-center px-4">
+                    <div className="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center mb-4">
+                      <Clock className="w-8 h-8 text-stone-300" />
+                    </div>
+                    <h3 className="text-lg font-bold text-stone-800">No Booking Requests</h3>
+                    <p className="text-stone-500 max-w-xs mt-1 text-sm">
+                      When guests request to stay at your sanctuaries, they will appear here for your review.
+                    </p>
                   </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              requests.map((req) => (
+                <tr 
+                  key={req.id} 
+                  onClick={() => onRowClick(req)}
+                  className="hover:bg-stone-50/30 transition-colors group"
+                >
+                  <td className="px-8 py-6">
+                    <p className="font-medium text-on-surface">{req.guest}</p>
+                  </td>
+                  <td className="px-8 py-6">
+                    <span className="text-sm text-stone-600 bg-stone-100 px-3 py-1 rounded-lg">{req.property}</span>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2 text-stone-500">
+                      <Clock className="w-3.5 h-3.5 text-primary/60" />
+                      <span className="text-sm">{req.dates}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6 font-semibold text-primary">{req.amount}</td>
+                  <td className="px-8 py-6">
+                    <div className="flex justify-end gap-3">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onCancel(req.id); }}
+                        className="p-2 text-stone-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                        title="Decline Request"
+                      >
+                        <XCircle className="w-5 h-5" />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onConfirm(req.id); }}
+                        className="flex items-center gap-2 bg-primary/5 text-primary px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm hover:shadow-primary/20"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        Approve
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

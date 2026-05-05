@@ -1,12 +1,11 @@
-import { IndianRupee, Plus, Trash2, Camera, LayoutGrid, Bed, Sofa, Trees, Utensils, Bath, Wind } from "lucide-react";
+import { IndianRupee, Plus, Trash2, Camera, LayoutGrid, Bed, Sofa, Trees, Utensils, Bath, Wind, ChevronDown, Check } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 
 interface EditorGeneralProps {
-  property: any;
-  photos: { [key: string]: number[] };
-  onAddPhoto: (category: string) => void;
-  onRemovePhoto: (category: string, id: number) => void;
+  formData: any;
+  setFormData: (data: any) => void;
+  onPhotoUpload: (file: File, category: string) => Promise<void>;
 }
 
 const MASTER_CATEGORIES = [
@@ -19,12 +18,23 @@ const MASTER_CATEGORIES = [
   { id: "exterior", label: "Exterior", icon: Trees },
 ];
 
-export default function EditorGeneral({ property, photos, onAddPhoto, onRemovePhoto }: EditorGeneralProps) {
+const PROPERTY_TYPES = ["Villa", "Apartment", "Cottage", "Studio", "Boutique Hotel", "Private Sanctuary"];
+
+export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: EditorGeneralProps) {
   const [activePhotoTab, setActivePhotoTab] = useState("main");
   const [enabledCategories, setEnabledCategories] = useState<string[]>(["main", "bedroom", "living", "exterior"]);
+  const [uploading, setUploading] = useState(false);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const activeTabs = MASTER_CATEGORIES.filter(cat => enabledCategories.includes(cat.id));
+
+  // Filter images based on active tab
+  const displayImages = useMemo(() => {
+    if (activePhotoTab === "main") return formData.images;
+    return formData.images.filter((img: any) => img.category === activePhotoTab);
+  }, [formData.images, activePhotoTab]);
 
   const toggleCategory = (id: string) => {
     if (id === "main") return; // Main is always required
@@ -36,25 +46,212 @@ export default function EditorGeneral({ property, photos, onAddPhoto, onRemovePh
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsTypeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-12">
-      <input type="file" ref={fileInputRef} onChange={() => onAddPhoto(activePhotoTab)} className="hidden" accept="image/*" />
+      {/* Gallery Input */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        multiple
+        onChange={async (e) => {
+          const files = e.target.files;
+          if (files && files.length > 0) {
+            setUploading(true);
+            try {
+              await Promise.all(Array.from(files).map(file => onPhotoUpload(file, activePhotoTab)));
+            } finally {
+              setUploading(false);
+            }
+          }
+          if (fileInputRef.current) fileInputRef.current.value = "";
+        }} 
+        className="hidden" 
+        accept="image/*" 
+      />
+
+      {/* Map Screenshot Input */}
+      <input 
+        type="file"
+        id="map-upload"
+        onChange={async (e) => {
+          const files = e.target.files;
+          if (files && files.length > 0) {
+            setUploading(true);
+            try {
+              // We'll reuse onPhotoUpload but handle the state update locally if needed
+              // or better, just use onPhotoUpload with a special category 'map'
+              await onPhotoUpload(files[0], 'map_internal');
+            } finally {
+              setUploading(false);
+            }
+          }
+        }}
+        className="hidden"
+        accept="image/*"
+      />
 
       {/* Basic Identity */}
       <section>
         <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-8 flex items-center gap-3">
           <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Basic Identity
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           <div className="space-y-3">
             <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Property Name</label>
-            <input type="text" defaultValue={property?.title || ""} className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" />
+            <input 
+              type="text" 
+              value={formData.title} 
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="e.g. Moon Retreat"
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
+          </div>
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Subtitle / Catchphrase</label>
+            <input 
+              type="text" 
+              value={formData.subtitle} 
+              onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+              placeholder="e.g. A Riverside Sanctuary"
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
           </div>
           <div className="space-y-3">
             <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Base Nightly Rate</label>
             <div className="relative">
               <IndianRupee className="absolute left-8 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300" />
-              <input type="text" defaultValue={property?.price || ""} className="w-full bg-white border border-stone-100 rounded-[1.5rem] pl-16 pr-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" />
+              <input 
+                type="text" 
+                value={formData.base_nightly_rate} 
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  setFormData({ ...formData, base_nightly_rate: val });
+                }}
+                className="w-full bg-white border border-stone-100 rounded-[1.5rem] pl-16 pr-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-10">
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">City</label>
+            <input 
+              type="text" 
+              value={formData.city} 
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              placeholder="e.g. Udaipur"
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
+          </div>
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Property Type</label>
+            <div className="relative" ref={dropdownRef}>
+              <div 
+                onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium flex justify-between items-center cursor-pointer group"
+              >
+                <span>{formData.property_type || "Select Type"}</span>
+                <ChevronDown className={`w-4 h-4 text-stone-300 transition-transform duration-500 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
+              </div>
+
+              <AnimatePresence>
+                {isTypeDropdownOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-full left-0 right-0 mt-3 bg-white border border-stone-100 rounded-[1.5rem] shadow-2xl overflow-hidden z-50 p-2"
+                  >
+                    {PROPERTY_TYPES.map(type => (
+                      <button
+                        key={type}
+                        onClick={() => {
+                          setFormData({ ...formData, property_type: type });
+                          setIsTypeDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center justify-between px-6 py-4 rounded-xl hover:bg-stone-50 transition-colors text-sm"
+                      >
+                        <span className={formData.property_type === type ? "text-primary font-bold" : "text-stone-600"}>{type}</span>
+                        {formData.property_type === type && <Check className="w-4 h-4 text-primary" />}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Full Address</label>
+            <input 
+              type="text" 
+              value={formData.address} 
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              placeholder="e.g. Near Lake Pichola, Udaipur"
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
+          </div>
+        </div>
+
+        <div className="mt-10 space-y-3">
+          <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Description</label>
+          <textarea 
+            rows={4}
+            value={formData.description} 
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Tell the story of this sanctuary..."
+            className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium resize-none" 
+          />
+        </div>
+      </section>
+
+      {/* Location Identity */}
+      <section>
+        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-8 flex items-center gap-3">
+          <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Location Identity
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Google Maps URL</label>
+            <input 
+              type="text" 
+              value={formData.google_maps_url} 
+              onChange={(e) => setFormData({ ...formData, google_maps_url: e.target.value })}
+              placeholder="e.g. https://goo.gl/maps/..."
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
+          </div>
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Location Map Screenshot</label>
+            <div className="flex gap-4">
+              <div 
+                onClick={() => !uploading && document.getElementById('map-upload')?.click()}
+                className="flex-grow bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 flex items-center justify-between cursor-pointer hover:bg-stone-50 transition-all group"
+              >
+                <span className="text-on-surface font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]">
+                  {formData.map_image ? "Image Selected" : "Upload Map Screenshot"}
+                </span>
+                <Camera className="w-5 h-5 text-stone-300 group-hover:text-primary transition-colors" />
+              </div>
+              {formData.map_image && (
+                <div className="w-16 h-16 rounded-xl overflow-hidden border border-stone-100 shrink-0 shadow-sm relative group">
+                  <img src={formData.map_image} className="w-full h-full object-cover" />
+                  <button 
+                    onClick={() => setFormData({ ...formData, map_image: "" })}
+                    className="absolute inset-0 bg-red-500/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                  >
+                    <Trash2 className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -107,31 +304,55 @@ export default function EditorGeneral({ property, photos, onAddPhoto, onRemovePh
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div 
-            onClick={() => fileInputRef.current?.click()}
-            className="aspect-square bg-white rounded-[2rem] border-2 border-dashed border-stone-200 flex flex-col items-center justify-center gap-3 text-stone-400 hover:border-primary/30 hover:text-primary transition-all cursor-pointer group"
-          >
-            <div className="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center group-hover:bg-primary/5 transition-colors">
-              <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+          {/* Only show upload button if not in Main Gallery */}
+          {activePhotoTab !== "main" && (
+            <div 
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              className={`aspect-square bg-white rounded-[2rem] border-2 border-dashed border-stone-200 flex flex-col items-center justify-center gap-3 text-stone-400 hover:border-primary/30 hover:text-primary transition-all cursor-pointer group ${uploading ? 'opacity-50 cursor-wait' : ''}`}
+            >
+              <div className="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center group-hover:bg-primary/5 transition-colors">
+                <Plus className={`w-6 h-6 transition-transform ${uploading ? 'animate-spin' : 'group-hover:rotate-90'}`} />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-center px-4">
+                {uploading ? "Uploading..." : `Add to ${MASTER_CATEGORIES.find(c => c.id === activePhotoTab)?.label}`}
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-center px-4">Add to {activePhotoTab}</span>
-          </div>
+          )}
 
           <AnimatePresence mode="popLayout">
-            {(photos[activePhotoTab] || []).map((id) => (
+            {displayImages.length === 0 && !uploading && (
+              <div className={`col-span-2 md:col-span-3 flex items-center px-6 ${activePhotoTab === "main" ? "md:col-span-4" : ""}`}>
+                <p className="text-stone-300 italic text-sm font-serif">
+                  {activePhotoTab === "main" 
+                    ? "Upload photos to specific categories (Bedroom, Living, etc.) to see them appear here in the Main Gallery."
+                    : "This category is empty. Select it and upload your first photo to bring this sanctuary to life."}
+                </p>
+              </div>
+            )}
+            {displayImages.map((img: any) => (
               <motion.div 
-                key={id} layout initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                key={img.url} layout initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
                 className="aspect-square bg-stone-200 rounded-[2rem] relative group overflow-hidden"
               >
+                <img src={img.url} alt="Gallery item" className="w-full h-full object-cover" />
+                
+                {/* Always show category tag in main gallery */}
+                {activePhotoTab === "main" && (
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="bg-white/80 backdrop-blur-md text-[8px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg text-stone-600 border border-white">
+                      {img.category}
+                    </span>
+                  </div>
+                )}
+
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
                   <button 
-                    onClick={() => onRemovePhoto(activePhotoTab, id)}
+                    onClick={() => setFormData({ ...formData, images: formData.images.filter((i: any) => i.url !== img.url) })}
                     className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-all hover:scale-110"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center"><Camera className="w-8 h-8 text-white/20" /></div>
               </motion.div>
             ))}
           </AnimatePresence>

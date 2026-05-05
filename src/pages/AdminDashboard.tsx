@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { 
   Search, 
   Filter, 
@@ -16,62 +16,18 @@ import RequestFilterBar from "../components/admin/RequestFilterBar";
 import ConfirmModal from "../components/admin/ConfirmModal";
 import BookingDetailModal from "../components/admin/BookingDetailModal";
 import FocusBox from "../components/FocusBox";
+import { adminService } from "../services/adminService";
 
-// Dummy data for design phase
-const INITIAL_REQUESTS = [
-  { 
-    id: 1, guest: "Aria Smith", property: "The Tuscan Retreat", 
-    dates: "June 12 - June 15", status: "pending", amount: "₹9,300",
-    email: "aria.smith@example.com", phone: "+91 98765 43210"
-  },
-  { 
-    id: 2, guest: "Julian V.", property: "Ocean Sanctuary", 
-    dates: "July 01 - July 04", status: "pending", amount: "₹12,600",
-    email: "j.verne@voyage.com", phone: "+91 88888 77777"
-  },
-  { 
-    id: 3, guest: "Elena R.", property: "The Tuscan Retreat", 
-    dates: "June 20 - June 22", status: "pending", amount: "₹6,200",
-    email: "elena.r@cloud.com", phone: "+91 99999 11111"
-  },
-  { 
-    id: 4, guest: "Marcus Aurelius", property: "Heritage Haveli", 
-    dates: "Aug 05 - Aug 10", status: "pending", amount: "₹25,000",
-    email: "marcus.a@stoic.com", phone: "+91 77777 55555"
-  },
-  { 
-    id: 5, guest: "Sophia L.", property: "Modern Glass Villa", 
-    dates: "Sept 10 - Sept 12", status: "pending", amount: "₹15,000",
-    email: "sophia.l@design.it", phone: "+91 66666 44444"
-  },
-  { 
-    id: 6, guest: "David Goggins", property: "The Tuscan Retreat", 
-    dates: "Oct 01 - Oct 05", status: "pending", amount: "₹12,400",
-    email: "david.g@stayhard.com", phone: "+91 55555 33333"
-  },
-  { 
-    id: 7, guest: "Leila M.", property: "Ocean Sanctuary", 
-    dates: "Oct 15 - Oct 18", status: "pending", amount: "₹14,000",
-    email: "leila.m@travel.co", phone: "+91 44444 22222"
-  },
-  { 
-    id: 8, guest: "Aman S.", property: "Heritage Haveli", 
-    dates: "Nov 02 - Nov 05", status: "pending", amount: "₹18,000",
-    email: "aman.s@start.in", phone: "+91 33333 11111"
-  },
-];
 
-const INITIAL_PROPERTIES = [
-  { id: "tuscan", title: "The Tuscan Retreat", price: "₹3,100/night", active: true },
-  { id: "ocean", title: "Ocean Sanctuary", price: "₹4,200/night", active: true },
-  { id: "heritage", title: "Heritage Haveli", price: "₹5,500/night", active: true },
-  { id: "modern", title: "Modern Glass Villa", price: "₹7,800/night", active: true },
-  { id: "stone", title: "Stone Sanctuary", price: "₹6,400/night", active: true },
-];
+
+import { propertiesData } from "../data/properties";
+import { bookingsData } from "../data/bookings";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("bookings");
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
+  const [requests, setRequests] = useState<any[]>(bookingsData);
+  const [properties, setProperties] = useState<any[]>(propertiesData);
+  const [loading, setLoading] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
@@ -82,6 +38,15 @@ export default function AdminDashboard() {
   // Filter States
   const [propertyFilter, setPropertyFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
+
+  const fetchData = useCallback(async () => {
+    // No-op for now as we are using static data
+    console.log("Static mode active");
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleTabChange = useCallback((tab: string) => {
     if (isEditorOpen) {
@@ -101,27 +66,37 @@ export default function AdminDashboard() {
     setShowExitConfirm(false);
   }, [pendingTab]);
 
-  // Memoized handlers for maximum speed
-  const handleConfirm = useCallback((id: string | number) => {
-    setRequests(prev => prev.filter(r => r.id !== id));
-    // API call would happen here
-  }, []);
+  const handleConfirm = useCallback(async (id: string) => {
+    try {
+      await adminService.updateBookingStatus(id, "confirmed");
+      fetchData(); // Refresh
+    } catch (error) {
+      console.error("Failed to confirm booking:", error);
+    }
+  }, [fetchData]);
 
-  const handleCancel = useCallback((id: string | number) => {
-    setRequests(prev => prev.filter(r => r.id !== id));
-    // API call would happen here
-  }, []);
+  const handleCancel = useCallback(async (id: string) => {
+    try {
+      await adminService.updateBookingStatus(id, "cancelled");
+      fetchData(); // Refresh
+    } catch (error) {
+      console.error("Failed to cancel booking:", error);
+    }
+  }, [fetchData]);
 
-  const handleEditProperty = useCallback((id: string) => {
-    const prop = INITIAL_PROPERTIES.find(p => p.id === id);
-    setSelectedProperty(prop);
-    setIsEditorOpen(true);
-  }, []);
+
 
   const handleAddProperty = useCallback(() => {
     setSelectedProperty(null);
     setIsEditorOpen(true);
   }, []);
+
+  const handleEditProperty = useCallback((id: string) => {
+    if (!id) return handleAddProperty();
+    const prop = properties.find(p => p.id === id);
+    setSelectedProperty(prop);
+    setIsEditorOpen(true);
+  }, [properties, handleAddProperty]);
 
   const handleManagePhotos = useCallback((id: string) => {
     console.log("Managing photos for:", id);
@@ -129,11 +104,22 @@ export default function AdminDashboard() {
 
   // Optimized Filtering Logic
   const filteredRequests = useMemo(() => {
-    return requests.filter(req => {
-      const matchesProperty = propertyFilter === "all" || req.property === propertyFilter;
-      const matchesDate = !dateFilter || req.dates.toLowerCase().includes(dateFilter.toLowerCase());
-      return matchesProperty && matchesDate;
-    });
+    if (!Array.isArray(requests)) return [];
+    return requests
+      .filter(req => {
+        const matchesProperty = propertyFilter === "all" || req.property?.title === propertyFilter;
+        const dateStr = `${req.check_in} - ${req.check_out}`;
+        const matchesDate = !dateFilter || dateStr.toLowerCase().includes(dateFilter.toLowerCase());
+        return matchesProperty && matchesDate;
+      })
+      .map(req => ({
+        id: req.id,
+        guest: req.user?.full_name || "Guest",
+        property: req.property?.title || "Property",
+        dates: `${req.check_in} - ${req.check_out}`,
+        amount: "₹12,400", // Static mock
+        status: req.status
+      }));
   }, [requests, propertyFilter, dateFilter]);
 
   return (
@@ -157,7 +143,7 @@ export default function AdminDashboard() {
                 />
                 
                 <RequestFilterBar 
-                  properties={INITIAL_PROPERTIES}
+                  properties={properties}
                   propertyFilter={propertyFilter}
                   setPropertyFilter={setPropertyFilter}
                   dateFilter={dateFilter}
@@ -167,8 +153,8 @@ export default function AdminDashboard() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                   {[
-                    { label: "Pending Approvals", value: requests.length, color: "text-primary" },
-                    { label: "Confirmed Today", value: "05", color: "text-stone-900" },
+                    { label: "Pending Approvals", value: Array.isArray(requests) ? requests.filter((r: any) => r.status === 'pending').length : 0, color: "text-primary" },
+                    { label: "Confirmed Today", value: Array.isArray(requests) ? requests.filter((r: any) => r.status === 'confirmed').length : 0, color: "text-stone-900" },
                     { label: "Revenue (MTD)", value: "₹45,200", color: "text-stone-900" },
                   ].map((stat, i) => (
                     <div key={i} className="bg-white/50 backdrop-blur-sm p-5 rounded-2xl border border-stone-100 shadow-sm flex items-center justify-between">
@@ -185,12 +171,16 @@ export default function AdminDashboard() {
               </div>
 
               <div className="flex-grow overflow-y-auto min-h-0 pr-2 no-scrollbar relative group">
-                <BookingTable 
-                  requests={filteredRequests} 
-                  onConfirm={handleConfirm} 
-                  onCancel={handleCancel} 
-                  onRowClick={(booking) => { setSelectedBooking(booking); setIsDetailOpen(true); }}
-                />
+                {loading ? (
+                  <div className="h-full flex items-center justify-center italic text-stone-400">Loading requests...</div>
+                ) : (
+                  <BookingTable 
+                    requests={filteredRequests} 
+                    onConfirm={handleConfirm} 
+                    onCancel={handleCancel} 
+                    onRowClick={(booking) => { setSelectedBooking(booking); setIsDetailOpen(true); }}
+                  />
+                )}
                 {/* Scroll Hint: Bottom Gradient */}
                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -208,11 +198,15 @@ export default function AdminDashboard() {
                 />
               </motion.div>
               <div className="flex-grow flex items-center min-h-0">
-                <PropertyGrid 
-                  properties={INITIAL_PROPERTIES} 
-                  onEdit={handleEditProperty} 
-                  onPhotos={handleManagePhotos} 
-                />
+                {loading ? (
+                  <div className="w-full h-full flex items-center justify-center italic text-stone-400">Loading properties...</div>
+                ) : (
+                  <PropertyGrid 
+                    properties={properties} 
+                    onEdit={handleEditProperty} 
+                    onPhotos={handleManagePhotos} 
+                  />
+                )}
               </div>
             </div>
           )}

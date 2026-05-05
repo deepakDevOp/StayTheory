@@ -10,15 +10,25 @@ interface AllReviewsProps {
   onBookClick: () => void;
 }
 
+import { useLocation } from "react-router-dom";
+
 export default function AllReviews({ onBookClick }: AllReviewsProps) {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const propertyIdFilter = searchParams.get("property");
+
   // Aggregate all reviews from all properties
-  const allReviews = propertiesData.flatMap(property => 
-    property.reviews.map(review => ({
-      ...review,
-      propertyTitle: property.title,
-      propertyId: property.id
-    }))
-  );
+  const allReviews = propertiesData
+    .filter(p => !propertyIdFilter || p.id === propertyIdFilter)
+    .flatMap(property => 
+      property.reviews.map(review => ({
+        ...review,
+        propertyTitle: property.title,
+        propertyId: property.id
+      }))
+    );
+
+  const filteredPropertyTitle = propertyIdFilter ? propertiesData.find(p => p.id === propertyIdFilter)?.title : null;
 
   return (
     <div className="bg-background min-h-screen">
@@ -32,11 +42,13 @@ export default function AllReviews({ onBookClick }: AllReviewsProps) {
             className="mb-8"
           >
             <Link 
-              to="/" 
+              to={propertyIdFilter ? `/property/${propertyIdFilter}` : "/"} 
               className="inline-flex items-center gap-2 text-stone-500 hover:text-primary transition-colors group w-fit"
             >
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              <span className="text-[10px] md:text-sm uppercase tracking-widest font-bold">Back to sanctuary</span>
+              <span className="text-[10px] md:text-sm uppercase tracking-widest font-bold">
+                {propertyIdFilter ? "Back to sanctuary" : "Back to home"}
+              </span>
             </Link>
           </motion.div>
           
@@ -45,7 +57,7 @@ export default function AllReviews({ onBookClick }: AllReviewsProps) {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-8xl font-serif italic text-primary mb-6"
           >
-            Guest Stories
+            {filteredPropertyTitle ? `${filteredPropertyTitle} Stories` : "Guest Stories"}
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -53,7 +65,9 @@ export default function AllReviews({ onBookClick }: AllReviewsProps) {
             transition={{ delay: 0.1 }}
             className="max-w-2xl text-stone-500 text-lg md:text-xl font-light leading-relaxed"
           >
-            Whispers of stillness and moments of clarity. A collection of experiences from those who have shared our space.
+            {filteredPropertyTitle 
+              ? `Voices from the ${filteredPropertyTitle}. A collection of experiences shared by our guests during their stay.`
+              : "Whispers of stillness and moments of clarity. A collection of experiences from those who have shared our space."}
           </motion.p>
         </header>
 

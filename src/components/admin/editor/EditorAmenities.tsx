@@ -30,6 +30,11 @@ export default function EditorAmenities({ selectedAmenities, onToggle, onAdd }: 
       <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-8 flex items-center gap-3">
         <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Feature Checklist
       </h3>
+      {selectedAmenities.length === 0 && (
+        <div className="mb-6 p-4 bg-primary/5 rounded-xl border border-primary/10">
+          <p className="text-[10px] text-primary font-bold uppercase tracking-widest">Tip: Select at least 3 amenities to help your sanctuary stand out in search results.</p>
+        </div>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
         {AMENITY_OPTIONS.concat(selectedAmenities.filter(a => !AMENITY_OPTIONS.includes(a))).map((item) => (
           <label key={item} className={`flex items-center gap-4 p-6 rounded-2xl border transition-all cursor-pointer group ${

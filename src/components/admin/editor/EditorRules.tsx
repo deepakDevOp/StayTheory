@@ -1,15 +1,22 @@
 import { Plus, Trash2, Percent } from "lucide-react";
 import { motion } from "motion/react";
+import { useState } from "react";
 
 interface EditorRulesProps {
   rules: string[];
-  newRule: string;
-  onNewRuleChange: (val: string) => void;
-  onAddRule: () => void;
+  onAddRule: (rule: string) => void;
   onRemoveRule: (index: number) => void;
 }
 
-export default function EditorRules({ rules, newRule, onNewRuleChange, onAddRule, onRemoveRule }: EditorRulesProps) {
+export default function EditorRules({ rules, onAddRule, onRemoveRule }: EditorRulesProps) {
+  const [newRule, setNewRule] = useState("");
+
+  const handleAdd = () => {
+    if (newRule.trim()) {
+      onAddRule(newRule);
+      setNewRule("");
+    }
+  };
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-12">
       <section>
@@ -17,23 +24,30 @@ export default function EditorRules({ rules, newRule, onNewRuleChange, onAddRule
           <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Sanctuary Rules
         </h3>
         <div className="space-y-4">
-          {rules.map((rule, i) => (
-            <div key={i} className="flex items-center justify-between p-6 bg-white rounded-2xl border border-stone-100 shadow-sm group">
-              <span className="text-sm text-stone-600 font-medium">{rule}</span>
-              <button onClick={() => onRemoveRule(i)} className="text-stone-300 hover:text-red-500 transition-colors p-2">
-                <Trash2 className="w-4 h-4" />
-              </button>
+          {rules.length === 0 ? (
+            <div className="p-8 bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-center">
+              <p className="text-stone-400 italic text-sm">No sanctuary rules defined yet. Add rules like "No Smoking" or "Quiet Hours" below.</p>
             </div>
-          ))}
+          ) : (
+            rules.map((rule, i) => (
+              <div key={i} className="flex items-center justify-between p-6 bg-white rounded-2xl border border-stone-100 shadow-sm group">
+                <span className="text-sm text-stone-600 font-medium">{rule}</span>
+                <button onClick={() => onRemoveRule(i)} className="text-stone-300 hover:text-red-500 transition-colors p-2">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))
+          )}
           <div className="flex gap-4 mt-6">
             <input 
               type="text" 
               value={newRule}
-              onChange={(e) => onNewRuleChange(e.target.value)}
+              onChange={(e) => setNewRule(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
               placeholder="Add a new sanctuary rule..."
               className="flex-grow bg-white border border-stone-100 rounded-2xl px-6 py-4 outline-none focus:border-primary/20 transition-all text-sm"
             />
-            <button onClick={onAddRule} className="bg-stone-900 text-white px-8 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all">Add</button>
+            <button onClick={handleAdd} className="bg-stone-900 text-white px-8 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all">Add</button>
           </div>
         </div>
       </section>
