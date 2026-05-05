@@ -73,15 +73,36 @@ const mockSnapshot = {
 };
 
 export default function Overview() {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(mockSnapshot);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
   const [showTrafficSources, setShowTrafficSources] = useState(false);
   const [trafficFilter, setTrafficFilter] = useState<"day" | "week" | "month">("week");
 
   useEffect(() => {
-    // Static mode: no data fetching
-    console.log("Overview: Static mode active");
+    const fetchSnapshot = async () => {
+      setLoading(true);
+      try {
+        const snapshot = await adminService.getSnapshot();
+        setData(snapshot);
+      } catch (error) {
+        console.error("Failed to fetch dashboard snapshot:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSnapshot();
   }, []);
+
+  if (loading || !data) {
+    return (
+      <div className="h-[60vh] flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 bg-stone-100 rounded-full mb-4" />
+          <p className="font-serif italic text-stone-400">Preparing your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const { stats, recent_activity, chart_data } = data;
 

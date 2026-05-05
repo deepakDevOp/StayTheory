@@ -1,15 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
-import { MapPin, Star, Check, Info, ArrowLeft, Users, ChevronRight, Bed, Bath, Square, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { MapPin, Star, Check, Info, ArrowLeft, Users, ChevronRight, Bed, Bath, Square, ArrowRight, X, Share, Heart, ChevronLeft } from "lucide-react";
 import { publicService } from "../services/publicService";
 import { DayPicker, DateRange } from "react-day-picker";
 import { addDays, differenceInCalendarDays, parseISO } from "date-fns";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import MobileNav from "../components/MobileNav";
-
-import { propertiesData } from "../data/properties";
 
 export default function PropertyDetails({ onBookClick }: { onBookClick?: () => void }) {
   const { id: slug } = useParams();
@@ -18,11 +16,9 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
-  const [range, setRange] = useState<DateRange | undefined>({
-    from: new Date(),
-    to: addDays(new Date(), 3),
-  });
+  const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [activeGalleryCategory, setActiveGalleryCategory] = useState("all");
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -30,21 +26,69 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
       if (!slug) return;
       setLoading(true);
       try {
-        // Find property from static data
-        const prop = propertiesData.find(p => p.id === slug);
+        const prop = await publicService.getPropertyBySlug(slug);
         if (prop) {
-          // but here we just use it as is.
           setProperty(prop);
-          setBlockedDates([]); // No blocked dates in static data
+          // Load blocked dates from the property availability data
+          if (prop.availability && Array.isArray(prop.availability)) {
+            console.log("DEBUG: Raw availability data:", prop.availability);
+            const blocked = prop.availability.map((a: any) => {
+              // Ensure we handle both string and date objects
+              const d = typeof a.date === 'string' ? parseISO(a.date) : new Date(a.date);
+              d.setHours(0, 0, 0, 0);
+              return d;
+            });
+            console.log("DEBUG: Parsed blocked dates:", blocked);
+            setBlockedDates(blocked);
+          }
         }
       } catch (error) {
-        console.error("Failed to load static property data:", error);
+        console.error("Failed to load property data:", error);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
   }, [slug]);
+
+  useEffect(() => {
+    if (lightboxIndex !== null) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [lightboxIndex]);
+
+  useEffect(() => {
+    if (blockedDates.length >= 0 && !range && !loading) {
+      // Find first available 3-night range starting from tomorrow
+      let start = addDays(new Date(), 1);
+      start.setHours(0, 0, 0, 0);
+      
+      const isDateBlocked = (date: Date) => {
+        return blockedDates.some(bd => bd.getTime() === date.getTime());
+      };
+
+      for (let i = 0; i < 90; i++) {
+        const potentialStart = addDays(start, i);
+        const potentialEnd = addDays(potentialStart, 2); // 3 days (2 nights)
+        
+        let rangeBlocked = false;
+        for (let d = 0; d <= 2; d++) {
+          if (isDateBlocked(addDays(potentialStart, d))) {
+            rangeBlocked = true;
+            break;
+          }
+        }
+        
+        if (!rangeBlocked) {
+          setRange({ from: potentialStart, to: potentialEnd });
+          break;
+        }
+      }
+    }
+  }, [blockedDates, loading]);
 
   const handleBooking = async () => {
     if (!range?.from || !range?.to || !property) return;
@@ -139,37 +183,111 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
           
           {/* Categorized Image Gallery */}
           <section>
-            <div className="flex justify-between items-end mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8">
               <h3 className="text-2xl font-serif text-stone-800 italic">The Gallery</h3>
-              <div className="flex gap-4">
-                {["all", ...new Set(normalizedImages.map((img: any) => img.category))].map((cat: any) => (
+              <div className="flex gap-4 p-1 bg-stone-50 rounded-full border border-stone-100 overflow-x-auto no-scrollbar max-w-full">
+                {["all", ...new Set(normalizedImages.map((img: any) => img.category))].filter(c => c !== 'main').map((cat: any) => (
                   <button 
                     key={cat}
                     onClick={() => setActiveGalleryCategory(cat)}
-                    className={`text-[10px] font-bold uppercase tracking-widest pb-1 border-b-2 transition-all ${activeGalleryCategory === cat ? 'border-primary text-primary' : 'border-transparent text-stone-400'}`}
+                    className={`text-[9px] font-bold uppercase tracking-widest px-4 py-2 rounded-full transition-all whitespace-nowrap ${activeGalleryCategory === cat ? 'bg-white text-primary shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
                   >
                     {cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
                   </button>
                 ))}
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {normalizedImages
                 .filter((img: any) => activeGalleryCategory === 'all' || img.category === activeGalleryCategory)
-                .map((img: any, idx: number) => (
-                  <motion.img
-                    key={img.url || idx}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4 }}
-                    src={img.url}
-                    className="w-full h-64 object-cover rounded-2xl shadow-sm hover:scale-[1.02] transition-transform duration-500 cursor-pointer"
-                    alt={`Property Image ${idx + 1}`}
-                  />
-                ))}
+                .slice(0, 4)
+                .map((img: any, idx: number) => {
+                  const filtered = normalizedImages.filter((img: any) => activeGalleryCategory === 'all' || img.category === activeGalleryCategory);
+                  const totalFiltered = filtered.length;
+                  const isLastInitial = idx === 3 && totalFiltered > 4;
+
+                  return (
+                    <motion.div
+                      key={img.url || idx}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      className="relative group cursor-pointer overflow-hidden rounded-2xl shadow-sm"
+                      onClick={() => setLightboxIndex(normalizedImages.indexOf(img))}
+                    >
+                      <img
+                        src={img.url}
+                        className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-105"
+                        alt={`Property Image ${idx + 1}`}
+                      />
+                      {isLastInitial && (
+                        <div className="absolute inset-0 bg-stone-900/40 flex flex-col items-center justify-center text-white backdrop-blur-[1px] group-hover:bg-stone-900/50 transition-all">
+                          <span className="text-3xl font-serif italic mb-2">+{totalFiltered - 4}</span>
+                          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">View All Photos</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
             </div>
           </section>
+
+          {/* Lightbox Modal */}
+          <AnimatePresence>
+            {lightboxIndex !== null && (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[1000] bg-black w-screen h-screen flex flex-col items-center justify-center overflow-hidden"
+              >
+                {/* Header */}
+                <div className="absolute top-0 left-0 right-0 p-8 flex justify-between items-center z-10">
+                  <button onClick={() => setLightboxIndex(null)} className="flex items-center gap-2 text-white/70 hover:text-white transition-colors">
+                    <X className="w-5 h-5" />
+                    <span className="text-xs uppercase tracking-widest font-bold">Close</span>
+                  </button>
+                  <div className="text-white/60 text-xs font-bold uppercase tracking-[0.3em]">
+                    {lightboxIndex + 1} / {normalizedImages.length}
+                  </div>
+                  <div className="flex gap-4">
+                    <button className="text-white/60 hover:text-white"><Share className="w-5 h-5" /></button>
+                    <button className="text-white/60 hover:text-white"><Heart className="w-5 h-5" /></button>
+                  </div>
+                </div>
+
+                {/* Main Image */}
+                <div className="relative w-full h-full flex items-center justify-center p-4 md:p-20">
+                  <motion.img 
+                    key={lightboxIndex}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    src={normalizedImages[lightboxIndex].url} 
+                    className="max-w-full max-h-full object-contain shadow-2xl"
+                  />
+
+                  {/* Navigation Arrows */}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxIndex((prev) => (prev! === 0 ? normalizedImages.length - 1 : prev! - 1));
+                    }}
+                    className="absolute left-8 w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/10 transition-all"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxIndex((prev) => (prev! === normalizedImages.length - 1 ? 0 : prev! + 1));
+                    }}
+                    className="absolute right-8 w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/10 transition-all"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Stats & Overview */}
           <section className="flex flex-wrap gap-8 text-stone-600 bg-stone-50/50 p-6 rounded-2xl border border-stone-100">
@@ -306,11 +424,67 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: () => v
               </div>
 
               <div className="border border-stone-200 rounded-xl bg-white overflow-hidden flex justify-center w-full">
+                <style>{`
+                  .rdp-day_disabled {
+                    text-decoration: line-through !important;
+                    text-decoration-color: #8A4630 !important;
+                    text-decoration-thickness: 2px !important;
+                    opacity: 0.3 !important;
+                    color: #A8A29E !important;
+                    cursor: not-allowed !important;
+                  }
+                  .rdp-day_selected {
+                    background-color: #8A4630 !important;
+                    color: white !important;
+                  }
+                  .rdp-day_selected.rdp-day_disabled {
+                    background-color: #F5F5F4 !important;
+                    color: #A8A29E !important;
+                    text-decoration: line-through !important;
+                  }
+                `}</style>
                 <DayPicker
                   mode="range"
                   selected={range}
-                  onSelect={setRange}
-                  disabled={[{ before: today }, ...blockedDates]}
+                  onSelect={(newRange) => {
+                    if (!newRange) {
+                      setRange(undefined);
+                      return;
+                    }
+
+                    // Prevent starting a stay on a blocked date
+                    if (newRange.from && blockedDates.some(bd => bd.getTime() === newRange.from!.getTime())) {
+                      // If they clicked a blocked date as their first choice, ignore it
+                      return;
+                    }
+
+                    if (newRange.from && newRange.to) {
+                      // Check if any date BETWEEN from and to is blocked
+                      const isMidRangeBlocked = blockedDates.some(bd => {
+                        const date = bd.getTime();
+                        // It's blocked if it's the start date OR any date BEFORE the end date
+                        return date >= newRange.from!.getTime() && date < newRange.to!.getTime();
+                      });
+                      
+                      if (isMidRangeBlocked) {
+                        // Reset to just the start date if they tried to jump over a block
+                        setRange({ from: newRange.from, to: undefined });
+                        return;
+                      }
+                    }
+                    setRange(newRange);
+                  }}
+                  disabled={[{ before: today }]}
+                  modifiers={{
+                    blocked: blockedDates
+                  }}
+                  modifiersStyles={{
+                    blocked: { 
+                      textDecoration: 'line-through',
+                      textDecorationColor: '#8A4630',
+                      textDecorationThickness: '2px'
+                    }
+                  }}
                   className="custom-calendar"
                 />
               </div>

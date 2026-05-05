@@ -4,6 +4,7 @@ import { X, Minus, Plus, Users, Mail, Phone, Info, Home, ChevronDown, Check } fr
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, addDays, differenceInCalendarDays } from 'date-fns';
 import 'react-day-picker/dist/style.css';
+import { publicService } from '../services/publicService';
 
 const availableProperties = [
   {
@@ -42,13 +43,13 @@ interface BookingModalProps {
 }
 
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
+  const [properties, setProperties] = useState<any[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [isPropertyDropdownOpen, setIsPropertyDropdownOpen] = useState(false);
+  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const [range, setRange] = useState<DateRange | undefined>({
-    from: new Date(2026, 4, 16),
-    to: addDays(new Date(2026, 4, 16), 3),
-  });
+  const [range, setRange] = useState<DateRange | undefined>(undefined);
 
   const [guests, setGuests] = useState({
     adults: 2,
@@ -63,6 +64,38 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
   const [showGuestPicker, setShowGuestPicker] = useState(false);
 
+  // Fetch properties on mount
+  useEffect(() => {
+    const fetchProps = async () => {
+      try {
+        const data = await publicService.getProperties();
+        setProperties(data);
+      } catch (err) {
+        console.error("Failed to fetch properties for modal:", err);
+      }
+    };
+    fetchProps();
+  }, []);
+
+  // Update blocked dates when property changes
+  useEffect(() => {
+    if (selectedPropertyId) {
+      const prop = properties.find(p => p.id === selectedPropertyId);
+      if (prop && prop.availability) {
+        const blocked = prop.availability.map((a: any) => {
+          const d = typeof a.date === 'string' ? new Date(a.date) : new Date(a.date);
+          d.setHours(0, 0, 0, 0);
+          return d;
+        });
+        setBlockedDates(blocked);
+      } else {
+        setBlockedDates([]);
+      }
+    } else {
+      setBlockedDates([]);
+    }
+  }, [selectedPropertyId, properties]);
+
   // Clear form state when the modal closes
   useEffect(() => {
     if (!isOpen) {
@@ -70,11 +103,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       setIsPropertyDropdownOpen(false);
       setShowGuestPicker(false);
       setContact({ email: '', phone: '' });
+      setRange(undefined);
     }
   }, [isOpen]);
 
-  const selectedProperty = availableProperties.find(p => p.id === selectedPropertyId);
-  const pricePerNight = selectedProperty ? selectedProperty.price : 0;
+  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+  const pricePerNight = selectedProperty ? selectedProperty.base_nightly_rate : 0;
 
   const totalGuests = guests.adults + guests.children;
   
@@ -87,13 +121,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const disabledDays = [
-    { before: today },
-    { from: new Date(2026, 4, 1), to: new Date(2026, 4, 15) },
-  ];
-
-  const hiddenDays = { before: today };
-
   const updateGuest = (type: keyof typeof guests, delta: number) => {
     setGuests((prev) => ({
       ...prev,
@@ -104,6 +131,28 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setContact(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleBooking = async () => {
+    if (!range?.from || !range?.to || !selectedPropertyId) return;
+    setLoading(true);
+    try {
+      await publicService.createBooking({
+        property_id: selectedPropertyId,
+        check_in: format(range.from, 'yyyy-MM-dd'),
+        check_out: format(range.to, 'yyyy-MM-dd'),
+        guests: totalGuests,
+        email: contact.email,
+        phone: contact.phone
+      });
+      alert("Sanctuary request sent successfully!");
+      onClose();
+    } catch (err) {
+      console.error("Failed to create booking from modal:", err);
+      alert("Failed to send request. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -257,7 +306,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                             transition={{ duration: 0.2 }}
                             className="absolute top-full left-0 w-full mt-2 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden z-30 p-1"
                           >
-                            {availableProperties.map(prop => (
+                            {properties.map(prop => (
                               <button
                                 key={prop.id}
                                 onClick={() => {
@@ -266,10 +315,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                                 }}
                                 className={`w-full p-3 flex items-center gap-4 rounded-lg hover:bg-stone-50 transition-colors ${selectedPropertyId === prop.id ? 'bg-stone-50' : ''}`}
                               >
-                                <img src={prop.image} className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" />
+                                <img src={prop.images?.[0]?.url || prop.coverImage} className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" />
                                 <div className="text-left flex-1">
                                   <div className={`font-serif italic text-sm md:text-base ${selectedPropertyId === prop.id ? 'text-accent font-semibold' : 'text-stone-800'}`}>{prop.title}</div>
-                                  <div className="text-[10px] md:text-xs text-stone-500 tracking-wide">₹{prop.price.toLocaleString()} / night</div>
+                                  <div className="text-[10px] md:text-xs text-stone-500 tracking-wide">₹{prop.base_nightly_rate.toLocaleString()} / night</div>
                                 </div>
                                 {selectedPropertyId === prop.id && <Check className="w-5 h-5 text-accent" />}
                               </button>
@@ -295,10 +344,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                         color: #A8A29E !important;
                         cursor: not-allowed !important;
                         background-color: transparent !important;
+                        border-radius: 0 !important;
                       }
-                      .rdp-day_disabled.rdp-day_selected {
-                        background-color: transparent !important;
-                        color: #A8A29E !important;
+                      .rdp-day_selected {
+                        background-color: #8A4630 !important;
+                        color: white !important;
                       }
                       .rdp-nav_button_previous[disabled],
                       .rdp-nav_button_previous:disabled {
@@ -321,26 +371,64 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     <DayPicker
                       mode="range"
                       selected={range}
-                      onSelect={setRange}
-                      disabled={disabledDays}
-                      hidden={hiddenDays}
+                      onSelect={(newRange) => {
+                        if (!newRange) {
+                          setRange(undefined);
+                          return;
+                        }
+
+                        // Prevent starting a stay on a blocked date
+                        if (newRange.from && blockedDates.some(bd => bd.getTime() === newRange.from!.getTime())) {
+                          return;
+                        }
+
+                        if (newRange.from && newRange.to) {
+                          // Check if any date BETWEEN from and to is blocked
+                          const isMidRangeBlocked = blockedDates.some(bd => {
+                            const date = bd.getTime();
+                            return date >= newRange.from!.getTime() && date < newRange.to!.getTime();
+                          });
+                          
+                          if (isMidRangeBlocked) {
+                            setRange({ from: newRange.from, to: undefined });
+                            return;
+                          }
+                        }
+                        setRange(newRange);
+                      }}
+                      disabled={[{ before: today }]}
+                      modifiers={{
+                        blocked: blockedDates
+                      }}
+                      modifiersStyles={{
+                        blocked: { 
+                          textDecoration: 'line-through',
+                          textDecorationColor: '#8A4630',
+                          textDecorationThickness: '2px'
+                        }
+                      }}
                       fromDate={today}
                       numberOfMonths={2}
                       className="mx-auto"
-                      modifiersStyles={{
-                        disabled: { 
-                          textDecoration: 'line-through',
-                        }
-                      }}
-                      styles={{
-                        caption: { color: '#8A4630', fontFamily: 'serif', fontStyle: 'italic' },
-                        head_cell: { color: '#A8A29E', fontWeight: 'normal', fontSize: '0.75rem' },
-                        day_selected: { backgroundColor: '#8A4630', color: 'white' },
-                        day_today: { color: '#8A4630', fontWeight: 'bold' }
-                      }}
                     />
                   </div>
                 </div>
+
+                {/* Confirm Button */}
+                <button
+                  onClick={handleBooking}
+                  disabled={!selectedPropertyId || !range?.from || !range?.to || loading}
+                  className="w-full py-4 bg-accent text-white rounded-xl font-serif text-lg shadow-xl shadow-accent/20 hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-3"
+                >
+                  {loading ? (
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>Complete Request</span>
+                      <Check className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </button>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Guests Section */}

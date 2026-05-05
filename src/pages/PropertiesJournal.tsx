@@ -14,13 +14,24 @@ import { useState, useEffect } from "react";
 import { publicService } from "../services/publicService";
 
 export default function PropertiesJournal({ onBookClick }: PropertiesJournalProps) {
-  const [properties, setProperties] = useState<any[]>(propertiesData);
-  const [loading, setLoading] = useState(false);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Static mode
-    console.log("PropertiesJournal: Static mode active");
+    const fetchProperties = async () => {
+      setLoading(true);
+      try {
+        const data = await publicService.getProperties();
+        console.log("DEBUG: PropertiesJournal Data:", data);
+        setProperties(data);
+      } catch (error) {
+        console.error("Failed to fetch journal properties:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProperties();
   }, []);
 
   if (loading) {
@@ -82,8 +93,8 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
             </div>
           ) : (
             properties.map((property, index) => {
-              const image = property.coverImage || (property.images?.[0]?.url) || "";
-              const priceVal = property.price || property.base_nightly_rate || 0;
+              const image = property.images?.[0]?.url || property.coverImage || "";
+              const priceVal = property.base_nightly_rate || 0;
               const price = `₹${parseFloat(String(priceVal)).toLocaleString()}`;
               const location = property.city || "India";
               
@@ -94,7 +105,7 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ delay: index * 0.1, duration: 0.8 }}
-                  onClick={() => navigate(`/property/${property.id}`)}
+                  onClick={() => navigate(`/property/${property.slug}`)}
                   className="group cursor-pointer"
                 >
                   <div className="relative aspect-[4/5] overflow-hidden rounded-3xl mb-6 shadow-sm group-hover:shadow-2xl transition-all duration-700">

@@ -2,15 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { propertiesData } from "../data/properties";
-
-const properties = propertiesData.map(p => ({
-  id: p.id,
-  title: p.title,
-  location: p.nearby[0]?.name || "Destination",
-  description: p.subtitle,
-  image: p.coverImage
-}));
+import { publicService } from "../services/publicService";
 
 const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => {
@@ -18,23 +10,76 @@ const swipePower = (offset: number, velocity: number) => {
 };
 
 export default function Hero() {
+  const [properties, setProperties] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
   const lastWheelTime = useRef(0);
   const navigate = useNavigate();
 
-  const nextSlide = useCallback(() => {
-    setActiveIndex((prev) => (prev + 1) % properties.length);
+  useEffect(() => {
+    const fetchProperties = async () => {
+      setLoading(true);
+      try {
+        const data = await publicService.getProperties();
+        console.log("DEBUG: Public Properties Data:", data);
+        const mapped = data.slice(0, 5).map((p: any) => ({
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          location: p.city || "Destination",
+          description: p.subtitle || p.description?.substring(0, 100) + "...",
+          image: p.images?.find((img: any) => img.is_primary)?.url || p.images?.[0]?.url || p.coverImage || "",
+          isPlaceholder: false
+        }));
+
+        // Add 2 "Coming Soon" placeholders to Hero
+        const placeholders = [
+          {
+            id: 'hero-placeholder-1',
+            slug: 'coming-soon',
+            title: 'Celestial Sands',
+            location: 'Pushkar',
+            description: 'Experience the magic of desert nights under a blanket of stars. Coming soon to our collection.',
+            image: 'https://images.unsplash.com/photo-1509233725247-49e657c54213?auto=format&fit=crop&q=80&w=1200',
+            isPlaceholder: true
+          },
+          {
+            id: 'hero-placeholder-2',
+            slug: 'coming-soon',
+            title: 'Azure Heights',
+            location: 'Shimla',
+            description: 'A sanctuary in the clouds, where luxury meets the Himalayan breeze. Launching shortly.',
+            image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1200',
+            isPlaceholder: true
+          }
+        ];
+
+        setProperties([...mapped, ...placeholders]);
+      } catch (error) {
+        console.error("Failed to fetch hero properties:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProperties();
   }, []);
+
+  const nextSlide = useCallback(() => {
+    if (properties.length === 0) return;
+    setActiveIndex((prev) => (prev + 1) % properties.length);
+  }, [properties.length]);
 
   const prevSlide = useCallback(() => {
+    if (properties.length === 0) return;
     setActiveIndex((prev) => (prev - 1 + properties.length) % properties.length);
-  }, []);
+  }, [properties.length]);
 
   useEffect(() => {
+    if (properties.length === 0) return;
     // Start interval immediately, but first change will be after 2000ms
     const timer = setInterval(nextSlide, 2000);
     return () => clearInterval(timer);
-  }, [nextSlide]);
+  }, [nextSlide, properties.length]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     // Only handle significant horizontal scrolling to prevent interference with vertical page scroll
@@ -107,8 +152,20 @@ export default function Hero() {
       className="relative h-[calc(100vh-72px)] flex flex-col justify-center overflow-hidden bg-surface-dim/30"
       onWheel={handleWheel}
     >
-      {/* Background Blur Image corresponding to active slide */}
-      <AnimatePresence mode="popLayout">
+      {loading ? (
+        <div className="h-full w-full flex items-center justify-center italic text-stone-400">
+          Loading our world...
+        </div>
+      ) : properties.length === 0 ? (
+        <div className="h-full w-full flex flex-col items-center justify-center text-center p-12">
+           <MapPin className="w-12 h-12 text-stone-200 mb-6" />
+           <h2 className="text-4xl font-serif italic text-accent mb-4">Finding Sanctuaries</h2>
+           <p className="text-stone-400 max-w-md">Our collection is currently being curated. Please return shortly.</p>
+        </div>
+      ) : (
+        <>
+          {/* Background Blur Image corresponding to active slide */}
+          <AnimatePresence mode="popLayout">
         <motion.img
           key={`bg-${activeIndex}`}
           initial={{ opacity: 0 }}
@@ -138,7 +195,7 @@ export default function Hero() {
               onClick={() => {
                 if (variant === "left") prevSlide();
                 if (variant === "right") nextSlide();
-                if (variant === "center") navigate(`/property/${prop.id}`);
+                if (variant === "center") navigate(`/property/${prop.slug}`);
               }}
               drag={isActive ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
@@ -155,13 +212,13 @@ export default function Hero() {
               <img 
                 src={prop.image} 
                 alt={prop.title}
-                className="w-full h-full object-cover pointer-events-none"
+                className={`w-full h-full object-cover object-center pointer-events-none ${prop.isPlaceholder ? 'blur-[3px] brightness-90' : ''}`}
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent pointer-events-none z-20" />
               
               {/* Content */}
-              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-16 text-center pointer-events-none">
+              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-16 text-center pointer-events-none z-30">
                 <motion.div 
                   initial={false}
                   animate={{ 
@@ -198,6 +255,8 @@ export default function Hero() {
           />
         ))}
       </div>
+        </>
+      )}
     </section>
   );
 }

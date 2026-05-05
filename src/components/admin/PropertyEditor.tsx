@@ -12,11 +12,12 @@ interface PropertyEditorProps {
   isOpen: boolean;
   onClose: () => void;
   property?: any;
+  onSaveSuccess?: () => void;
 }
 
 import { adminService } from "../../services/adminService";
 
-export default function PropertyEditor({ isOpen, onClose, property }: PropertyEditorProps) {
+export default function PropertyEditor({ isOpen, onClose, property, onSaveSuccess }: PropertyEditorProps) {
   const [activeTab, setActiveTab] = useState("general");
   const [loading, setLoading] = useState(false);
 
@@ -35,8 +36,10 @@ export default function PropertyEditor({ isOpen, onClose, property }: PropertyEd
     address: property?.address || "",
     google_maps_url: property?.google_maps_url || "",
     map_image: property?.map_image || "",
+    coverImage: property?.images?.find((img: any) => img.is_primary)?.url || property?.images?.[0]?.url || "",
     amenities: property?.amenities || [],
     rules: property?.rules || [],
+    availability: property?.availability?.map((a: any) => a.date) || [],
     images: property?.images || [] // This will be an array of {url: string}
   });
 
@@ -45,6 +48,8 @@ export default function PropertyEditor({ isOpen, onClose, property }: PropertyEd
       setFormData({
         ...formData,
         ...property,
+        coverImage: property.images?.find((img: any) => img.is_primary)?.url || property.images?.[0]?.url || "",
+        availability: property.availability?.map((a: any) => a.date) || [],
         base_nightly_rate: property.base_nightly_rate ? String(property.base_nightly_rate) : "0",
         beds: property.beds || property.bedrooms || 1
       });
@@ -56,6 +61,8 @@ export default function PropertyEditor({ isOpen, onClose, property }: PropertyEd
       const { url } = await adminService.uploadMedia(file);
       if (category === 'map_internal') {
         setFormData(prev => ({ ...prev, map_image: url }));
+      } else if (category === 'cover_internal') {
+        setFormData(prev => ({ ...prev, coverImage: url }));
       } else {
         setFormData(prev => ({
           ...prev,
@@ -76,22 +83,51 @@ export default function PropertyEditor({ isOpen, onClose, property }: PropertyEd
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)+/g, '');
 
+      // Prepare final images list
+      let finalImages = [...formData.images];
+      if (formData.coverImage) {
+        // Find if this image already exists to get its original category
+        const existingImg = formData.images.find(img => img.url === formData.coverImage);
+        const originalCategory = existingImg?.category || 'main';
+
+        // Remove the cover image from images if it's already there to avoid duplicates
+        finalImages = finalImages.filter(img => img.url !== formData.coverImage);
+        
+        // Add it back as primary with its original category preserved
+        finalImages.unshift({
+          url: formData.coverImage,
+          category: originalCategory,
+          is_primary: true,
+          order: 0
+        });
+      }
+
       const payload = {
         ...formData,
         slug,
-        base_nightly_rate: parseFloat(formData.base_nightly_rate) || 0,
+        images: finalImages,
+        base_nightly_rate: parseFloat(String(formData.base_nightly_rate)) || 0,
         max_guests: parseInt(String(formData.max_guests)) || 1,
         bedrooms: parseInt(String(formData.bedrooms)) || 1,
         bathrooms: parseInt(String(formData.bathrooms)) || 1,
         beds: parseInt(String(formData.beds)) || 1,
       };
 
-      console.log("Static mode: Simulating save for", payload);
-      alert("Static Mode: Changes simulated successfully (not saved to database).");
+      if (property?.id) {
+        console.info("HITTING UPDATE API for ID:", property.id);
+        console.log("PAYLOAD:", payload);
+        await adminService.updateProperty(property.id, payload);
+      } else {
+        console.info("HITTING CREATE API");
+        console.log("PAYLOAD:", payload);
+        await adminService.createProperty(payload);
+      }
+      
+      onSaveSuccess?.();
       onClose();
     } catch (error: any) {
       console.error("Save failed:", error);
-      const errorMsg = error.response?.data?.detail?.[0]?.msg || "Check console for details.";
+      const errorMsg = error.response?.data?.detail?.[0]?.msg || error.response?.data?.detail || "Check console for details.";
       alert(`Failed to save property: ${errorMsg}`);
     } finally {
       setLoading(false);
@@ -157,8 +193,13 @@ export default function PropertyEditor({ isOpen, onClose, property }: PropertyEd
             )}
             {activeTab === "availability" && (
               <EditorAvailability
-                blockedDates={[]} // Future: wire this
-                onToggleDate={() => {}} 
+                blockedDates={formData.availability}
+                onToggleDate={(dateStr) => setFormData(prev => ({
+                  ...prev,
+                  availability: prev.availability.includes(dateStr) 
+                    ? prev.availability.filter(d => d !== dateStr) 
+                    : [...prev.availability, dateStr]
+                }))} 
               />
             )}
             {activeTab === "amenities" && (

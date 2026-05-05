@@ -27,11 +27,19 @@ const mockReviews = [
 ];
 
 export default function ReviewManager() {
-  const [reviews, setReviews] = useState<any[]>(mockReviews);
-  const [loading, setLoading] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchReviews = async () => {
-    console.log("ReviewManager: Static mode active");
+    setLoading(true);
+    try {
+      const data = await adminService.getAllReviews();
+      setReviews(data);
+    } catch (error) {
+      console.error("Failed to fetch reviews:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

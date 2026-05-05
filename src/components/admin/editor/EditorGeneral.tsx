@@ -22,7 +22,16 @@ const PROPERTY_TYPES = ["Villa", "Apartment", "Cottage", "Studio", "Boutique Hot
 
 export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: EditorGeneralProps) {
   const [activePhotoTab, setActivePhotoTab] = useState("main");
-  const [enabledCategories, setEnabledCategories] = useState<string[]>(["main", "bedroom", "living", "exterior"]);
+  const [enabledCategories, setEnabledCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Dynamically enable categories based on existing images
+    const existingCategories = Array.from(new Set(formData.images.map((img: any) => img.category)));
+    // Ensure 'main' and a few defaults are always there, plus whatever is in the data
+    const defaults = ["main", "bedroom", "living"];
+    const combined = Array.from(new Set([...defaults, ...existingCategories]));
+    setEnabledCategories(combined as string[]);
+  }, [formData.images]);
   const [uploading, setUploading] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,6 +88,25 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
         accept="image/*" 
       />
 
+      {/* Cover Image Input */}
+      <input 
+        type="file"
+        id="cover-upload"
+        onChange={async (e) => {
+          const files = e.target.files;
+          if (files && files.length > 0) {
+            setUploading(true);
+            try {
+              await onPhotoUpload(files[0], 'cover_internal');
+            } finally {
+              setUploading(false);
+            }
+          }
+        }}
+        className="hidden"
+        accept="image/*"
+      />
+
       {/* Map Screenshot Input */}
       <input 
         type="file"
@@ -88,8 +116,6 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
           if (files && files.length > 0) {
             setUploading(true);
             try {
-              // We'll reuse onPhotoUpload but handle the state update locally if needed
-              // or better, just use onPhotoUpload with a special category 'map'
               await onPhotoUpload(files[0], 'map_internal');
             } finally {
               setUploading(false);
@@ -249,6 +275,43 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             placeholder="Tell the story of this sanctuary..."
             className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium resize-none" 
           />
+        </div>
+      </section>
+      
+      {/* Showcase Identity */}
+      <section>
+        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-8 flex items-center gap-3">
+          <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Main Showcase Identity
+        </h3>
+        <div 
+          onClick={() => !uploading && document.getElementById('cover-upload')?.click()}
+          className="relative h-64 w-full bg-stone-100 rounded-[2.5rem] border-2 border-dashed border-stone-200 overflow-hidden group cursor-pointer hover:border-primary/30 transition-all"
+        >
+          {formData.coverImage ? (
+            <>
+              <img src={formData.coverImage} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white backdrop-blur-sm">
+                <Camera className="w-8 h-8 mb-3" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Change Showcase Image</span>
+              </div>
+            </>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400 group-hover:text-primary transition-colors">
+              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                <Camera className="w-6 h-6" />
+              </div>
+              <p className="font-serif italic text-lg mb-1">Select Cinematic Cover</p>
+              <p className="text-[9px] uppercase tracking-[0.2em] font-bold">Recommended: 16:9 High Resolution</p>
+            </div>
+          )}
+          {uploading && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Uploading Showcase...</span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

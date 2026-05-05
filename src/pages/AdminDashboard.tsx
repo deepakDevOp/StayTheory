@@ -20,14 +20,14 @@ import { adminService } from "../services/adminService";
 
 
 
-import { propertiesData } from "../data/properties";
-import { bookingsData } from "../data/bookings";
+// import { propertiesData } from "../data/properties";
+// import { bookingsData } from "../data/bookings";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("bookings");
-  const [requests, setRequests] = useState<any[]>(bookingsData);
-  const [properties, setProperties] = useState<any[]>(propertiesData);
-  const [loading, setLoading] = useState(false);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
@@ -40,8 +40,19 @@ export default function AdminDashboard() {
   const [dateFilter, setDateFilter] = useState("");
 
   const fetchData = useCallback(async () => {
-    // No-op for now as we are using static data
-    console.log("Static mode active");
+    setLoading(true);
+    try {
+      const [props, bks] = await Promise.all([
+        adminService.getProperties(),
+        adminService.getAllBookings()
+      ]);
+      setProperties(props);
+      setRequests(bks);
+    } catch (error) {
+      console.error("Failed to fetch admin data:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -91,9 +102,16 @@ export default function AdminDashboard() {
     setIsEditorOpen(true);
   }, []);
 
-  const handleEditProperty = useCallback((id: string) => {
-    if (!id) return handleAddProperty();
-    const prop = properties.find(p => p.id === id);
+  const handleEditProperty = useCallback((propOrId: any) => {
+    if (!propOrId) return handleAddProperty();
+    
+    let prop;
+    if (typeof propOrId === 'string') {
+      prop = properties.find(p => p.id === propOrId);
+    } else {
+      prop = propOrId;
+    }
+    
     setSelectedProperty(prop);
     setIsEditorOpen(true);
   }, [properties, handleAddProperty]);
@@ -218,6 +236,7 @@ export default function AdminDashboard() {
             isOpen={isEditorOpen} 
             onClose={() => setIsEditorOpen(false)} 
             property={selectedProperty}
+            onSaveSuccess={fetchData}
           />
 
           {/* Booking Detail Modal */}

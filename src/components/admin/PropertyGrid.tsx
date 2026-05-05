@@ -56,16 +56,22 @@ export default function PropertyGrid({ properties, onEdit, onPhotos }: PropertyG
           >
             <div className="bg-white rounded-[4rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] border border-stone-100 group flex flex-col h-[70vh] relative">
               {/* Image Section (Hero) */}
-              <div className="relative h-2/3 overflow-hidden">
+              <div className="relative h-2/3 overflow-hidden bg-stone-100">
+                {/* Blurred background for cinematic feel with varying aspect ratios */}
                 <img 
-                  src={property.coverImage || (property.images?.[0]?.url)} 
+                  src={property.main_image_url || property.coverImage || (property.images?.[0]?.url)} 
+                  className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-110"
+                  alt=""
+                />
+                <img 
+                  src={property.main_image_url || property.coverImage || (property.images?.[0]?.url)} 
                   alt={property.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
+                  className="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-1000" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent" />
                 
-                <div className="absolute top-10 left-10">
-                  <span className="bg-primary text-white text-[9px] font-bold uppercase tracking-[0.3em] px-6 py-2.5 rounded-full shadow-2xl">
+                <div className="absolute top-8 left-8">
+                  <span className="bg-primary/90 backdrop-blur-md text-white text-[7px] font-bold uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">
                     Active Listing
                   </span>
                 </div>
