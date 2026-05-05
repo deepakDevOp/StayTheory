@@ -201,6 +201,45 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
           </div>
         </div>
 
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mt-10">
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Max Guests</label>
+            <input 
+              type="number" 
+              value={formData.max_guests} 
+              onChange={(e) => setFormData({ ...formData, max_guests: parseInt(e.target.value) || 1 })}
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
+          </div>
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Bedrooms</label>
+            <input 
+              type="number" 
+              value={formData.bedrooms} 
+              onChange={(e) => setFormData({ ...formData, bedrooms: parseInt(e.target.value) || 1 })}
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
+          </div>
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Bathrooms</label>
+            <input 
+              type="number" 
+              value={formData.bathrooms} 
+              onChange={(e) => setFormData({ ...formData, bathrooms: parseInt(e.target.value) || 1 })}
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
+          </div>
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Total Beds</label>
+            <input 
+              type="number" 
+              value={formData.beds} 
+              onChange={(e) => setFormData({ ...formData, beds: parseInt(e.target.value) || 1 })}
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
+          </div>
+        </div>
+
         <div className="mt-10 space-y-3">
           <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Description</label>
           <textarea 
