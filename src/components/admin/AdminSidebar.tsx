@@ -18,6 +18,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarPr
     { id: "bookings", label: "Booking Requests", icon: CalendarCheck },
     { id: "properties", label: "My Properties", icon: Home },
     { id: "reviews", label: "Guest Reviews", icon: MessageSquare },
+    { id: "cms", label: "Home Settings", icon: LayoutDashboard },
   ];
 
   return (

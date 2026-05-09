@@ -1,32 +1,22 @@
+import { useState, useEffect } from "react";
 import FocusBox from "./FocusBox";
 import { motion } from "motion/react";
 import { Star } from "lucide-react";
-
 import { Link } from "react-router-dom";
+import { publicService } from "../services/publicService";
 
 export default function Testimonials() {
-  const quotes = [
-    {
-      text: "An architectural masterpiece that somehow feels like coming home. The light in the living hall is transformative.",
-      author: "ELENA V."
-    },
-    {
-      text: "Stay Theory isn't just a place to sleep; it's a reset button for the soul. The attention to tactile detail is unmatched.",
-      author: "MARCUS D."
-    },
-    {
-      text: "Waking up in the master bedroom, watching the sun hit the terracotta walls—pure poetry in motion.",
-      author: "SARAH K."
-    },
-    {
-      text: "A sanctuary in the truest sense. The quiet rustle of the surrounding foliage was the only soundtrack we needed.",
-      author: "JAMES T."
-    },
-    {
-      text: "Every corner of this retreat has been thoughtfully curated. It felt less like a rental and more like an exclusive private club.",
-      author: "CHLOE M."
-    }
-  ];
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    publicService.getAllReviews()
+      .then(setReviews)
+      .catch(err => console.error("Failed to load reviews:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return null;
 
   return (
     <section id="reviews" className="px-6 md:px-16 bg-background py-24 md:py-32 border-t border-stone-200">
@@ -44,31 +34,37 @@ export default function Testimonials() {
         </div>
 
         <div className="flex gap-6 md:gap-8 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-12 px-4 md:px-0">
-          {quotes.map((quote, index) => (
-            <motion.div 
-              key={index} 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-               transition={{ delay: index * 0.1, duration: 0.8 }}
-              className="min-w-[85vw] md:min-w-[400px] max-w-[400px] snap-center p-8 md:p-10 bg-white/40 backdrop-blur-sm border border-stone-200/60 rounded-3xl hover:border-primary/30 transition-colors shadow-sm shrink-0 flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex gap-1 mb-6">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-primary text-primary" />
-                  ))}
-                </div>
-                <p className="text-xl md:text-2xl font-serif italic leading-relaxed text-on-surface mb-8 font-medium">
-                  "{quote.text}"
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-[1px] bg-primary/40" />
-                <p className="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">{quote.author}</p>
-              </div>
-            </motion.div>
-          ))}
+          {reviews.length > 0 ? (
+            reviews.map((review, index) => (
+                <motion.div 
+                  key={review.id || index} 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.8 }}
+                  className="min-w-[85vw] md:min-w-[400px] max-w-[400px] snap-center p-6 md:p-8 bg-white/40 backdrop-blur-sm border border-stone-200/60 rounded-3xl hover:border-primary/30 transition-colors shadow-sm shrink-0 flex flex-col justify-between h-full"
+                >
+                  <div>
+                    <div className="flex gap-1 mb-4">
+                      {[...Array(review.rating || 5)].map((_, i) => (
+                        <Star key={i} className="w-3 h-3 fill-primary text-primary" />
+                      ))}
+                    </div>
+                    <p className="text-lg md:text-xl font-serif italic leading-relaxed text-on-surface mb-6 font-medium line-clamp-6">
+                      "{review.comment || review.text}"
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-[1px] bg-primary/40" />
+                    <p className="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">{review.author_name || review.author || "GUEST"}</p>
+                  </div>
+                </motion.div>
+            ))
+          ) : (
+            <div className="w-full py-12 text-center opacity-30 italic font-serif text-stone-500">
+              New experiences being curated...
+            </div>
+          )}
         </div>
       </FocusBox>
     </section>

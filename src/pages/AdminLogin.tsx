@@ -10,12 +10,28 @@ export default function AdminLogin() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate successful login
-    if (email === "admin@staytheory.com" && password === "admin123") {
-      localStorage.setItem("staytheory_token", "static_token_mock");
-      navigate("/admin");
-    } else {
-      setError("Invalid credentials");
+    setError("");
+    
+    try {
+      // Backend expects OAuth2 form data (username/password)
+      const params = new URLSearchParams();
+      params.append('username', email);
+      params.append('password', password);
+
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/auth/login`, params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+
+      if (response.data.access_token) {
+        localStorage.setItem("staytheory_token", response.data.access_token);
+        navigate("/admin");
+      }
+    } catch (err: any) {
+      console.error("Login failed:", err);
+      const msg = err.response?.data?.detail || "Invalid email or password";
+      setError(typeof msg === 'string' ? msg : "Login failed. Please try again.");
     }
   };
 

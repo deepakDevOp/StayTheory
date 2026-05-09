@@ -332,6 +332,16 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             />
           </div>
           <div className="space-y-3">
+            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Airbnb URL (Booking Redirection)</label>
+            <input 
+              type="text" 
+              value={formData.airbnb_url} 
+              onChange={(e) => setFormData({ ...formData, airbnb_url: e.target.value })}
+              placeholder="e.g. https://www.airbnb.com/rooms/..."
+              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
+            />
+          </div>
+          <div className="space-y-3">
             <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Location Map Screenshot</label>
             <div className="flex gap-4">
               <div 

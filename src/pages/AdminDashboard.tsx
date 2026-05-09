@@ -12,6 +12,7 @@ import PropertyGrid from "../components/admin/PropertyGrid";
 import Overview from "../components/admin/Overview";
 import ReviewManager from "../components/admin/ReviewManager";
 import PropertyEditor from "../components/admin/PropertyEditor";
+import CMSManager from "../components/admin/CMSManager";
 import RequestFilterBar from "../components/admin/RequestFilterBar";
 import ConfirmModal from "../components/admin/ConfirmModal";
 import BookingDetailModal from "../components/admin/BookingDetailModal";
@@ -230,6 +231,8 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "reviews" && <div className="flex-grow overflow-y-auto"><ReviewManager /></div>}
+          
+          {activeTab === "cms" && <div className="flex-grow overflow-y-auto"><CMSManager /></div>}
 
           {/* Editor Modal */}
           <PropertyEditor 

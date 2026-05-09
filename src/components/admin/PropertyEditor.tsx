@@ -35,6 +35,7 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
     city: property?.city || "",
     address: property?.address || "",
     google_maps_url: property?.google_maps_url || "",
+    airbnb_url: property?.airbnb_url || "",
     map_image: property?.map_image || "",
     coverImage: property?.images?.find((img: any) => img.is_primary)?.url || property?.images?.[0]?.url || "",
     amenities: property?.amenities || [],

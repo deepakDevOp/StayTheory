@@ -43,6 +43,11 @@ export const publicService = {
     const response = await api.get(`/reviews/property/${propertyId}`);
     return response.data;
   },
+
+  getAllReviews: async () => {
+    const response = await api.get("/reviews/all");
+    return response.data;
+  },
   
   submitReview: async (data: any) => {
     const response = await api.post("/reviews", data);

@@ -55,6 +55,11 @@ export const adminService = {
     await api.delete(`/reviews/${id}`);
   },
 
+  createReview: async (data: any) => {
+    const response = await api.post("/reviews/admin/create", data);
+    return response.data;
+  },
+
   // Media
   uploadMedia: async (file: File) => {
     const formData = new FormData();
@@ -64,6 +69,17 @@ export const adminService = {
         "Content-Type": "multipart/form-data",
       },
     });
+    return response.data;
+  },
+
+  // CMS / Home Page Management
+  getCMSContent: async () => {
+    const response = await api.get("/cms/home");
+    return response.data;
+  },
+
+  updateCMSContent: async (sectionKey: string, data: any) => {
+    const response = await api.patch(`/cms/home/${sectionKey}`, data);
     return response.data;
   }
 };

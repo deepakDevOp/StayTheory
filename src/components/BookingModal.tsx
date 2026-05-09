@@ -40,9 +40,10 @@ const availableProperties = [
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onRedirect?: (property: any) => void;
 }
 
-export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
+export default function BookingModal({ isOpen, onClose, onRedirect }: BookingModalProps) {
   const [properties, setProperties] = useState<any[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [isPropertyDropdownOpen, setIsPropertyDropdownOpen] = useState(false);
@@ -166,6 +167,15 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             onClick={onClose}
             className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
           />
+
+          {/* Close Button - Fixed to screen corner to prevent clipping */}
+          <button 
+            onClick={onClose}
+            className="fixed top-6 right-6 md:top-10 md:right-10 p-3 bg-white text-stone-900 hover:bg-primary hover:text-white rounded-full transition-all z-[2000] shadow-2xl flex items-center justify-center group"
+            title="Close"
+          >
+            <X className="w-6 h-6 transition-transform group-hover:rotate-90" />
+          </button>
           
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -174,12 +184,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             className="relative bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
             onClick={(e) => e.stopPropagation()}
           >
-            <button 
-              onClick={onClose}
-              className="absolute top-4 right-4 p-2 hover:bg-stone-100 rounded-full transition-colors z-10 bg-white/50 backdrop-blur-md"
-            >
-              <X className="w-5 h-5 text-stone-700" />
-            </button>
 
             {/* Left Side: Info & Hero Image */}
             <div className="hidden lg:block lg:w-1/3 relative bg-stone-100 overflow-hidden">
@@ -191,7 +195,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
-                    src={selectedProperty.image}
+                    src={selectedProperty.images?.[0]?.url || selectedProperty.coverImage || ""}
                     className="absolute inset-0 w-full h-full object-cover"
                     referrerPolicy="no-referrer"
                     alt={selectedProperty.title}
@@ -259,8 +263,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
             {/* Right Side: Booking Controls */}
             <div className="flex-1 p-6 md:p-10 overflow-y-auto max-h-[90vh]">
-              <header className="mb-6">
-                <h2 className="text-3xl font-serif mb-2 text-stone-800">Complete Your Request</h2>
+              <header className="mb-6 relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Direct booking coming soon</span>
+                </div>
+                <h2 className="text-3xl font-serif mb-2 text-stone-800 italic">Complete Your Request</h2>
                 <p className="text-stone-500 text-sm">Fine-tune your stay and provide contact details.</p>
               </header>
 
@@ -275,10 +283,14 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     >
                       {selectedProperty ? (
                         <div className="flex items-center gap-4">
-                          <img src={selectedProperty.image} alt={selectedProperty.title} className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" />
+                          <img 
+                            src={selectedProperty.images?.[0]?.url || selectedProperty.coverImage || ""} 
+                            alt={selectedProperty.title} 
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" 
+                          />
                           <div className="text-left">
                             <div className="font-serif italic font-medium text-stone-800 text-base md:text-lg">{selectedProperty.title}</div>
-                            <div className="text-[10px] md:text-xs text-stone-500 tracking-wide">₹{selectedProperty.price.toLocaleString()} / night</div>
+                            <div className="text-[10px] md:text-xs text-stone-500 tracking-wide">₹{(selectedProperty.base_nightly_rate || 0).toLocaleString()} / night</div>
                           </div>
                         </div>
                       ) : (
@@ -315,11 +327,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                                 }}
                                 className={`w-full p-3 flex items-center gap-4 rounded-lg hover:bg-stone-50 transition-colors ${selectedPropertyId === prop.id ? 'bg-stone-50' : ''}`}
                               >
-                                <img src={prop.images?.[0]?.url || prop.coverImage} className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" />
-                                <div className="text-left flex-1">
-                                  <div className={`font-serif italic text-sm md:text-base ${selectedPropertyId === prop.id ? 'text-accent font-semibold' : 'text-stone-800'}`}>{prop.title}</div>
-                                  <div className="text-[10px] md:text-xs text-stone-500 tracking-wide">₹{prop.base_nightly_rate.toLocaleString()} / night</div>
-                                </div>
+                                 <img src={prop.images?.[0]?.url || prop.coverImage || ""} className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" />
+                                 <div className="text-left flex-1">
+                                   <div className={`font-serif italic text-sm md:text-base ${selectedPropertyId === prop.id ? 'text-accent font-semibold' : 'text-stone-800'}`}>{prop.title}</div>
+                                   <div className="text-[10px] md:text-xs text-stone-500 tracking-wide">₹{(prop.base_nightly_rate || 0).toLocaleString()} / night</div>
+                                 </div>
                                 {selectedPropertyId === prop.id && <Check className="w-5 h-5 text-accent" />}
                               </button>
                             ))}
@@ -336,7 +348,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400">Select Dates</label>
                     {nights > 0 && <span className="text-[10px] bg-accent/10 text-accent px-2 py-1 rounded font-bold uppercase tracking-wider">{nights} Night{nights > 1 ? 's' : ''}</span>}
                   </div>
-                  <div className="booking-calendar p-2 border border-stone-100 rounded-xl bg-stone-50/50">
+                  <div className="booking-calendar p-2 md:p-4 border border-stone-100 rounded-xl bg-stone-50/50 flex justify-center">
                     <style>{`
                       .rdp-day_disabled {
                         text-decoration: line-through !important;
@@ -358,13 +370,22 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                         visibility: hidden !important;
                       }
                       .rdp-months {
-                        flex-wrap: wrap;
                         justify-content: center;
-                        gap: 1rem;
+                      }
+                      .booking-calendar .rdp {
+                        margin: 0;
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                      }
+                      .booking-calendar {
+                        --rdp-cell-size: 48px;
+                        --rdp-accent-color: #8A4630;
+                        --rdp-background-color: #F5F5F4;
                       }
                       @media (max-width: 768px) {
                         .booking-calendar {
-                          --rdp-cell-size: 36px;
+                          --rdp-cell-size: 38px;
                         }
                       }
                     `}</style>
@@ -408,27 +429,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                         }
                       }}
                       fromDate={today}
-                      numberOfMonths={2}
-                      className="mx-auto"
+                      numberOfMonths={1}
                     />
                   </div>
                 </div>
 
-                {/* Confirm Button */}
-                <button
-                  onClick={handleBooking}
-                  disabled={!selectedPropertyId || !range?.from || !range?.to || loading}
-                  className="w-full py-4 bg-accent text-white rounded-xl font-serif text-lg shadow-xl shadow-accent/20 hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-3"
-                >
-                  {loading ? (
-                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <span>Complete Request</span>
-                      <Check className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
-                </button>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Guests Section */}
@@ -565,13 +570,22 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold mb-1">Total Stay Value</p>
                   <p className="text-2xl font-serif italic text-accent tracking-tight">₹{totalAmount.toLocaleString()}</p>
                 </div>
-                <button 
-                  onClick={() => alert(`Booking Request for ${selectedProperty?.title || 'Unknown'}\nGuest: ${contact.email || 'N/A'}\nTotal: ₹${totalAmount.toLocaleString()}`)}
-                  disabled={!contact.email || !contact.phone || nights === 0 || !selectedProperty}
-                  className="w-full md:w-auto px-12 py-4 bg-accent text-white rounded-full font-serif italic text-lg hover:bg-[#723a28] transition-all shadow-lg active:scale-95 disabled:bg-stone-300 disabled:shadow-none disabled:cursor-not-allowed"
-                >
-                  Send Booking Request
-                </button>
+                {selectedProperty?.airbnb_url ? (
+                  <button 
+                    onClick={() => onRedirect?.(selectedProperty)}
+                    className="w-full md:w-auto px-12 py-4 bg-primary text-white rounded-full font-serif italic text-lg hover:opacity-90 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
+                  >
+                    Book on Airbnb
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => alert(`Booking Request for ${selectedProperty?.title || 'Unknown'}\nGuest: ${contact.email || 'N/A'}\nTotal: ₹${totalAmount.toLocaleString()}`)}
+                    disabled={!contact.email || !contact.phone || nights === 0 || !selectedProperty}
+                    className="w-full md:w-auto px-12 py-4 bg-accent text-white rounded-full font-serif italic text-lg hover:bg-[#723a28] transition-all shadow-lg active:scale-95 disabled:bg-stone-300 disabled:shadow-none disabled:cursor-not-allowed"
+                  >
+                    Send Booking Request
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>
