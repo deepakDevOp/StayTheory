@@ -480,7 +480,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                         <div className="font-medium text-stone-800">{property.title}</div>
                      </div>
 
-                     <div className="border border-stone-200 rounded-xl bg-white overflow-hidden flex justify-center w-full">
+                     <div className="border border-stone-200 rounded-xl bg-white overflow-x-auto overflow-y-hidden flex justify-center w-full max-w-full">
                         <style>{`
                   .rdp-day_disabled {
                     text-decoration: line-through !important;
@@ -593,7 +593,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                      initial={{ opacity: 0, y: 50, scale: 0.95 }}
                      animate={{ opacity: 1, y: 0, scale: 1 }}
                      exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                     className="relative w-full max-w-3xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-full"
+                     className="relative w-full max-w-3xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                   >
                      <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-white sticky top-0 z-10">
                         <h3 className="text-2xl font-serif text-stone-800 italic">What this sanctuary offers</h3>

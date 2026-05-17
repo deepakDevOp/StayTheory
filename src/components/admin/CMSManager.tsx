@@ -103,9 +103,9 @@ function SectionEditor({ section, onSave, onImageUpload, isSaving }: any) {
   }, [section]);
 
   return (
-    <div className="bg-white rounded-[2rem] border border-stone-100 overflow-hidden shadow-sm flex flex-col md:flex-row h-full md:h-[450px]">
+    <div className="bg-white rounded-[2rem] border border-stone-100 overflow-hidden shadow-sm flex flex-col md:flex-row md:h-[450px]">
       {/* Image Preview / Upload */}
-      <div className="md:w-1/2 relative bg-stone-50 group">
+      <div className="md:w-1/2 relative bg-stone-50 group h-64 md:h-full">
         <img 
           src={formData.image_url} 
           alt={section.title} 

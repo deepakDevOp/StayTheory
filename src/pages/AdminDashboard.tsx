@@ -142,18 +142,18 @@ export default function AdminDashboard() {
   }, [requests, propertyFilter, dateFilter]);
 
   return (
-    <div className="h-[100dvh] w-full bg-background flex overflow-hidden fixed inset-0">
+    <div className="h-[100dvh] w-full bg-background flex flex-col md:flex-row overflow-hidden fixed inset-0">
       <AdminSidebar activeTab={activeTab} setActiveTab={handleTabChange} />
 
-      <main className="flex-grow flex flex-col min-w-0 overflow-hidden relative">
-        <FocusBox className="max-w-7xl mx-auto w-full h-full flex flex-col px-8 md:px-12 lg:px-16 py-6 md:py-10">
+      <main className="flex-grow flex flex-col min-w-0 overflow-y-auto md:overflow-hidden relative pb-[72px] md:pb-0">
+        <FocusBox className="max-w-7xl mx-auto w-full flex flex-col flex-grow px-4 md:px-12 lg:px-16 py-6 md:py-10">
           {activeTab === "overview" && <div className="flex-grow overflow-y-auto"><Overview /></div>}
 
           {activeTab === "bookings" && (
             <motion.div 
               initial={{ opacity: 0, y: 10 }} 
               animate={{ opacity: 1, y: 0 }} 
-              className="flex flex-col h-full overflow-hidden"
+              className="flex flex-col flex-grow md:h-full md:overflow-hidden"
             >
               <div className="flex-shrink-0">
                 <AdminHeader 
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="flex-grow overflow-y-auto min-h-0 pr-2 no-scrollbar relative group">
+              <div className="flex-grow md:overflow-y-auto min-h-0 pr-2 no-scrollbar relative group">
                 {loading ? (
                   <div className="h-full flex items-center justify-center italic text-stone-400">Loading requests...</div>
                 ) : (
@@ -234,42 +234,44 @@ export default function AdminDashboard() {
           
           {activeTab === "cms" && <div className="flex-grow overflow-y-auto"><CMSManager /></div>}
 
-          {/* Editor Modal */}
-          <PropertyEditor 
-            isOpen={isEditorOpen} 
-            onClose={() => setIsEditorOpen(false)} 
-            property={selectedProperty}
-            onSaveSuccess={fetchData}
-          />
-
-          {/* Booking Detail Modal */}
-          <BookingDetailModal 
-            isOpen={isDetailOpen}
-            onClose={() => setIsDetailOpen(false)}
-            booking={selectedBooking}
-            onConfirm={handleConfirm}
-            onCancel={handleCancel}
-          />
-
-          {/* Exit Confirmation Modal */}
-          <ConfirmModal 
-            isOpen={showExitConfirm}
-            onClose={() => setShowExitConfirm(false)}
-            onConfirm={confirmExit}
-            title="Unsaved Changes"
-            message="You are currently editing a sanctuary. If you leave now, your changes will be discarded. Would you like to continue?"
-            confirmLabel="Discard & Exit"
-            cancelLabel="Stay and Edit"
-          />
-
-          {/* Placeholder for other tabs */}
-          {activeTab === "settings" && (
-            <div className="h-[60vh] flex flex-col items-center justify-center text-center opacity-40">
-              <p className="font-serif italic text-xl">General settings coming soon.</p>
-            </div>
-          )}
         </FocusBox>
       </main>
+
+      {/* Editor Modal */}
+      <PropertyEditor 
+        isOpen={isEditorOpen} 
+        onClose={() => setIsEditorOpen(false)} 
+        property={selectedProperty}
+        onSaveSuccess={fetchData}
+      />
+
+      {/* Booking Detail Modal */}
+      <BookingDetailModal 
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        booking={selectedBooking}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+
+      {/* Exit Confirmation Modal */}
+      <ConfirmModal 
+        isOpen={showExitConfirm}
+        onClose={() => setShowExitConfirm(false)}
+        onConfirm={confirmExit}
+        title="Unsaved Changes"
+        message="You are currently editing a sanctuary. If you leave now, your changes will be discarded. Would you like to continue?"
+        confirmLabel="Discard & Exit"
+        cancelLabel="Stay and Edit"
+      />
+
+      {/* Placeholder for other tabs */}
+      {activeTab === "settings" && (
+        <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm h-[100dvh] flex flex-col items-center justify-center text-center opacity-90">
+          <p className="font-serif italic text-2xl">General settings coming soon.</p>
+          <button onClick={() => setActiveTab('bookings')} className="mt-4 px-6 py-2 bg-stone-900 text-white rounded-full">Go Back</button>
+        </div>
+      )}
     </div>
   );
 }

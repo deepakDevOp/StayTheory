@@ -83,7 +83,7 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
 
       <div className="flex-1 flex flex-col lg:flex-row max-w-[1800px] mx-auto w-full">
         {/* Fixed Left Sidebar (Desktop) */}
-        <aside className="w-full lg:w-1/3 lg:h-[calc(100vh-72px)] lg:sticky lg:top-[72px] p-8 md:px-16 md:pt-4 md:pb-16 flex flex-col border-b lg:border-b-0 lg:border-r border-stone-100 bg-stone-50/30">
+        <aside className="w-full lg:w-1/3 lg:h-[calc(100vh-72px)] lg:sticky lg:top-[72px] p-6 md:px-16 md:pt-4 md:pb-16 flex flex-col border-b lg:border-b-0 lg:border-r border-stone-100 bg-stone-50/30">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -122,7 +122,7 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
         </aside>
 
         {/* Scrollable Right Grid */}
-        <main className="flex-1 p-8 md:px-16 md:pt-4 md:pb-16">
+        <main className="flex-1 p-6 md:px-16 md:pt-4 md:pb-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-16">
             {filteredProperties.length === 0 ? (
               <div className="col-span-full py-32 text-center">

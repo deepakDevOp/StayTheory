@@ -9,7 +9,7 @@ export default function HostSection() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/v1/cms/home/host_section?t=${Date.now()}`);
+        const response = await axios.get(`http://${window.location.hostname}:8000/api/v1/cms/home/host_section?t=${Date.now()}`);
         setContent(response.data);
       } catch (err) {
         console.error("Failed to fetch host section content:", err);
@@ -34,7 +34,7 @@ export default function HostSection() {
   const subLabel = parts[parts.length - 1];
 
   return (
-    <section className="px-8 md:px-16 max-w-[1440px] mx-auto md:h-[calc(100vh-72px)] flex items-center py-12 md:py-0">
+    <section className="px-6 md:px-16 max-w-[1440px] mx-auto md:min-h-[calc(100vh-72px)] flex items-center py-20 md:py-0">
       <FocusBox className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center w-full">
         <div>
           <span className="uppercase text-[11px] tracking-[0.2em] font-bold text-primary mb-4 block">The Visionary</span>

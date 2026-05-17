@@ -187,7 +187,7 @@ export default function Hero() {
           return (
             <motion.div
               key={prop.id}
-              className="absolute w-[80vw] md:w-[60vw] h-[70vh] md:h-[75vh] rounded-[2rem] overflow-hidden shadow-2xl cursor-pointer"
+              className="absolute w-[95vw] md:w-[60vw] h-[70vh] md:h-[75vh] rounded-[2rem] overflow-hidden shadow-2xl cursor-pointer"
               variants={variants}
               initial={false}
               animate={variant}

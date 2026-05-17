@@ -16,7 +16,7 @@ export default function PropertyGrid({ properties, onEdit, onPhotos }: PropertyG
   return (
     <div 
       ref={containerRef}
-      className="flex gap-12 overflow-x-auto overflow-y-hidden snap-x snap-mandatory py-10 px-[15%] no-scrollbar scroll-smooth"
+      className="flex gap-12 overflow-x-auto overflow-y-hidden snap-x snap-mandatory py-4 md:py-10 px-[5%] md:px-[15%] no-scrollbar scroll-smooth"
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
       {/* Starting Spacer */}
@@ -26,7 +26,7 @@ export default function PropertyGrid({ properties, onEdit, onPhotos }: PropertyG
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex-shrink-0 w-[450px] md:w-[600px] snap-center px-4"
+          className="flex-shrink-0 w-[85vw] md:w-[600px] snap-center px-4"
         >
           <div className="bg-white rounded-[4rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] border border-stone-100 flex flex-col h-[70vh] relative justify-center items-center text-center p-12">
             <div className="w-24 h-24 bg-stone-50 rounded-full flex items-center justify-center mb-8">
@@ -52,7 +52,7 @@ export default function PropertyGrid({ properties, onEdit, onPhotos }: PropertyG
             whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             viewport={{ root: containerRef, amount: 0.8 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="flex-shrink-0 w-[450px] md:w-[600px] snap-center px-4"
+            className="flex-shrink-0 w-[85vw] md:w-[600px] snap-center px-4"
           >
             <div className="bg-white rounded-[4rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] border border-stone-100 group flex flex-col h-[70vh] relative">
               {/* Image Section (Hero) */}
@@ -131,7 +131,7 @@ export default function PropertyGrid({ properties, onEdit, onPhotos }: PropertyG
       <div className="flex-shrink-0 w-[20vw]" />
 
       {/* New Era UI Scroll Hint: Progress Bar */}
-      <div className="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4 z-10">
+      <div className="fixed bottom-12 left-1/2 -translate-x-1/2 hidden md:flex items-center gap-4 z-10 pointer-events-none">
         <div className="h-0.5 w-48 bg-stone-200/50 rounded-full overflow-hidden">
           <motion.div 
             className="h-full bg-stone-800"

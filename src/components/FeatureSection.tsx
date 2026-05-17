@@ -10,7 +10,7 @@ export default function FeatureSection() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/v1/cms/home/interior_balcony?t=${Date.now()}`);
+        const response = await axios.get(`http://${window.location.hostname}:8000/api/v1/cms/home/interior_balcony?t=${Date.now()}`);
         setContent(response.data);
       } catch (err) {
         console.error("Failed to fetch interior section content:", err);
@@ -26,11 +26,11 @@ export default function FeatureSection() {
   const displayContent = content || {
     title: "The Balcony",
     subtitle: "Morning rituals accompanied by the gentle breeze of the sanctuary.",
-    image_url: "http://localhost:8000/media/sanctuaries/IMG_5732.jpg"
+    image_url: `http://${window.location.hostname}:8000/media/sanctuaries/IMG_5732.jpg`
   };
 
   return (
-    <section className="relative px-8 md:px-16 max-w-[1440px] mx-auto h-screen flex items-center overflow-hidden bg-background">
+    <section className="relative px-6 md:px-16 py-20 lg:py-0 max-w-[1440px] mx-auto min-h-screen lg:h-screen flex items-center overflow-hidden bg-background">
       {/* Background Decorative Accent */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
       

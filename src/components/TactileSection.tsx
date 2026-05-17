@@ -12,8 +12,8 @@ export default function TactileSection() {
     const fetchContent = async () => {
       try {
         const [mainRes, detailRes] = await Promise.all([
-          axios.get(`http://localhost:8000/api/v1/cms/home/tactile_main?t=${Date.now()}`),
-          axios.get(`http://localhost:8000/api/v1/cms/home/tactile_detail?t=${Date.now()}`)
+          axios.get(`http://${window.location.hostname}:8000/api/v1/cms/home/tactile_main?t=${Date.now()}`),
+          axios.get(`http://${window.location.hostname}:8000/api/v1/cms/home/tactile_detail?t=${Date.now()}`)
         ]);
         setMainContent(mainRes.data);
         setDetailContent(detailRes.data);
@@ -40,8 +40,8 @@ export default function TactileSection() {
   };
 
   return (
-    <section className="max-w-[1440px] mx-auto px-8 md:px-16 py-12 md:py-0 md:h-[calc(100vh-72px)] flex items-center">
-      <FocusBox className="grid grid-cols-1 md:grid-cols-12 gap-16 items-center w-full">
+    <section className="max-w-[1440px] mx-auto px-6 md:px-16 py-20 md:py-0 md:min-h-[calc(100vh-72px)] flex items-center">
+      <FocusBox className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center w-full">
         <div className="md:col-span-7 relative">
           <img 
             src={displayMain.image_url} 

@@ -84,7 +84,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <main className="bg-background min-h-screen selection:bg-[#ffb59e] selection:text-[#3a0b00] overflow-x-hidden w-full relative pt-[72px]">
+      <main className="bg-background min-h-screen selection:bg-[#ffb59e] selection:text-[#3a0b00] overflow-x-hidden w-full relative pt-[72px] pb-[80px] md:pb-0">
         <Routes>
           <Route path="/" element={<HomePage onBookClick={handleBookClick} />} />
           <Route path="/properties" element={<PropertiesJournal onBookClick={handleBookClick} />} />
