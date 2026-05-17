@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import FocusBox from "./FocusBox";
-import axios from "axios";
+import api from "../services/api";
 
 export default function FeatureSection() {
   const [content, setContent] = useState<any>(null);
@@ -10,7 +10,7 @@ export default function FeatureSection() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const response = await axios.get(`http://${window.location.hostname}:8000/api/v1/cms/home/interior_balcony?t=${Date.now()}`);
+        const response = await api.get(`/cms/home/interior_balcony?t=${Date.now()}`);
         setContent(response.data);
       } catch (err) {
         console.error("Failed to fetch interior section content:", err);

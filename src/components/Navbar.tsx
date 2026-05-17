@@ -23,10 +23,10 @@ export default function Navbar({ onBookClick }: NavbarProps) {
   ];
 
   return (
-    <motion.nav 
-      animate={{ 
-        background: isScrolled 
-          ? "linear-gradient(to bottom, rgba(255, 248, 245, 0.98), rgba(255, 248, 245, 0.92))" 
+    <motion.nav
+      animate={{
+        background: isScrolled
+          ? "linear-gradient(to bottom, rgba(255, 248, 245, 0.98), rgba(255, 248, 245, 0.92))"
           : "linear-gradient(to bottom, rgba(255, 248, 245, 0.9) 0%, rgba(255, 248, 245, 0) 100%)",
         backdropFilter: isScrolled ? "blur(12px)" : "blur(4px)",
         boxShadow: isScrolled ? "0 4px 20px -5px rgba(138, 70, 48, 0.1)" : "none",
@@ -40,22 +40,22 @@ export default function Navbar({ onBookClick }: NavbarProps) {
       <Link to="/" className="text-2xl font-serif italic text-accent cursor-pointer">
         Stay Theory
       </Link>
-      
+
       <div className="hidden md:flex items-center space-x-12">
         {navLinks.map((link) => (
           link.path.startsWith("/#") ? (
-            <a 
+            <a
               key={link.label}
-              href={link.path} 
+              href={link.path}
               className={`font-serif tracking-tight text-lg transition-all duration-300 relative group text-stone-500 hover:text-accent`}
             >
               {link.label}
               <span className={`absolute -bottom-1 left-0 h-[1px] bg-accent transition-all duration-300 w-0 group-hover:w-full`} />
             </a>
           ) : (
-            <Link 
+            <Link
               key={link.label}
-              to={link.path} 
+              to={link.path}
               className={`font-serif tracking-tight text-lg transition-all duration-300 relative group
                 ${location.pathname === link.path ? 'text-accent font-medium' : 'text-stone-500 hover:text-accent'}
               `}
@@ -69,7 +69,7 @@ export default function Navbar({ onBookClick }: NavbarProps) {
         ))}
       </div>
       <div className="flex items-center gap-3 md:gap-6">
-        <button 
+        <button
           onClick={onBookClick}
           className="bg-primary-container text-on-primary-container px-5 py-2.5 md:px-8 md:py-3 rounded-full font-semibold text-[10px] md:text-xs uppercase tracking-wider hover:opacity-80 transition-all active:scale-95 whitespace-nowrap"
         >

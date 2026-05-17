@@ -59,7 +59,7 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
 
   const handlePhotoUpload = async (file: File, category: string) => {
     try {
-      const { url } = await adminService.uploadMedia(file);
+      const { url, public_id } = await adminService.uploadMedia(file);
       if (category === 'map_internal') {
         setFormData(prev => ({ ...prev, map_image: url }));
       } else if (category === 'cover_internal') {
@@ -67,7 +67,7 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
       } else {
         setFormData(prev => ({
           ...prev,
-          images: [...prev.images, { url, category }]
+          images: [...prev.images, { url, public_id, category }]
         }));
       }
     } catch (error) {

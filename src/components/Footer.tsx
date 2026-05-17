@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Footer() {
   return (
     <footer className="bg-stone-50 w-full py-12 px-8 md:px-16 border-t border-stone-200">
@@ -7,10 +9,10 @@ export default function Footer() {
         </div>
         
         <div className="flex flex-wrap justify-center gap-10">
-          <a href="#" className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Privacy</a>
-          <a href="#" className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Terms</a>
-          <a href="#" className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Sustainability</a>
-          <a href="#" className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Contact</a>
+          <Link to="/privacy"       className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Privacy</Link>
+          <Link to="/terms"         className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Terms</Link>
+          <Link to="/sustainability" className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Sustainability</Link>
+          <Link to="/contact"       className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Contact</Link>
         </div>
         
         <div className="font-serif text-[10px] tracking-widest uppercase text-stone-400">

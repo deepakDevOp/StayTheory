@@ -12,7 +12,8 @@ import {
   X, 
   Home, 
   CheckCircle, 
-  Calendar 
+  Calendar,
+  ExternalLink
 } from "lucide-react";
 import AdminHeader from "./AdminHeader";
 import AnalyticsChart from "./AnalyticsChart";
@@ -25,52 +26,11 @@ const ICON_MAP: Record<string, any> = {
   Star,
   Home,
   CheckCircle,
-  Calendar
+  Calendar,
+  ExternalLink
 };
 
-const propertyTrafficData: Record<string, any[]> = {
-  day: [
-    { property: "Tuscan Retreat", visitors: 45, percentage: 40, color: "bg-primary" },
-    { property: "Kyoto Machiya", visitors: 32, percentage: 28, color: "bg-stone-400" },
-    { property: "Nordic Cabin", visitors: 28, percentage: 22, color: "bg-stone-300" },
-    { property: "others", visitors: 10, percentage: 10, color: "bg-stone-200" },
-  ],
-  week: [
-    { property: "Tuscan Retreat", visitors: 312, percentage: 42, color: "bg-primary" },
-    { property: "Kyoto Machiya", visitors: 245, percentage: 33, color: "bg-stone-400" },
-    { property: "Nordic Cabin", visitors: 110, percentage: 15, color: "bg-stone-300" },
-    { property: "others", visitors: 74, percentage: 10, color: "bg-stone-200" },
-  ],
-  month: [
-    { property: "Tuscan Retreat", visitors: 1240, percentage: 45, color: "bg-primary" },
-    { property: "Kyoto Machiya", visitors: 890, percentage: 32, color: "bg-stone-400" },
-    { property: "Nordic Cabin", visitors: 450, percentage: 16, color: "bg-stone-300" },
-    { property: "others", visitors: 195, percentage: 7, color: "bg-stone-200" },
-  ]
-};
-
-const mockSnapshot = {
-  stats: [
-    { label: "Total Bookings", value: "24", icon: "Calendar", trend: "up", trendValue: "+12%" },
-    { label: "Active Listings", value: "4", icon: "Home", trend: "none", trendValue: "Stable" },
-    { label: "Monthly Revenue", value: "₹45.2k", icon: "TrendingUp", trend: "up", trendValue: "+8%" },
-    { label: "Avg Rating", value: "4.8", icon: "Star", trend: "none", trendValue: "Top Tier" }
-  ],
-  recent_activity: [
-    { id: 1, type: "booking", message: "New booking request for Tuscan Retreat", time: "2 hours ago" },
-    { id: 2, type: "review", message: "Sarah left a 5-star review for Ocean Sanctuary", time: "5 hours ago" },
-    { id: 3, type: "booking", message: "Booking confirmed for Nordic Cabin", time: "1 day ago" }
-  ],
-  chart_data: [
-    { name: "Mon", visitors: 400, bookings: 24 },
-    { name: "Tue", visitors: 300, bookings: 13 },
-    { name: "Wed", visitors: 200, bookings: 98 },
-    { name: "Thu", visitors: 278, bookings: 39 },
-    { name: "Fri", visitors: 189, bookings: 48 },
-    { name: "Sat", visitors: 239, bookings: 38 },
-    { name: "Sun", visitors: 349, bookings: 43 }
-  ]
-};
+// Dynamic mock fallbacks removed. All dashboard data now loaded from backend API.
 
 export default function Overview() {
   const [loading, setLoading] = useState(true);
@@ -104,7 +64,14 @@ export default function Overview() {
     );
   }
 
-  const { stats, recent_activity, chart_data } = data;
+  const { stats, recent_activity, chart_data, top_properties, properties } = data;
+
+  // Dynamically calculate conversion rate (Airbnb CTR) from real views and redirects
+  const totalViews = Array.isArray(top_properties) ? top_properties.reduce((sum: number, p: any) => sum + (p.views || 0), 0) : 0;
+  const totalClicks = Array.isArray(top_properties) ? top_properties.reduce((sum: number, p: any) => sum + (p.clicks || 0), 0) : 0;
+  const conversionRate = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : "0.0";
+  const topProperty = Array.isArray(top_properties) && top_properties[0] ? top_properties[0].name : "Your active sanctuaries";
+  const randomPropertyTitle = Array.isArray(properties) && properties[0] ? properties[0].title : "your active listing";
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -114,7 +81,7 @@ export default function Overview() {
       />
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-8 mb-12">
         {stats.map((stat: any, i: number) => {
           const Icon = ICON_MAP[stat.icon] || TrendingUp;
           return (
@@ -156,18 +123,20 @@ export default function Overview() {
         <div className="bg-primary text-white p-8 md:p-10 rounded-[2.5rem] shadow-xl relative overflow-hidden flex flex-col justify-between group">
           <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
           <div className="relative z-10">
-            <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary-200 mb-2 text-white/70">Conversion Rate</h3>
-            <p className="text-6xl font-serif italic mb-4">8.4%</p>
+            <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary-200 mb-2 text-white/70">Airbnb Click-Through Rate (CTR)</h3>
+            <p className="text-6xl font-serif italic mb-4">{conversionRate}%</p>
             <p className="text-sm text-white/80 leading-relaxed">
-              Your conversion rate is up <span className="font-bold text-white">+1.2%</span> from last week. The <span className="font-bold text-white">Tuscan Retreat</span> is driving the highest conversions.
+              Based on real visitor metrics, your Airbnb redirection click-through rate is tracking at <span className="font-bold text-white">{conversionRate}%</span>. <span className="font-bold text-white">{topProperty}</span> is currently driving the most click redirects.
             </p>
           </div>
-          <button 
-            onClick={() => setShowTrafficSources(true)}
-            className="relative z-10 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white hover:text-stone-200 transition-colors mt-8 self-start"
-          >
-            Top Properties <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          {Array.isArray(top_properties) && top_properties.length > 0 && (
+            <button 
+              onClick={() => setShowTrafficSources(true)}
+              className="relative z-10 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white hover:text-stone-200 transition-colors mt-8 self-start"
+            >
+              Top Properties <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -212,7 +181,7 @@ export default function Overview() {
             <div className="relative z-10">
               <h3 className="text-xl font-serif italic mb-2">Pro Tip</h3>
               <p className="text-stone-400 text-sm leading-relaxed mb-6">
-                Updated photos can increase booking requests by up to 40%. Add a new view of the Tuscan garden today.
+                Updated photos can increase booking requests by up to 40%. Add a new cinematic view of <span className="text-white italic font-serif">{randomPropertyTitle}</span> today.
               </p>
               <button className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary hover:text-white transition-colors">
                 Update Gallery <ArrowUpRight className="w-4 h-4" />
@@ -250,41 +219,37 @@ export default function Overview() {
                 <X className="w-5 h-5" />
               </button>
               
-              <div className="mb-8 pr-12">
-                <h3 className="text-2xl font-serif italic text-on-surface mb-6">Top Visited Properties</h3>
-                <div className="flex gap-1 p-1 bg-stone-50 rounded-xl inline-flex border border-stone-100">
-                  {["day", "week", "month"].map(filter => (
-                    <button 
-                      key={filter}
-                      onClick={() => setTrafficFilter(filter as any)}
-                      className={`px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all ${
-                        trafficFilter === filter ? 'bg-white text-primary shadow-sm' : 'text-stone-400 hover:text-stone-600'
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div className="space-y-6">
-                {propertyTrafficData[trafficFilter].map((s, i) => (
-                  <div key={`${trafficFilter}-${i}`}>
-                    <div className="flex justify-between items-end mb-2">
-                      <span className="text-sm font-bold text-stone-700">{s.property}</span>
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-stone-900 block">{s.percentage}%</span>
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">{s.visitors} visits</span>
+                {Array.isArray(top_properties) && top_properties.length > 0 ? (
+                  top_properties.map((s: any, i: number) => {
+                    const maxViews = Math.max(...top_properties.map((p: any) => p.views || 0), 1);
+                    const percentage = Math.round(((s.views || 0) / maxViews) * 100);
+                    const colors = ["bg-primary", "bg-stone-400", "bg-stone-300", "bg-stone-200"];
+                    const color = colors[i % colors.length];
+
+                    return (
+                      <div key={i}>
+                        <div className="flex justify-between items-end mb-2">
+                          <span className="text-sm font-bold text-stone-700">{s.name}</span>
+                          <div className="text-right">
+                            <span className="text-xs font-bold text-stone-900 block">{percentage}%</span>
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">
+                              {s.views || 0} views • {s.clicks || 0} Airbnb clicks
+                            </span>
+                          </div>
+                        </div>
+                        <div className="h-2.5 w-full bg-stone-100 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
+                            className={`h-full ${color}`} 
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="h-2.5 w-full bg-stone-100 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} animate={{ width: `${s.percentage}%` }} transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
-                        className={`h-full ${s.color}`} 
-                      />
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })
+                ) : (
+                  <p className="font-serif italic text-stone-400 text-center py-4">No visitor views tracked yet.</p>
+                )}
               </div>
             </motion.div>
           </motion.div>

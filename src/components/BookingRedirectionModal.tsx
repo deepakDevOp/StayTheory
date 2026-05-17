@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { X, ExternalLink, ShieldCheck, CalendarClock, Globe } from "lucide-react";
+import api from "../services/api";
 
 interface BookingRedirectionModalProps {
   isOpen: boolean;
@@ -10,8 +11,13 @@ interface BookingRedirectionModalProps {
 export default function BookingRedirectionModal({ isOpen, onClose, property }: BookingRedirectionModalProps) {
   if (!isOpen || !property) return null;
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (property.airbnb_url) {
+      try {
+        await api.post(`/properties/analytics/track-redirect/${property.id}`);
+      } catch (err) {
+        console.error("Failed to log redirection analytics", err);
+      }
       window.open(property.airbnb_url, '_blank');
       onClose();
     }

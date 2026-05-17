@@ -3,7 +3,7 @@ import api from "./api";
 export const adminService = {
   // Dashboard Snapshot
   getSnapshot: async () => {
-    const response = await api.get("/dashboard/snapshot");
+    const response = await api.get(`/dashboard/snapshot?t=${Date.now()}`);
     return response.data;
   },
 

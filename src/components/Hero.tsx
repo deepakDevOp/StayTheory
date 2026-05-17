@@ -180,6 +180,7 @@ export default function Hero() {
       </AnimatePresence>
 
       <div className="relative w-full h-full flex items-center justify-center">
+
         {properties.map((prop, idx) => {
           const variant = getVariant(idx);
           const isActive = variant === "center";

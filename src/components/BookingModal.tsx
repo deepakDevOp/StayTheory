@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Minus, Plus, Users, Mail, Phone, Info, Home, ChevronDown, Check } from 'lucide-react';
+import { X, Info, Home, ChevronDown, Check } from 'lucide-react';
 import { DayPicker, DateRange } from 'react-day-picker';
-import { format, addDays, differenceInCalendarDays } from 'date-fns';
+import { format, differenceInCalendarDays } from 'date-fns';
 import 'react-day-picker/dist/style.css';
 import { publicService } from '../services/publicService';
 
@@ -48,22 +48,8 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [isPropertyDropdownOpen, setIsPropertyDropdownOpen] = useState(false);
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
-  const [loading, setLoading] = useState(false);
 
   const [range, setRange] = useState<DateRange | undefined>(undefined);
-
-  const [guests, setGuests] = useState({
-    adults: 2,
-    children: 0,
-    infants: 0,
-  });
-
-  const [contact, setContact] = useState({
-    email: '',
-    phone: '',
-  });
-
-  const [showGuestPicker, setShowGuestPicker] = useState(false);
 
   // Fetch properties on mount
   useEffect(() => {
@@ -102,8 +88,6 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
     if (!isOpen) {
       setSelectedPropertyId(null);
       setIsPropertyDropdownOpen(false);
-      setShowGuestPicker(false);
-      setContact({ email: '', phone: '' });
       setRange(undefined);
     }
   }, [isOpen]);
@@ -111,8 +95,6 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
   const pricePerNight = selectedProperty ? selectedProperty.base_nightly_rate : 0;
 
-  const totalGuests = guests.adults + guests.children;
-  
   const nights = range?.from && range?.to 
     ? differenceInCalendarDays(range.to, range.from) 
     : 0;
@@ -121,40 +103,6 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  const updateGuest = (type: keyof typeof guests, delta: number) => {
-    setGuests((prev) => ({
-      ...prev,
-      [type]: Math.max(type === 'adults' ? 1 : 0, prev[type] + delta),
-    }));
-  };
-
-  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setContact(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleBooking = async () => {
-    if (!range?.from || !range?.to || !selectedPropertyId) return;
-    setLoading(true);
-    try {
-      await publicService.createBooking({
-        property_id: selectedPropertyId,
-        check_in: format(range.from, 'yyyy-MM-dd'),
-        check_out: format(range.to, 'yyyy-MM-dd'),
-        guests: totalGuests,
-        email: contact.email,
-        phone: contact.phone
-      });
-      alert("Sanctuary request sent successfully!");
-      onClose();
-    } catch (err) {
-      console.error("Failed to create booking from modal:", err);
-      alert("Failed to send request. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <AnimatePresence>
@@ -435,93 +383,6 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
                 </div>
 
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Guests Section */}
-                  <div className="space-y-3 relative">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400">Guests</label>
-                    <button 
-                      onClick={() => setShowGuestPicker(!showGuestPicker)}
-                      className="w-full p-3.5 flex items-center justify-between border border-stone-200 rounded-xl hover:border-accent/40 transition-colors bg-white shadow-sm text-sm"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Users className="w-4 h-4 text-accent" />
-                        <span className="text-stone-700">{totalGuests} Guest{totalGuests !== 1 ? 's' : ''}</span>
-                      </div>
-                      <Plus className={`w-3.5 h-3.5 text-stone-400 transition-transform ${showGuestPicker ? 'rotate-45' : ''}`} />
-                    </button>
-
-                    <AnimatePresence>
-                      {showGuestPicker && (
-                        <>
-                          <div 
-                            className="fixed inset-0 z-10" 
-                            onClick={() => setShowGuestPicker(false)} 
-                          />
-                          <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                            className="absolute bottom-full left-0 w-full mb-3 bg-white border border-stone-200 rounded-xl shadow-xl p-4 z-20"
-                          >
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-stone-800">Adults</p>
-                                  <p className="text-[10px] text-stone-400">13+</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <button onClick={(e) => { e.stopPropagation(); updateGuest('adults', -1); }} className="p-1.5 border border-stone-100 rounded-full hover:bg-stone-50 disabled:opacity-30" disabled={guests.adults <= 1}><Minus className="w-3.5 h-3.5" /></button>
-                                  <span className="w-4 text-center text-sm">{guests.adults}</span>
-                                  <button onClick={(e) => { e.stopPropagation(); updateGuest('adults', 1); }} className="p-1.5 border border-stone-100 rounded-full hover:bg-stone-50"><Plus className="w-3.5 h-3.5" /></button>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-stone-800">Children</p>
-                                  <p className="text-[10px] text-stone-400">2–12</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <button onClick={(e) => { e.stopPropagation(); updateGuest('children', -1); }} className="p-1.5 border border-stone-100 rounded-full hover:bg-stone-50 disabled:opacity-30" disabled={guests.children <= 0}><Minus className="w-3.5 h-3.5" /></button>
-                                  <span className="w-4 text-center text-sm">{guests.children}</span>
-                                  <button onClick={(e) => { e.stopPropagation(); updateGuest('children', 1); }} className="p-1.5 border border-stone-100 rounded-full hover:bg-stone-50"><Plus className="w-3.5 h-3.5" /></button>
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Contact Section */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400">Contact Info</label>
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300" />
-                        <input 
-                          type="email"
-                          name="email"
-                          placeholder="Email Address"
-                          value={contact.email}
-                          onChange={handleContactChange}
-                          className="w-full pl-10 pr-4 py-3 bg-white border border-stone-200 rounded-xl focus:ring-1 focus:ring-accent focus:border-accent outline-none text-sm transition-all shadow-sm"
-                        />
-                      </div>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300" />
-                        <input 
-                          type="tel"
-                          name="phone"
-                          placeholder="Phone Number"
-                          value={contact.phone}
-                          onChange={handleContactChange}
-                          className="w-full pl-10 pr-4 py-3 bg-white border border-stone-200 rounded-xl focus:ring-1 focus:ring-accent focus:border-accent outline-none text-sm transition-all shadow-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Price Breakdown */}
                 <AnimatePresence mode="wait">
@@ -570,22 +431,13 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
                   <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold mb-1">Total Stay Value</p>
                   <p className="text-2xl font-serif italic text-accent tracking-tight">₹{totalAmount.toLocaleString()}</p>
                 </div>
-                {selectedProperty?.airbnb_url ? (
-                  <button 
-                    onClick={() => onRedirect?.(selectedProperty)}
-                    className="w-full md:w-auto px-12 py-4 bg-primary text-white rounded-full font-serif italic text-lg hover:opacity-90 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
-                  >
-                    Book on Airbnb
-                  </button>
-                ) : (
-                  <button 
-                    onClick={() => alert(`Booking Request for ${selectedProperty?.title || 'Unknown'}\nGuest: ${contact.email || 'N/A'}\nTotal: ₹${totalAmount.toLocaleString()}`)}
-                    disabled={!contact.email || !contact.phone || nights === 0 || !selectedProperty}
-                    className="w-full md:w-auto px-12 py-4 bg-accent text-white rounded-full font-serif italic text-lg hover:bg-[#723a28] transition-all shadow-lg active:scale-95 disabled:bg-stone-300 disabled:shadow-none disabled:cursor-not-allowed"
-                  >
-                    Send Booking Request
-                  </button>
-                )}
+                <button 
+                  onClick={() => onRedirect?.(selectedProperty)}
+                  disabled={!selectedProperty || nights === 0}
+                  className="w-full md:w-auto px-12 py-4 bg-primary text-white rounded-full font-serif italic text-lg hover:opacity-90 transition-all shadow-lg active:scale-95 disabled:bg-stone-300 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                >
+                  Book on Airbnb
+                </button>
               </div>
             </div>
           </motion.div>

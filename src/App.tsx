@@ -17,6 +17,10 @@ import PropertyDetails from "./pages/PropertyDetails";
 import AllReviews from "./pages/AllReviews";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import Sustainability from "./pages/Sustainability";
+import Contact from "./pages/Contact";
 import { publicService } from "./services/publicService";
 import { useLocation } from "react-router-dom";
 
@@ -31,6 +35,14 @@ function ScrollToTop() {
 }
 
 function HomePage({ onBookClick }: { onBookClick: (prop?: any) => void }) {
+  useEffect(() => {
+    try {
+      import("./services/api").then((m) => {
+        m.default.post("/properties/analytics/track-homepage");
+      }).catch(() => {});
+    } catch (err) {}
+  }, []);
+
   return (
     <>
       <Navbar onBookClick={onBookClick} />
@@ -90,6 +102,10 @@ export default function App() {
           <Route path="/properties" element={<PropertiesJournal onBookClick={handleBookClick} />} />
           <Route path="/property/:id" element={<PropertyDetails onBookClick={handleBookClick} />} />
           <Route path="/reviews" element={<AllReviews onBookClick={handleBookClick} />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/sustainability" element={<Sustainability />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/login" element={<AdminLogin />} />
         </Routes>

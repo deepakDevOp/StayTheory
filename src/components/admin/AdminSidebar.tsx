@@ -1,8 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Home, 
-  CalendarCheck, 
   MessageSquare, 
   LogOut 
 } from "lucide-react";
@@ -13,13 +12,18 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarProps) {
+  const navigate = useNavigate();
   const navItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "bookings", label: "Booking Requests", icon: CalendarCheck },
     { id: "properties", label: "My Properties", icon: Home },
     { id: "reviews", label: "Guest Reviews", icon: MessageSquare },
     { id: "cms", label: "Home Settings", icon: LayoutDashboard },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("staytheory_token");
+    navigate("/admin/login");
+  };
 
   return (
     <>
@@ -28,7 +32,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarPr
         <div>
           <Link to="/" className="text-xl font-serif italic text-primary">StayTheory</Link>
         </div>
-        <button className="p-2 text-stone-400 hover:text-red-500 transition-colors">
+        <button onClick={handleLogout} className="p-2 text-stone-400 hover:text-red-500 transition-colors">
           <LogOut className="w-5 h-5" />
         </button>
       </div>
@@ -58,7 +62,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarPr
       </nav>
 
       <div className="p-8 border-t border-stone-100">
-        <button className="flex items-center gap-3 text-stone-400 hover:text-red-500 transition-colors group">
+        <button onClick={handleLogout} className="flex items-center gap-3 text-stone-400 hover:text-red-500 transition-colors group">
           <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">Logout</span>
         </button>

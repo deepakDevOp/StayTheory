@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Moon } from "lucide-react";
 import FocusBox from "./FocusBox";
-import axios from "axios";
+import api from "../services/api";
 
 export default function TactileSection() {
   const [mainContent, setMainContent] = useState<any>(null);
@@ -12,8 +12,8 @@ export default function TactileSection() {
     const fetchContent = async () => {
       try {
         const [mainRes, detailRes] = await Promise.all([
-          axios.get(`http://${window.location.hostname}:8000/api/v1/cms/home/tactile_main?t=${Date.now()}`),
-          axios.get(`http://${window.location.hostname}:8000/api/v1/cms/home/tactile_detail?t=${Date.now()}`)
+          api.get(`/cms/home/tactile_main?t=${Date.now()}`),
+          api.get(`/cms/home/tactile_detail?t=${Date.now()}`)
         ]);
         setMainContent(mainRes.data);
         setDetailContent(detailRes.data);
