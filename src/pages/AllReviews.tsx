@@ -4,7 +4,6 @@ import { Star, ArrowLeft, Quote } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import MobileNav from "../components/MobileNav";
 import { publicService } from "../services/publicService";
 
 interface AllReviewsProps {
@@ -75,10 +74,10 @@ export default function AllReviews({ onBookClick }: AllReviewsProps) {
             </Link>
           </motion.div>
           
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-8xl font-serif italic text-primary mb-6"
+            className="text-3xl sm:text-5xl md:text-8xl font-serif italic text-primary mb-6"
           >
             {propertyTitle ? `${propertyTitle} Stories` : "Guest Stories"}
           </motion.h1>
@@ -94,7 +93,7 @@ export default function AllReviews({ onBookClick }: AllReviewsProps) {
           </motion.p>
         </header>
 
-        <section className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 pb-20">
+        <section className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-8 space-y-4 md:space-y-8 pb-20">
           {reviews.length > 0 ? (
             reviews.map((review, index) => (
               <motion.div
@@ -103,7 +102,7 @@ export default function AllReviews({ onBookClick }: AllReviewsProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05, duration: 0.8 }}
-                className="break-inside-avoid p-8 md:p-10 bg-white/40 backdrop-blur-sm border border-stone-200/60 rounded-3xl hover:border-primary/30 transition-all duration-500 shadow-sm hover:shadow-xl group"
+                className="break-inside-avoid p-5 sm:p-7 md:p-10 bg-white border border-stone-200/60 rounded-3xl hover:border-primary/30 transition-all duration-500 shadow-sm hover:shadow-xl group"
               >
                 <div className="flex justify-between items-start mb-8">
                   <div className="flex gap-1">
@@ -137,7 +136,6 @@ export default function AllReviews({ onBookClick }: AllReviewsProps) {
       </main>
 
       <Footer />
-      <MobileNav onBookClick={onBookClick} />
     </div>
   );
 }

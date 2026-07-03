@@ -1,18 +1,18 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { 
-   MapPin, Star, Check, Info, ArrowLeft, Users, ChevronRight, Bed, Bath, Square, 
-   ArrowRight, X, Share, Heart, ChevronLeft, Wifi, Tv, UtensilsCrossed, 
-   WashingMachine, Wind, Waves, Car, Dumbbell, Briefcase, Droplets, CloudRain, 
-   Layout, ArrowUp, Cctv, Bell, PlusCircle, Flame 
+import {
+   MapPin, Star, Check, Info, ArrowLeft, Users, ChevronRight, Bed, Bath, Square,
+   ArrowRight, X, Share, Heart, ChevronLeft, Wifi, Tv, UtensilsCrossed,
+   WashingMachine, Wind, Waves, Car, Dumbbell, Briefcase, Droplets, CloudRain,
+   Layout, ArrowUp, Cctv, Bell, PlusCircle, Flame
 } from "lucide-react";
 import { publicService } from "../services/publicService";
 import { DayPicker, DateRange } from "react-day-picker";
 import { addDays, differenceInCalendarDays, parseISO } from "date-fns";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import MobileNav from "../components/MobileNav";
+import { preloadPropertyImages } from "../utils/preload";
 
 export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?: any) => void }) {
    const { id: slug } = useParams();
@@ -36,10 +36,11 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
             const prop = await publicService.getPropertyBySlug(slug);
             if (prop) {
                setProperty(prop);
+               preloadPropertyImages(prop);
                // Fetch reviews for this property
                const reviews = await publicService.getPropertyReviews(prop.id);
                setPropertyReviews(reviews);
-               
+
                // Load blocked dates from the property availability data
                if (prop.availability && Array.isArray(prop.availability)) {
                   console.log("DEBUG: Raw availability data:", prop.availability);
@@ -158,11 +159,11 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
    today.setHours(0, 0, 0, 0);
 
    return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background overflow-x-hidden">
          <Navbar onBookClick={onBookClick || (() => { })} />
 
          {/* Hero Section */}
-         <div className="relative h-[60vh] md:h-[70vh] w-full">
+         <div className="relative h-[50vh] sm:h-[55vh] md:h-[70vh] w-full">
             <img src={property.coverImage || normalizedImages[0]?.url} alt={property.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/20 to-transparent flex flex-col justify-end p-8 md:p-16">
                <Link to="/properties" className="flex items-center gap-2 text-white/70 hover:text-white mb-6 w-fit transition-colors">
@@ -184,7 +185,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.title + " " + (property.city || 'Udaipur'))}`}
                      target="_blank"
                      rel="noopener noreferrer"
-                     className="text-xs uppercase tracking-[0.2em] font-bold text-white/60 hover:text-white flex items-center gap-2 border border-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm transition-all"
+                     className="text-xs uppercase tracking-[0.2em] font-bold text-white/60 hover:text-white flex items-center gap-2 border border-white/20 bg-stone-900/40 px-3 py-1.5 rounded-full transition-all"
                   >
                      <MapPin className="w-3 h-3" />
                      View on Maps
@@ -193,20 +194,20 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
             </div>
          </div>
 
-         <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 flex flex-col md:flex-row gap-12 lg:gap-16 items-start">
+         <div className="max-w-7xl mx-auto px-4 md:px-12 py-10 md:py-16 flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-16 md:items-start">
             {/* Left Content Area */}
-            <div className="flex-1 space-y-16 min-w-0">
+            <div className="flex-1 space-y-10 md:space-y-16 min-w-0">
 
                {/* Categorized Image Gallery */}
-               <section>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8">
-                     <h3 className="text-2xl font-serif text-stone-800 italic">The Gallery</h3>
-                     <div className="flex gap-4 p-1 bg-stone-50 rounded-full border border-stone-100 overflow-x-auto no-scrollbar max-w-full">
+               <section className="w-full min-w-0">
+                  <div className="mb-6 w-full min-w-0">
+                     <h3 className="text-2xl font-serif text-stone-800 italic mb-4">The Gallery</h3>
+                     <div className="flex gap-2 p-1 bg-stone-50 rounded-full border border-stone-100 overflow-x-auto no-scrollbar" style={{ maxWidth: '100%' }}>
                         {["all", ...new Set(normalizedImages.map((img: any) => img.category))].filter(c => c !== 'main').map((cat: any) => (
                            <button
                               key={cat}
                               onClick={() => setActiveGalleryCategory(cat)}
-                              className={`text-[9px] font-bold uppercase tracking-widest px-4 py-2 rounded-full transition-all whitespace-nowrap ${activeGalleryCategory === cat ? 'bg-white text-primary shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                              className={`text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full transition-all whitespace-nowrap ${activeGalleryCategory === cat ? 'bg-white text-primary shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
                            >
                               {cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
                            </button>
@@ -214,7 +215,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                      </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3 md:gap-4">
                      {normalizedImages
                         .filter((img: any) => activeGalleryCategory === 'all' || img.category === activeGalleryCategory)
                         .slice(0, 4)
@@ -226,20 +227,23 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                            return (
                               <motion.div
                                  key={img.url || idx}
-                                 initial={{ opacity: 0, scale: 0.95 }}
-                                 whileInView={{ opacity: 1, scale: 1 }}
+                                 initial={{ opacity: 0, y: 12 }}
+                                 whileInView={{ opacity: 1, y: 0 }}
                                  viewport={{ once: true }}
+                                 transition={{ duration: 0.4, delay: idx * 0.06 }}
                                  className="relative group cursor-pointer overflow-hidden rounded-2xl shadow-sm"
                                  onClick={() => setLightboxIndex(normalizedImages.indexOf(img))}
                               >
                                  <img
                                     src={img.url}
-                                    className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-105"
+                                    className="w-full h-52 sm:h-52 md:h-64 object-cover transition-transform duration-500 group-hover:scale-105"
                                     alt={`Property Image ${idx + 1}`}
+                                    loading={idx < 2 ? "eager" : "lazy"}
+                                    decoding="async"
                                  />
                                  {isLastInitial && (
-                                    <div className="absolute inset-0 bg-stone-900/40 flex flex-col items-center justify-center text-white backdrop-blur-[1px] group-hover:bg-stone-900/50 transition-all">
-                                       <span className="text-3xl font-serif italic mb-2">+{totalFiltered - 4}</span>
+                                     <div className="absolute inset-0 bg-stone-900/60 flex flex-col items-center justify-center text-white group-hover:bg-stone-900/70 transition-all">
+                                        <span className="text-3xl font-serif italic mb-2">+{totalFiltered - 4}</span>
                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em]">View All Photos</span>
                                     </div>
                                  )}
@@ -271,14 +275,22 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                            </div>
                         </div>
 
+                        {/* Preload adjacent images as hidden elements so the browser caches them */}
+                        {[-1, 1].map(offset => {
+                           const adjIdx = (lightboxIndex! + offset + normalizedImages.length) % normalizedImages.length;
+                           return <link key={offset} rel="preload" as="image" href={normalizedImages[adjIdx]?.url} />;
+                        })}
+
                         {/* Main Image */}
                         <div className="relative w-full h-full flex items-center justify-center p-4 md:p-20">
                            <motion.img
                               key={lightboxIndex}
-                              initial={{ opacity: 0, scale: 0.9 }}
+                              initial={{ opacity: 0, scale: 0.95 }}
                               animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.25 }}
                               src={normalizedImages[lightboxIndex].url}
                               className="max-w-full max-h-full object-contain shadow-2xl"
+                              decoding="async"
                            />
 
                            {/* Navigation Arrows */}
@@ -375,9 +387,9 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                               );
                            })}
                         </div>
-                        
+
                         {property.amenities.length > 10 && (
-                           <button 
+                           <button
                               onClick={() => setShowAllAmenities(true)}
                               className="px-8 py-3.5 border border-stone-800 rounded-xl text-sm font-bold uppercase tracking-widest hover:bg-stone-50 transition-colors"
                            >
@@ -460,9 +472,9 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
 
             </div>
 
-            {/* Right Sidebar - Sticky Booking Widget */}
+            {/* Right Sidebar - Booking Widget (sticky on desktop only) */}
             <div className="w-full md:w-[350px] lg:w-[400px] shrink-0">
-               <div className="sticky top-24 bg-white rounded-3xl shadow-xl border border-stone-100 p-6 lg:p-8">
+               <div className="md:sticky md:top-24 bg-white rounded-3xl shadow-xl border border-stone-100 p-4 sm:p-6 lg:p-8">
                   {property?.airbnb_url && (
                      <div className="flex items-center gap-2 mb-4 bg-primary/5 p-2 rounded-lg border border-primary/10">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -576,7 +588,6 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
             </div>
          </div>
          <Footer />
-         <MobileNav onBookClick={onBookClick || (() => { })} />
 
          {/* Amenities Modal */}
          <AnimatePresence>
@@ -587,7 +598,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                      animate={{ opacity: 1 }}
                      exit={{ opacity: 0 }}
                      onClick={() => setShowAllAmenities(false)}
-                     className="absolute inset-0 bg-stone-900/40 backdrop-blur-md"
+                     className="absolute inset-0 bg-stone-900/90"
                   />
                   <motion.div
                      initial={{ opacity: 0, y: 50, scale: 0.95 }}
@@ -597,7 +608,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                   >
                      <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-white sticky top-0 z-10">
                         <h3 className="text-2xl font-serif text-stone-800 italic">What this sanctuary offers</h3>
-                        <button 
+                        <button
                            onClick={() => setShowAllAmenities(false)}
                            className="p-3 rounded-full hover:bg-stone-50 transition-colors"
                         >

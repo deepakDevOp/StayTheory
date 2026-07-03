@@ -3,7 +3,7 @@ import api from "./api";
 export const publicService = {
   // Properties
   getProperties: async (params: any = {}) => {
-    const response = await api.get("/properties", { params });
+    const response = await api.get("/properties/", { params });
     return response.data;
   },
   

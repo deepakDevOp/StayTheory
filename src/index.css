@@ -3,6 +3,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* Prevent font inflation on iOS orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 @theme {
@@ -11,24 +14,22 @@ html {
   --color-surface-bright: #fff8f5;
   --color-on-surface: #1e1b18;
   --color-on-surface-variant: #54433e;
-  --color-primary: #8a4630; /* Terracotta */
+  --color-primary: #8a4630;
   --color-primary-container: #a85e46;
   --color-on-primary: #ffffff;
-  --color-secondary: #546346; /* Earthy Green */
+  --color-secondary: #546346;
   --color-on-secondary: #ffffff;
   --color-background: #fff8f5;
   --color-accent: #A85E46;
-  
+
   --font-serif: "Noto Serif", serif;
   --font-sans: "Plus Jakarta Sans", sans-serif;
-
   --font-headline-xl: "Noto Serif", serif;
   --font-headline-lg: "Noto Serif", serif;
   --font-headline-md: "Noto Serif", serif;
 
   --rounded-xl: 0.75rem;
   --rounded-lg: 0.5rem;
-  
   --spacing-section: 120px;
 }
 
@@ -37,22 +38,44 @@ html {
     @apply bg-background text-on-surface font-sans antialiased;
     scroll-behavior: smooth;
     caret-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Prevent horizontal overflow on all pages */
+    overflow-x: hidden;
   }
 
-  input, textarea, [contenteditable="true"] {
-    caret-color: auto;
+  /* Smooth momentum scrolling on iOS */
+  .overflow-y-auto, .overflow-x-auto, .overflow-auto {
+    -webkit-overflow-scrolling: touch;
   }
-  
+
+  /* GPU compositing layer for explicitly animated elements only */
+  .transform-gpu {
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  img {
+    image-rendering: auto;
+  }
+
+  /* Prevent iOS zoom on input focus — font-size must be ≥16px */
+  input, textarea, select, [contenteditable="true"] {
+    caret-color: auto;
+    font-size: max(16px, 1em);
+  }
+
   h1, .text-headline-xl {
-    @apply font-serif text-[48px] leading-[1.1] tracking-[-0.02em] font-light italic;
+    @apply font-serif text-[32px] md:text-[48px] leading-[1.1] tracking-[-0.02em] font-light italic;
   }
 
   h2, .text-headline-lg {
-    @apply font-serif text-[32px] md:text-[36px] leading-[1.2] font-light;
+    @apply font-serif text-[26px] md:text-[36px] leading-[1.2] font-light;
   }
 
   h3, .text-headline-md {
-    @apply font-serif text-[24px] leading-[1.3] font-medium;
+    @apply font-serif text-[20px] md:text-[24px] leading-[1.3] font-medium;
   }
 
   ::selection {

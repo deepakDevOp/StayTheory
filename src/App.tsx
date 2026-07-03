@@ -9,7 +9,6 @@ import HostSection from "./components/HostSection";
 import Testimonials from "./components/Testimonials";
 import CTA from "./components/CTA";
 import Footer from "./components/Footer";
-import MobileNav from "./components/MobileNav";
 import BookingModal from "./components/BookingModal";
 import BookingRedirectionModal from "./components/BookingRedirectionModal";
 import PropertiesJournal from "./pages/PropertiesJournal";
@@ -39,8 +38,8 @@ function HomePage({ onBookClick }: { onBookClick: (prop?: any) => void }) {
     try {
       import("./services/api").then((m) => {
         m.default.post("/properties/analytics/track-homepage");
-      }).catch(() => {});
-    } catch (err) {}
+      }).catch(() => { });
+    } catch (err) { }
   }, []);
 
   return (
@@ -58,7 +57,6 @@ function HomePage({ onBookClick }: { onBookClick: (prop?: any) => void }) {
         </div>
         <Footer />
       </div>
-      <MobileNav onBookClick={onBookClick} />
     </>
   );
 }
@@ -76,7 +74,7 @@ export default function App() {
   const handleBookClick = (property?: any) => {
     // Determine which property we are talking about
     let targetProperty = property;
-    
+
     if (!targetProperty) {
       // If no specific property, find the first one that has an airbnb link
       targetProperty = properties.find(p => p.airbnb_url);
@@ -96,7 +94,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <main className="bg-background min-h-screen selection:bg-[#ffb59e] selection:text-[#3a0b00] overflow-x-hidden w-full relative pt-[72px] pb-[80px] md:pb-0">
+      <main className="bg-background min-h-screen selection:bg-[#ffb59e] selection:text-[#3a0b00] overflow-x-hidden w-full relative pt-[72px]">
         <Routes>
           <Route path="/" element={<HomePage onBookClick={handleBookClick} />} />
           <Route path="/properties" element={<PropertiesJournal onBookClick={handleBookClick} />} />
@@ -109,10 +107,10 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/login" element={<AdminLogin />} />
         </Routes>
-        
-        <BookingModal 
-          isOpen={isBookingOpen} 
-          onClose={() => setIsBookingOpen(false)} 
+
+        <BookingModal
+          isOpen={isBookingOpen}
+          onClose={() => setIsBookingOpen(false)}
           onRedirect={(prop) => {
             setIsBookingOpen(false);
             setRedirectProperty(prop);

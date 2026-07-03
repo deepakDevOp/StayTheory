@@ -9,7 +9,7 @@ export default function Contact() {
 
   return (
     <>
-      <Navbar onBookClick={() => {}} />
+      <Navbar onBookClick={() => { }} />
       <main className="max-w-3xl mx-auto px-6 py-24 md:py-32">
         <p className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold mb-4">Get in Touch</p>
         <h1 className="text-4xl md:text-5xl font-serif italic text-stone-800 mb-3 leading-tight">Contact Us</h1>
@@ -21,7 +21,7 @@ export default function Contact() {
           {/* Email */}
           <a
             href="mailto:atstaytheory@gmail.com"
-            className="flex items-center gap-5 p-6 rounded-2xl border border-stone-100 bg-white shadow-sm hover:border-accent/30 hover:shadow-md transition-all group"
+            className="flex items-center gap-4 p-4 sm:p-6 rounded-2xl border border-stone-100 bg-white shadow-sm hover:border-accent/30 hover:shadow-md transition-all group"
           >
             <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors">
               <Mail className="w-5 h-5 text-accent" />
@@ -37,7 +37,7 @@ export default function Contact() {
           {/* Phone */}
           <a
             href="tel:+917827467208"
-            className="flex items-center gap-5 p-6 rounded-2xl border border-stone-100 bg-white shadow-sm hover:border-accent/30 hover:shadow-md transition-all group"
+            className="flex items-center gap-4 p-4 sm:p-6 rounded-2xl border border-stone-100 bg-white shadow-sm hover:border-accent/30 hover:shadow-md transition-all group"
           >
             <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors">
               <Phone className="w-5 h-5 text-accent" />
@@ -55,7 +55,7 @@ export default function Contact() {
             href="https://www.instagram.com/staytheory.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-5 p-6 rounded-2xl border border-stone-100 bg-white shadow-sm hover:border-accent/30 hover:shadow-md transition-all group"
+            className="flex items-center gap-4 p-4 sm:p-6 rounded-2xl border border-stone-100 bg-white shadow-sm hover:border-accent/30 hover:shadow-md transition-all group"
           >
             <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors">
               <Instagram className="w-5 h-5 text-accent" />

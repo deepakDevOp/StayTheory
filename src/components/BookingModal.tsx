@@ -107,13 +107,13 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-stone-900/80"
           />
 
           {/* Close Button - Fixed to screen corner to prevent clipping */}
@@ -126,10 +126,11 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
           </button>
           
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="relative bg-white w-full max-w-4xl rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[92dvh] sm:max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
 
@@ -210,8 +211,10 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
             </div>
 
             {/* Right Side: Booking Controls */}
-            <div className="flex-1 p-6 md:p-10 overflow-y-auto max-h-[90vh]">
-              <header className="mb-6 relative">
+            <div className="flex-1 p-4 sm:p-6 md:p-10 overflow-y-auto">
+              {/* Drag handle — visible on mobile as bottom sheet affordance */}
+              <div className="sm:hidden w-10 h-1 bg-stone-200 rounded-full mx-auto mb-4" />
+              <header className="mb-5 relative">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Direct booking coming soon</span>
@@ -334,6 +337,11 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
                       @media (max-width: 768px) {
                         .booking-calendar {
                           --rdp-cell-size: 38px;
+                        }
+                      }
+                      @media (max-width: 400px) {
+                        .booking-calendar {
+                          --rdp-cell-size: 32px;
                         }
                       }
                     `}</style>

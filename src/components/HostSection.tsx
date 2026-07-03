@@ -24,7 +24,7 @@ export default function HostSection() {
 
   const display = content || {
     title: "Ritu",
-    subtitle: "Hi, I’m Ritu! I love connecting with new people and having good conversations. I’m a bit of a Netflix buff (currently watching Gossip Girl), and I enjoy exploring great food—so I’m always happy to share recommendations.\n\nWelcome to Stay Theory — a carefully curated 1BHK designed to give you the perfect balance of comfort and aesthetics. The apartment is fully furnished and thoughtfully equipped with all essential amenities to ensure a comfortable and hassle-free stay.\n\nWorking Professional",
+    subtitle: "Hi, I’m Ritu! I loveeee connecting with new people and having good conversations. I’m a bit of a Netflix buff (currently watching Gossip Girl), and I enjoy exploring great food—so I’m always happy to share recommendations.\n\nWelcome to Stay Theory — a carefully curated 1BHK designed to give you the perfect balance of comfort and aesthetics. The apartment is fully furnished and thoughtfully equipped with all essential amenities to ensure a comfortable and hassle-free stay.\n\nWorking Professional",
     image_url: "https://lh3.googleusercontent.com/aida-public/AB6AXuDwfg1tLDkEN9NjptH8LGKn5IGL0mgWBen2oHuWxgB_Ig28w7YttqL_lwBWURn9QXh6Aym-n7RuKgd_UBSkke-meOVJVERQOdRk4ltBezjBHPZa9klkYdO4my2NXMjqGnfwxFSmg28OwJxGZeiszf4k8rp6DD8lZ9Oe_sjRJIHKKrC71OA4KAzlgca-NM6EWNngQwuqhbIftYaPTd5eWXlnxwgi_pcCI-QmBDTfu4BWYaWniEoVXRAWaO5P0N2QYInzJIqoLnGHj2E"
   };
 
@@ -38,7 +38,7 @@ export default function HostSection() {
       <FocusBox className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center w-full">
         <div>
           <span className="uppercase text-[11px] tracking-[0.2em] font-bold text-primary mb-4 block">The Visionary</span>
-          <h2 className="text-5xl md:text-6xl font-serif italic mb-8 leading-tight">Meet Your Host</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-serif italic mb-6 md:mb-8 leading-tight">Meet Your Host</h2>
           <div className="space-y-6">
             {bio.map((p: string, i: number) => (
               <p key={i} className={`${i === 0 ? 'text-body-lg text-on-surface' : 'text-body-md text-on-surface-variant'} leading-relaxed`}>

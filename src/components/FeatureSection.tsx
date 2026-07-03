@@ -53,7 +53,7 @@ export default function FeatureSection() {
               <span className="uppercase text-[9px] tracking-[0.5em] font-bold text-primary opacity-70">The Interior</span>
             </div>
             
-            <h2 className="text-6xl md:text-8xl lg:text-[110px] font-serif text-on-surface leading-[0.85] mb-12 tracking-tight">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl xl:text-[110px] font-serif text-on-surface leading-[0.88] mb-8 md:mb-12 tracking-tight">
               Deliberate <br />
               <motion.span 
                 initial={{ opacity: 0, y: 20 }}

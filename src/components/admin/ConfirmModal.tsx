@@ -30,7 +30,7 @@ export default function ConfirmModal({
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       >
-        <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onClick={onClose} />
+        <div className="absolute inset-0 bg-stone-900/90" onClick={onClose} />
         
         <motion.div 
           initial={{ scale: 0.9, opacity: 0, y: 20 }}

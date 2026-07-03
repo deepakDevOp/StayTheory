@@ -4,8 +4,8 @@ import { ArrowLeft, MapPin, Users, Star, ArrowRight, Compass, Shrub, Bed, Bath, 
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import MobileNav from "../components/MobileNav";
 import { publicService } from "../services/publicService";
+import { preloadPropertyImages } from "../utils/preload";
 
 interface PropertiesJournalProps {
   onBookClick: (prop?: any) => void;
@@ -52,8 +52,10 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
             }
           ];
           setProperties(demoProperties);
+          preloadPropertyImages(demoProperties);
         } else {
           setProperties(data);
+          preloadPropertyImages(data);
         }
       } catch (error) {
         console.error("Failed to fetch journal properties:", error);
@@ -83,7 +85,7 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
 
       <div className="flex-1 flex flex-col lg:flex-row max-w-[1800px] mx-auto w-full">
         {/* Fixed Left Sidebar (Desktop) */}
-        <aside className="w-full lg:w-1/3 lg:h-[calc(100vh-72px)] lg:sticky lg:top-[72px] p-6 md:px-16 md:pt-4 md:pb-16 flex flex-col border-b lg:border-b-0 lg:border-r border-stone-100 bg-stone-50/30">
+        <aside className="w-full lg:w-1/3 lg:h-[calc(100vh-72px)] lg:sticky lg:top-[72px] px-5 pt-6 pb-8 md:px-16 md:pt-4 md:pb-16 flex flex-col border-b lg:border-b-0 lg:border-r border-stone-100 bg-stone-50/30">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -96,7 +98,7 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
               <span className="text-[10px] uppercase tracking-[0.5em] font-bold text-primary">Volume 01</span>
             </div>
 
-            <h1 className="text-6xl md:text-8xl font-serif italic text-accent leading-[0.85] tracking-tighter mb-4">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-serif italic text-accent leading-[0.9] tracking-tighter mb-4">
               The <br /> Journal.
             </h1>
 
@@ -122,8 +124,8 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
         </aside>
 
         {/* Scrollable Right Grid */}
-        <main className="flex-1 p-6 md:px-16 md:pt-4 md:pb-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-16">
+        <main className="flex-1 px-5 py-8 md:px-16 md:pt-4 md:pb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-10 md:gap-y-16">
             {filteredProperties.length === 0 ? (
               <div className="col-span-full py-32 text-center">
                 <Shrub className="w-12 h-12 text-stone-200 mx-auto mb-6" />
@@ -155,7 +157,7 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
                       <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
                       <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                        <div className="bg-white/90 backdrop-blur-md px-4 py-3 rounded-2xl border border-white shadow-2xl">
+                        <div className="bg-white px-4 py-3 rounded-2xl border border-stone-100 shadow-2xl">
                           <span className="text-xl font-serif italic text-accent">{price}</span>
                         </div>
                         <div className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center shadow-2xl">
@@ -164,7 +166,7 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
                       </div>
 
                       <div className="absolute top-6 left-6">
-                        <div className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[9px] font-bold uppercase tracking-widest">
+                        <div className="px-3 py-1.5 rounded-full bg-stone-900/60 border border-white/30 text-white text-[9px] font-bold uppercase tracking-widest">
                           {property.property_type || "Retreat"}
                         </div>
                       </div>
@@ -199,7 +201,6 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
       </div>
 
       <Footer />
-      <MobileNav onBookClick={onBookClick} />
     </div>
   );
 }

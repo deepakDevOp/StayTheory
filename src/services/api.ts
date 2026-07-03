@@ -1,12 +1,17 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+let API_BASE_URL = import.meta.env.VITE_API_URL;
+// Use relative path to leverage Vite proxy when not accessing via localhost
+if (API_BASE_URL.includes("localhost") && window.location.hostname !== "localhost") {
+  API_BASE_URL = "/api/v1";
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
-    "X-API-Key": import.meta.env.VITE_PUBLIC_API_KEY
+    "X-API-Key": import.meta.env.VITE_PUBLIC_API_KEY,
+    "Bypass-Tunnel-Reminder": "true"
   },
 });
 

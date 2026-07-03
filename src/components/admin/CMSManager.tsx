@@ -121,7 +121,7 @@ function SectionEditor({ section, onSave, onImageUpload, isSaving }: any) {
             onChange={(e) => e.target.files?.[0] && onImageUpload(e.target.files[0])} 
           />
         </label>
-        <div className="absolute top-6 left-6 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] font-bold uppercase tracking-widest">
+        <div className="absolute top-6 left-6 px-4 py-1.5 rounded-full bg-stone-900/40 border border-white/30 text-white text-[10px] font-bold uppercase tracking-widest">
           {section.section_key.replace('_', ' ')}
         </div>
       </div>

@@ -24,7 +24,7 @@ export default function LandscapeSection() {
         </div>
         <div className="order-1 md:order-2">
           <span className="uppercase text-[11px] tracking-[0.2em] font-bold text-primary mb-4 block">The Surroundings</span>
-          <h2 className="text-5xl md:text-6xl font-serif italic mb-8 leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-serif italic mb-6 md:mb-8 leading-tight">
             A landscape that breathes with you.
           </h2>
           <p className="text-on-surface-variant text-body-lg leading-relaxed mb-10 max-w-xl">

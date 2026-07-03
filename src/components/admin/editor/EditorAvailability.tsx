@@ -58,8 +58,8 @@ export default function EditorAvailability({ blockedDates, onToggleDate }: Edito
               onClick={handlePrevMonth}
               disabled={isPrevDisabled}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isPrevDisabled
-                  ? 'bg-stone-50 text-stone-300 cursor-not-allowed'
-                  : 'bg-stone-100 text-stone-600 hover:bg-primary hover:text-white hover:scale-110 shadow-sm'
+                ? 'bg-stone-50 text-stone-300 cursor-not-allowed'
+                : 'bg-stone-100 text-stone-600 hover:bg-primary hover:text-white hover:scale-110 shadow-sm'
                 }`}
             >
               <ChevronLeft className="w-5 h-5" />
@@ -99,10 +99,10 @@ export default function EditorAvailability({ blockedDates, onToggleDate }: Edito
                 disabled={isPast}
                 onClick={() => onToggleDate(dateStr)}
                 className={`h-10 md:h-12 w-full rounded-2xl flex items-center justify-center text-sm font-medium transition-all duration-300 active:scale-95 ${isPast
-                    ? 'text-stone-300 bg-stone-50/50 cursor-not-allowed'
-                    : isBlocked
-                      ? 'bg-primary text-white shadow-lg shadow-primary/40 scale-105 ring-2 ring-primary ring-offset-2'
-                      : 'bg-white text-stone-600 border-2 border-stone-100 hover:border-primary/30 hover:bg-stone-50 hover:-translate-y-1'
+                  ? 'text-stone-300 bg-stone-50/50 cursor-not-allowed'
+                  : isBlocked
+                    ? 'bg-primary text-white shadow-lg shadow-primary/40 scale-105 ring-2 ring-primary ring-offset-2'
+                    : 'bg-white text-stone-600 border-2 border-stone-100 hover:border-primary/30 hover:bg-stone-50 hover:-translate-y-1'
                   }`}
               >
                 {day}

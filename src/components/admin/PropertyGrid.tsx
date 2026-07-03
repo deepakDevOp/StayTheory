@@ -16,7 +16,7 @@ export default function PropertyGrid({ properties, onEdit, onPhotos }: PropertyG
   return (
     <div 
       ref={containerRef}
-      className="flex gap-12 overflow-x-auto overflow-y-hidden snap-x snap-mandatory py-4 md:py-10 px-[5%] md:px-[15%] no-scrollbar scroll-smooth"
+      className="flex gap-6 md:gap-12 overflow-x-auto md:overflow-y-hidden snap-x snap-mandatory py-4 md:py-10 px-[4%] md:px-[15%] no-scrollbar scroll-smooth items-start"
       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
       {/* Starting Spacer */}
@@ -52,74 +52,67 @@ export default function PropertyGrid({ properties, onEdit, onPhotos }: PropertyG
             whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             viewport={{ root: containerRef, amount: 0.8 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="flex-shrink-0 w-[85vw] md:w-[600px] snap-center px-4"
+            className="flex-shrink-0 w-[82vw] md:w-[600px] snap-center px-2 md:px-4"
           >
-            <div className="bg-white rounded-[4rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] border border-stone-100 group flex flex-col h-[70vh] relative">
+            <div className="bg-white rounded-[2.5rem] md:rounded-[4rem] overflow-hidden shadow-[0_20px_60px_-10px_rgba(0,0,0,0.12)] md:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] border border-stone-100 group flex flex-col md:h-[70vh] relative">
               {/* Image Section (Hero) */}
-              <div className="relative h-2/3 overflow-hidden bg-stone-100">
-                {/* Blurred background for cinematic feel with varying aspect ratios */}
-                <img 
-                  src={property.main_image_url || property.coverImage || (property.images?.[0]?.url)} 
-                  className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-110"
-                  alt=""
-                />
-                <img 
-                  src={property.main_image_url || property.coverImage || (property.images?.[0]?.url)} 
+              <div className="relative h-52 md:h-2/3 overflow-hidden bg-stone-100">
+                <div className="absolute inset-0 bg-stone-900/5" />
+                <img
+                  src={property.main_image_url || property.coverImage || (property.images?.[0]?.url)}
                   alt={property.title}
-                  className="relative z-10 w-full h-full object-contain group-hover:scale-105 transition-transform duration-1000" 
+                  className="relative z-10 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent" />
-                
-                <div className="absolute top-8 left-8">
-                  <span className="bg-primary/90 backdrop-blur-md text-white text-[7px] font-bold uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">
+
+                <div className="absolute top-5 left-5 md:top-8 md:left-8">
+                  <span className="bg-primary text-white text-[7px] font-bold uppercase tracking-[0.2em] px-3 py-1 md:px-4 md:py-1.5 rounded-full shadow-lg">
                     Active Listing
                   </span>
                 </div>
 
-                <div className="absolute bottom-8 right-8">
-                  <button 
+                <div className="absolute bottom-5 right-5 md:bottom-8 md:right-8">
+                  <button
                     onClick={() => onPhotos(property)}
-                    className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-stone-900 transition-all shadow-xl"
+                    className="p-3 md:p-4 bg-stone-900/60 rounded-full text-white hover:bg-white hover:text-stone-900 transition-all shadow-xl"
                   >
-                    <ImageIcon className="w-5 h-5" />
+                    <ImageIcon className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
               </div>
 
               {/* Content Section */}
-              <div className="p-10 flex flex-col justify-between flex-grow">
+              <div className="p-5 md:p-10 flex flex-col justify-between flex-grow">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-3xl font-serif italic text-on-surface group-hover:text-primary transition-colors">{property.title}</h3>
-                    <div className="flex items-center gap-2 text-stone-400 mt-2">
-                      <MapPin className="w-3 h-3" />
-                      <span className="text-xs uppercase tracking-widest font-medium">{property.city || 'Udaipur, Rajasthan'}</span>
+                  <div className="flex-1 min-w-0 pr-2">
+                    <h3 className="text-xl md:text-3xl font-serif italic text-on-surface group-hover:text-primary transition-colors leading-tight">{property.title}</h3>
+                    <div className="flex items-center gap-2 text-stone-400 mt-1.5">
+                      <MapPin className="w-3 h-3 shrink-0" />
+                      <span className="text-xs uppercase tracking-widest font-medium truncate">{property.city || 'Udaipur, Rajasthan'}</span>
                     </div>
                     {property.description && (
-                      <p className="mt-4 text-stone-500 text-xs line-clamp-2 leading-relaxed">
+                      <p className="mt-2 text-stone-500 text-xs line-clamp-2 leading-relaxed hidden sm:block">
                         {property.description}
                       </p>
                     )}
                   </div>
-                  <button className="p-3 text-stone-200 hover:text-primary transition-colors">
-                    <Settings className="w-5 h-5" />
+                  <button className="p-2 text-stone-200 hover:text-primary transition-colors shrink-0">
+                    <Settings className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between mt-8">
+                <div className="flex items-center justify-between mt-4 md:mt-8">
                   <div className="flex flex-col">
                     <span className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mb-1">Nightly Rate</span>
-                    <p className="text-xl font-serif italic text-on-surface">₹{(property.price || property.base_nightly_rate || 0).toLocaleString()}<span className="text-sm font-sans not-italic text-stone-400 ml-1">/night</span></p>
+                    <p className="text-base md:text-xl font-serif italic text-on-surface">₹{(property.price || property.base_nightly_rate || 0).toLocaleString()}<span className="text-xs font-sans not-italic text-stone-400 ml-1">/night</span></p>
                   </div>
 
-                  <div className="flex gap-4">
-                    <button 
-                      onClick={() => onEdit(property)}
-                      className="px-10 py-4 bg-stone-900 text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all shadow-lg shadow-stone-200"
-                    >
-                      Manage Sanctuary
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => onEdit(property)}
+                    className="px-5 py-3 md:px-10 md:py-4 bg-stone-900 text-white rounded-xl md:rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all shadow-lg shadow-stone-200"
+                  >
+                    Manage
+                  </button>
                 </div>
               </div>
             </div>

@@ -17,17 +17,17 @@ export default function AnalyticsChart({ data = [] }: { data?: any[] }) {
         <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#d6d3d1" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#d6d3d1" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#d6d3d1" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#d6d3d1" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8a4630" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#8a4630" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#8a4630" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#8a4630" stopOpacity={0} />
             </linearGradient>
           </defs>
           <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#a8a29e' }} dy={10} />
           <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#a8a29e' }} />
-          <Tooltip 
+          <Tooltip
             contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #f5f5f4', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
             itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
             labelStyle={{ color: '#a8a29e', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}

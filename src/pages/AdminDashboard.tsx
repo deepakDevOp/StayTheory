@@ -138,7 +138,7 @@ export default function AdminDashboard() {
 
       {/* Placeholder for other tabs */}
       {activeTab === "settings" && (
-        <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm h-[100dvh] flex flex-col items-center justify-center text-center opacity-90">
+        <div className="absolute inset-0 z-50 bg-white/95 h-[100dvh] flex flex-col items-center justify-center text-center">
           <p className="font-serif italic text-2xl">General settings coming soon.</p>
           <button onClick={() => setActiveTab('overview')} className="mt-4 px-6 py-2 bg-stone-900 text-white rounded-full">Go Back</button>
         </div>

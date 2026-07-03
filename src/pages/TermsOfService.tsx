@@ -8,7 +8,7 @@ export default function TermsOfService() {
 
   return (
     <>
-      <Navbar onBookClick={() => {}} />
+      <Navbar onBookClick={() => { }} />
       <main className="max-w-3xl mx-auto px-6 py-24 md:py-32">
         <p className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold mb-4">Legal</p>
         <h1 className="text-4xl md:text-5xl font-serif italic text-stone-800 mb-3 leading-tight">Terms of Service</h1>

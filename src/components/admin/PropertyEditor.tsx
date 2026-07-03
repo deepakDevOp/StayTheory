@@ -54,6 +54,20 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
         base_nightly_rate: property.base_nightly_rate ? String(property.base_nightly_rate) : "0",
         beds: property.beds || property.bedrooms || 1
       });
+
+      // Preload all images silently into browser cache
+      if (property.images && Array.isArray(property.images)) {
+        property.images.forEach((img: any) => {
+          if (img.url) {
+            const imgEl = new Image();
+            imgEl.src = img.url;
+          }
+        });
+      }
+      if (property.map_image) {
+        const imgEl = new Image();
+        imgEl.src = property.map_image;
+      }
     }
   }, [property]);
 
@@ -151,7 +165,7 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
         className="fixed inset-0 z-[100] flex items-center justify-center md:p-4"
       >
         {/* Deep Backdrop for silhouette */}
-        <div className="absolute inset-0 bg-stone-900/95 backdrop-blur-md" onClick={onClose} />
+        <div className="absolute inset-0 bg-stone-900/95" onClick={onClose} />
  
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
@@ -184,7 +198,7 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
           </div>
 
           {/* Tab Content Rendering */}
-          <div className="flex-grow overflow-y-auto p-6 md:p-12 bg-stone-50/30 no-scrollbar">
+          <div className="flex-grow overflow-y-auto p-6 md:p-12 bg-stone-50/30 no-scrollbar transform-gpu">
             {activeTab === "general" && (
               <EditorGeneral
                 formData={formData}

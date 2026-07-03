@@ -19,11 +19,11 @@ export default function Testimonials() {
   if (loading) return null;
 
   return (
-    <section id="reviews" className="px-6 md:px-16 bg-background py-24 md:py-32 border-t border-stone-200">
+    <section id="reviews" className="px-0 md:px-16 bg-background py-16 md:py-32 border-t border-stone-200">
       <FocusBox className="max-w-[1440px] mx-auto w-full">
-        <div className="text-center mb-16 md:mb-20">
+        <div className="text-center mb-10 md:mb-20 px-6 md:px-0">
           <span className="uppercase text-[11px] tracking-[0.2em] font-bold text-primary mb-4 block">Experiences</span>
-          <h2 className="text-4xl md:text-6xl font-serif italic text-on-surface mb-8">Voices from the Guests</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-serif italic text-on-surface mb-6 md:mb-8">Voices from the Guests</h2>
           <Link 
             to="/reviews"
             className="inline-flex items-center gap-3 px-6 py-2 border border-primary/20 rounded-full hover:border-primary/50 transition-all group"
@@ -33,16 +33,16 @@ export default function Testimonials() {
           </Link>
         </div>
 
-        <div className="flex gap-6 md:gap-8 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-12 px-4 md:px-0">
+        <div className="flex gap-4 md:gap-8 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-8 md:pb-12 px-6 md:px-0 overscroll-x-contain scroll-smooth">
           {reviews.length > 0 ? (
             reviews.map((review, index) => (
-                <motion.div 
-                  key={review.id || index} 
-                  initial={{ opacity: 0, y: 20 }}
+                <motion.div
+                  key={review.id || index}
+                  initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: 0.8 }}
-                  className="min-w-[85vw] md:min-w-[400px] max-w-[400px] snap-center p-6 md:p-8 bg-white/40 backdrop-blur-sm border border-stone-200/60 rounded-3xl hover:border-primary/30 transition-colors shadow-sm shrink-0 flex flex-col justify-between h-full"
+                  transition={{ delay: Math.min(index * 0.07, 0.4), duration: 0.5 }}
+                  className="min-w-[82vw] sm:min-w-[360px] md:min-w-[400px] max-w-[400px] snap-center p-5 md:p-8 bg-white border border-stone-200/60 rounded-3xl hover:border-primary/30 transition-colors shadow-sm shrink-0 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex gap-1 mb-4">

@@ -32,7 +32,7 @@ export default function BookingRedirectionModal({ isOpen, onClose, property }: B
         className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8"
       >
         {/* Cinematic Backdrop */}
-        <div className="absolute inset-0 bg-stone-900/90 backdrop-blur-xl" onClick={onClose} />
+        <div className="absolute inset-0 bg-stone-900/95" onClick={onClose} />
 
         {/* Close Button - Fixed to screen corner to prevent clipping */}
         <button 

@@ -9,7 +9,7 @@ export default function MobileNav({ onBookClick }: MobileNavProps) {
   const location = useLocation();
   
   return (
-    <div className="fixed bottom-0 w-full z-50 pb-safe bg-white/80 backdrop-blur-md border-t border-stone-200/50 md:hidden">
+    <div className="fixed bottom-0 w-full z-50 pb-safe bg-white/95 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-stone-200/50 md:hidden">
       <div className="flex justify-around items-center px-6 py-3 w-full">
         <a 
           href="/#reviews" 

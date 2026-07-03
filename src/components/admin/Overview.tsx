@@ -207,7 +207,7 @@ export default function Overview() {
         {showTrafficSources && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-stone-900/90"
             onClick={() => setShowTrafficSources(false)}
           >
             <motion.div 

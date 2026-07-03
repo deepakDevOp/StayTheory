@@ -1,6 +1,7 @@
 import { IndianRupee, Plus, Trash2, Camera, LayoutGrid, Bed, Sofa, Trees, Utensils, Bath, Wind, ChevronDown, Check } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useRef, useEffect, useMemo } from "react";
+import { optimizeImageUrl } from "../../../utils/preload";
 
 interface EditorGeneralProps {
   formData: any;
@@ -77,7 +78,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
           if (files && files.length > 0) {
             setUploading(true);
             try {
-              await Promise.all(Array.from(files).map(file => onPhotoUpload(file, activePhotoTab)));
+              await Promise.all(Array.from(files).map((file: any) => onPhotoUpload(file, activePhotoTab)));
             } finally {
               setUploading(false);
             }
@@ -137,7 +138,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="text" 
               value={formData.title} 
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, title: e.target.value }))}
               placeholder="e.g. Moon Retreat"
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
@@ -147,7 +148,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="text" 
               value={formData.subtitle} 
-              onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, subtitle: e.target.value }))}
               placeholder="e.g. A Riverside Sanctuary"
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
@@ -161,7 +162,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
                 value={formData.base_nightly_rate} 
                 onChange={(e) => {
                   const val = e.target.value.replace(/\D/g, '');
-                  setFormData({ ...formData, base_nightly_rate: val });
+                  setFormData((prev: any) => ({ ...prev, base_nightly_rate: val }));
                 }}
                 className="w-full bg-white border border-stone-100 rounded-[1.5rem] pl-16 pr-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
               />
@@ -175,7 +176,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="text" 
               value={formData.city} 
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, city: e.target.value }))}
               placeholder="e.g. Udaipur"
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
@@ -201,7 +202,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
                       <button
                         key={type}
                         onClick={() => {
-                          setFormData({ ...formData, property_type: type });
+                          setFormData((prev: any) => ({ ...prev, property_type: type }));
                           setIsTypeDropdownOpen(false);
                         }}
                         className="w-full flex items-center justify-between px-6 py-4 rounded-xl hover:bg-stone-50 transition-colors text-sm"
@@ -220,7 +221,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="text" 
               value={formData.address} 
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, address: e.target.value }))}
               placeholder="e.g. Near Lake Pichola, Udaipur"
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
@@ -233,7 +234,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="number" 
               value={formData.max_guests} 
-              onChange={(e) => setFormData({ ...formData, max_guests: parseInt(e.target.value) || 1 })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, max_guests: parseInt(e.target.value) || 1 }))}
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
           </div>
@@ -242,7 +243,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="number" 
               value={formData.bedrooms} 
-              onChange={(e) => setFormData({ ...formData, bedrooms: parseInt(e.target.value) || 1 })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, bedrooms: parseInt(e.target.value) || 1 }))}
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
           </div>
@@ -251,7 +252,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="number" 
               value={formData.bathrooms} 
-              onChange={(e) => setFormData({ ...formData, bathrooms: parseInt(e.target.value) || 1 })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, bathrooms: parseInt(e.target.value) || 1 }))}
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
           </div>
@@ -260,7 +261,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="number" 
               value={formData.beds} 
-              onChange={(e) => setFormData({ ...formData, beds: parseInt(e.target.value) || 1 })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, beds: parseInt(e.target.value) || 1 }))}
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
           </div>
@@ -271,7 +272,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
           <textarea 
             rows={4}
             value={formData.description} 
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) => setFormData((prev: any) => ({ ...prev, description: e.target.value }))}
             placeholder="Tell the story of this sanctuary..."
             className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium resize-none" 
           />
@@ -289,8 +290,8 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
         >
           {formData.coverImage ? (
             <>
-              <img src={formData.coverImage} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white backdrop-blur-sm">
+              <img src={formData.coverImage} decoding="async" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
                 <Camera className="w-8 h-8 mb-3" />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Change Showcase Image</span>
               </div>
@@ -305,7 +306,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             </div>
           )}
           {uploading && (
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Uploading Showcase...</span>
@@ -326,7 +327,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="text" 
               value={formData.google_maps_url} 
-              onChange={(e) => setFormData({ ...formData, google_maps_url: e.target.value })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, google_maps_url: e.target.value }))}
               placeholder="e.g. https://goo.gl/maps/..."
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
@@ -336,7 +337,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <input 
               type="text" 
               value={formData.airbnb_url} 
-              onChange={(e) => setFormData({ ...formData, airbnb_url: e.target.value })}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, airbnb_url: e.target.value }))}
               placeholder="e.g. https://www.airbnb.com/rooms/..."
               className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
             />
@@ -355,9 +356,9 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
               </div>
               {formData.map_image && (
                 <div className="w-16 h-16 rounded-xl overflow-hidden border border-stone-100 shrink-0 shadow-sm relative group">
-                  <img src={formData.map_image} className="w-full h-full object-cover" />
-                  <button 
-                    onClick={() => setFormData({ ...formData, map_image: "" })}
+                  <img src={formData.map_image} decoding="async" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => setFormData((prev: any) => ({ ...prev, map_image: "" }))}
                     className="absolute inset-0 bg-red-500/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
                   >
                     <Trash2 className="w-4 h-4 text-white" />
@@ -435,32 +436,42 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             {displayImages.length === 0 && !uploading && (
               <div className={`col-span-2 md:col-span-3 flex items-center px-6 ${activePhotoTab === "main" ? "md:col-span-4" : ""}`}>
                 <p className="text-stone-300 italic text-sm font-serif">
-                  {activePhotoTab === "main" 
+                  {activePhotoTab === "main"
                     ? "Upload photos to specific categories (Bedroom, Living, etc.) to see them appear here in the Main Gallery."
                     : "This category is empty. Select it and upload your first photo to bring this sanctuary to life."}
                 </p>
               </div>
             )}
-            {displayImages.map((img: any) => (
-              <motion.div 
-                key={img.url} layout initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+            {displayImages.map((img: any, idx: number) => (
+              <motion.div
+                key={img.url}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
                 className="aspect-square bg-stone-200 rounded-[2rem] relative group overflow-hidden"
               >
-                <img src={img.url} alt="Gallery item" className="w-full h-full object-cover" />
-                
-                {/* Always show category tag in main gallery */}
+                {/* Serve gallery thumbnails at 400px — avoids decoding multi-MB originals at 200px display size */}
+                <img
+                  src={optimizeImageUrl(img.url, 400)}
+                  alt="Gallery item"
+                  decoding="async"
+                  loading={idx < 8 ? "eager" : "lazy"}
+                  className="w-full h-full object-cover"
+                />
+
                 {activePhotoTab === "main" && (
                   <div className="absolute top-4 left-4 z-10">
-                    <span className="bg-white/80 backdrop-blur-md text-[8px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg text-stone-600 border border-white">
+                    <span className="bg-white shadow-md text-[8px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg text-stone-600 border border-stone-100">
                       {img.category}
                     </span>
                   </div>
                 )}
 
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-                  <button 
-                    onClick={() => setFormData({ ...formData, images: formData.images.filter((i: any) => i.url !== img.url) })}
-                    className="p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-all hover:scale-110"
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <button
+                    onClick={() => setFormData((prev: any) => ({ ...prev, images: prev.images.filter((i: any) => i.url !== img.url) }))}
+                    className="p-3 bg-stone-800/80 rounded-full text-white hover:bg-red-500 transition-all hover:scale-110 shadow-lg"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
