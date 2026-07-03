@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Info, Home, ChevronDown, Check } from 'lucide-react';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, differenceInCalendarDays } from 'date-fns';
-import 'react-day-picker/dist/style.css';
+import 'react-day-picker/style.css';
 import { publicService } from '../services/publicService';
 
 const availableProperties = [
@@ -299,93 +299,52 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
                     <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400">Select Dates</label>
                     {nights > 0 && <span className="text-[10px] bg-accent/10 text-accent px-2 py-1 rounded font-bold uppercase tracking-wider">{nights} Night{nights > 1 ? 's' : ''}</span>}
                   </div>
-                  <div className="booking-calendar p-2 md:p-4 border border-stone-100 rounded-xl bg-stone-50/50 flex justify-center">
+                  <div className="booking-calendar border border-stone-100 rounded-xl bg-stone-50/50 overflow-hidden">
                     <style>{`
-                      .rdp-day_disabled {
-                        text-decoration: line-through !important;
-                        opacity: 0.4 !important;
-                        color: #A8A29E !important;
-                        cursor: not-allowed !important;
-                        background-color: transparent !important;
-                        border-radius: 0 !important;
-                      }
-                      .rdp-day_selected {
-                        background-color: #8A4630 !important;
-                        color: white !important;
-                      }
-                      .rdp-nav_button_previous[disabled],
-                      .rdp-nav_button_previous:disabled {
-                        display: none !important;
-                      }
-                      .rdp-day_hidden {
-                        visibility: hidden !important;
-                      }
-                      .rdp-months {
-                        justify-content: center;
-                      }
-                      .booking-calendar .rdp {
-                        margin: 0;
-                        width: 100%;
-                        display: flex;
-                        justify-content: center;
-                      }
-                      .booking-calendar {
-                        --rdp-cell-size: 48px;
-                        --rdp-accent-color: #8A4630;
-                        --rdp-background-color: #F5F5F4;
-                      }
-                      @media (max-width: 768px) {
-                        .booking-calendar {
-                          --rdp-cell-size: 38px;
-                        }
-                      }
-                      @media (max-width: 400px) {
-                        .booking-calendar {
-                          --rdp-cell-size: 32px;
-                        }
-                      }
+                      .booking-calendar .rdp-months { max-width: 100%; width: 100%; }
+                      .booking-calendar .rdp-month  { width: 100%; }
+                      .booking-calendar .rdp-month_grid { width: 100%; table-layout: fixed; }
+                      .booking-calendar .rdp-day { width: auto; }
+                      .booking-calendar .rdp-weekday { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+                      .booking-calendar .rdp-day_button:hover:not(:disabled) { background: #f0e8e4; color: #8A4630; }
+                      .booking-calendar .rdp-day_blocked .rdp-day_button { text-decoration: line-through; text-decoration-color: #c4a8a0; opacity: 0.4; cursor: not-allowed; }
+                      .booking-calendar .rdp-day_blocked .rdp-day_button:hover { background: none; }
                     `}</style>
                     <DayPicker
                       mode="range"
                       selected={range}
                       onSelect={(newRange) => {
-                        if (!newRange) {
-                          setRange(undefined);
-                          return;
-                        }
-
-                        // Prevent starting a stay on a blocked date
-                        if (newRange.from && blockedDates.some(bd => bd.getTime() === newRange.from!.getTime())) {
-                          return;
-                        }
-
+                        if (!newRange) { setRange(undefined); return; }
+                        if (newRange.from && blockedDates.some(bd => bd.getTime() === newRange.from!.getTime())) return;
                         if (newRange.from && newRange.to) {
-                          // Check if any date BETWEEN from and to is blocked
                           const isMidRangeBlocked = blockedDates.some(bd => {
                             const date = bd.getTime();
                             return date >= newRange.from!.getTime() && date < newRange.to!.getTime();
                           });
-                          
-                          if (isMidRangeBlocked) {
-                            setRange({ from: newRange.from, to: undefined });
-                            return;
-                          }
+                          if (isMidRangeBlocked) { setRange({ from: newRange.from, to: undefined }); return; }
                         }
                         setRange(newRange);
                       }}
                       disabled={[{ before: today }]}
-                      modifiers={{
-                        blocked: blockedDates
-                      }}
-                      modifiersStyles={{
-                        blocked: { 
-                          textDecoration: 'line-through',
-                          textDecorationColor: '#8A4630',
-                          textDecorationThickness: '2px'
-                        }
-                      }}
-                      fromDate={today}
+                      modifiers={{ blocked: blockedDates }}
+                      modifiersClassNames={{ blocked: "rdp-day_blocked" }}
                       numberOfMonths={1}
+                      style={{
+                        "--rdp-accent-color": "#8A4630",
+                        "--rdp-accent-background-color": "#f5ede9",
+                        "--rdp-today-color": "#8A4630",
+                        "--rdp-range_middle-color": "#8A4630",
+                        "--rdp-day-height": "36px",
+                        "--rdp-day-width": "36px",
+                        "--rdp-day_button-height": "34px",
+                        "--rdp-day_button-width": "34px",
+                        "--rdp-day_button-border-radius": "8px",
+                        "--rdp-weekday-padding": "0.2rem 0",
+                        "--rdp-outside-opacity": "0.3",
+                        "--rdp-disabled-opacity": "0.3",
+                        width: "100%",
+                        fontSize: "13px",
+                      } as React.CSSProperties}
                     />
                   </div>
                 </div>

@@ -9,10 +9,11 @@ import {
 } from "lucide-react";
 import { publicService } from "../services/publicService";
 import { DayPicker, DateRange } from "react-day-picker";
+import "react-day-picker/style.css";
 import { addDays, differenceInCalendarDays, parseISO } from "date-fns";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { preloadPropertyImages } from "../utils/preload";
+import { preloadPropertyImages, markImageLoaded, imageLoadingAttr } from "../utils/preload";
 
 export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?: any) => void }) {
    const { id: slug } = useParams();
@@ -163,35 +164,61 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
          <Navbar onBookClick={onBookClick || (() => { })} />
 
          {/* Hero Section */}
-         <div className="relative h-[50vh] sm:h-[55vh] md:h-[70vh] w-full">
-            <img src={property.coverImage || normalizedImages[0]?.url} alt={property.title} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-stone-900/20 to-transparent flex flex-col justify-end p-8 md:p-16">
-               <Link to="/properties" className="flex items-center gap-2 text-white/70 hover:text-white mb-6 w-fit transition-colors">
-                  <ArrowLeft className="w-4 h-4" />
-                  <span className="text-sm uppercase tracking-widest font-bold">Back to Properties</span>
-               </Link>
+         <div className="relative h-[55vh] sm:h-[60vh] md:h-[72vh] w-full">
+            <img
+               src={property.coverImage || normalizedImages[0]?.url}
+               alt={property.title}
+               className="w-full h-full object-cover"
+               loading="eager"
+               onLoad={() => markImageLoaded(property.coverImage || normalizedImages[0]?.url)}
+            />
+
+            {/* Gradient: subtle top darkening for back btn, strong bottom for title */}
+            <div className="absolute inset-0 bg-gradient-to-b from-stone-900/40 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-stone-900/75 via-stone-900/10 to-transparent" />
+
+            {/* Back button — top left, minimal */}
+            <Link
+               to="/properties"
+               className="absolute top-4 left-4 md:top-8 md:left-8 flex items-center gap-1.5 text-white/80 hover:text-white transition-colors group"
+            >
+               <div className="w-8 h-8 rounded-full bg-stone-900/40 border border-white/20 flex items-center justify-center group-hover:bg-stone-900/70 transition-all">
+                  <ArrowLeft className="w-3.5 h-3.5" />
+               </div>
+               <span className="text-[10px] uppercase tracking-widest font-bold hidden sm:inline">Back</span>
+            </Link>
+
+            {/* Title only — bottom left, clean */}
+            <div className="absolute bottom-0 left-0 right-0 p-5 md:p-12">
+               <motion.p
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+                  className="text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold text-white/60 mb-2"
+               >
+                  {property.city || "India"}
+               </motion.p>
                <motion.h1
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-                  className="text-5xl md:text-7xl font-serif text-white mb-4 italic"
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
+                  className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-serif text-white italic leading-tight"
                >
                   {property.title}
                </motion.h1>
-               <motion.p
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-                  className="text-xl md:text-2xl text-white/90 font-light max-w-2xl flex flex-wrap items-center gap-x-4"
-               >
-                  <span>{property.subtitle || `${property.property_type || 'Sanctuary'} in ${property.city || 'Goa'}`}</span>
-                  <a
-                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.title + " " + (property.city || 'Udaipur'))}`}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     className="text-xs uppercase tracking-[0.2em] font-bold text-white/60 hover:text-white flex items-center gap-2 border border-white/20 bg-stone-900/40 px-3 py-1.5 rounded-full transition-all"
-                  >
-                     <MapPin className="w-3 h-3" />
-                     View on Maps
-                  </a>
-               </motion.p>
             </div>
+         </div>
+
+         {/* Sub-hero strip: subtitle + map link */}
+         <div className="bg-stone-900 px-5 md:px-12 py-3 flex items-center justify-between gap-4">
+            <span className="text-white/60 text-xs font-light truncate">
+               {property.subtitle || `${property.property_type || 'Sanctuary'}`}
+            </span>
+            <a
+               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.title + " " + (property.city || 'Udaipur'))}`}
+               target="_blank"
+               rel="noopener noreferrer"
+               className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] font-bold text-white/50 hover:text-primary transition-colors whitespace-nowrap shrink-0"
+            >
+               <MapPin className="w-3 h-3" />
+               View on Maps
+            </a>
          </div>
 
          <div className="max-w-7xl mx-auto px-4 md:px-12 py-10 md:py-16 flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-16 md:items-start">
@@ -201,7 +228,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                {/* Categorized Image Gallery */}
                <section className="w-full min-w-0">
                   <div className="mb-6 w-full min-w-0">
-                     <h3 className="text-2xl font-serif text-stone-800 italic mb-4">The Gallery</h3>
+                     <h3 className="text-lg md:text-2xl font-serif text-stone-800 italic mb-3 md:mb-4">The Gallery</h3>
                      <div className="flex gap-2 p-1 bg-stone-50 rounded-full border border-stone-100 overflow-x-auto no-scrollbar" style={{ maxWidth: '100%' }}>
                         {["all", ...new Set(normalizedImages.map((img: any) => img.category))].filter(c => c !== 'main').map((cat: any) => (
                            <button
@@ -238,8 +265,9 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                                     src={img.url}
                                     className="w-full h-52 sm:h-52 md:h-64 object-cover transition-transform duration-500 group-hover:scale-105"
                                     alt={`Property Image ${idx + 1}`}
-                                    loading={idx < 2 ? "eager" : "lazy"}
+                                    loading={idx < 2 ? "eager" : imageLoadingAttr(img.url)}
                                     decoding="async"
+                                    onLoad={() => markImageLoaded(img.url)}
                                  />
                                  {isLastInitial && (
                                      <div className="absolute inset-0 bg-stone-900/60 flex flex-col items-center justify-center text-white group-hover:bg-stone-900/70 transition-all">
@@ -318,29 +346,29 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                </AnimatePresence>
 
                {/* Stats & Overview */}
-               <section className="flex flex-wrap gap-8 text-stone-600 bg-stone-50/50 p-6 rounded-2xl border border-stone-100">
-                  <div className="flex items-center gap-3">
-                     <Users className="w-5 h-5 text-accent" />
-                     <span className="font-medium text-stone-800">Up to {property.stats?.guests || property.max_guests} Guests</span>
+               <section className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 md:gap-6 text-stone-600 bg-stone-50/50 p-4 md:p-6 rounded-2xl border border-stone-100">
+                  <div className="flex items-center gap-2">
+                     <Users className="w-4 h-4 text-accent shrink-0" />
+                     <span className="text-sm md:text-base font-medium text-stone-800">Up to {property.stats?.guests || property.max_guests} Guests</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                     <Bed className="w-5 h-5 text-accent" />
-                     <span className="font-medium text-stone-800">{property.stats?.bedrooms || property.bedrooms} Bedrooms</span>
+                  <div className="flex items-center gap-2">
+                     <Bed className="w-4 h-4 text-accent shrink-0" />
+                     <span className="text-sm md:text-base font-medium text-stone-800">{property.stats?.bedrooms || property.bedrooms} Bedrooms</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                     <Bath className="w-5 h-5 text-accent" />
-                     <span className="font-medium text-stone-800">{property.stats?.baths || property.bathrooms} Baths</span>
+                  <div className="flex items-center gap-2">
+                     <Bath className="w-4 h-4 text-accent shrink-0" />
+                     <span className="text-sm md:text-base font-medium text-stone-800">{property.stats?.baths || property.bathrooms} Baths</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                     <Square className="w-5 h-5 text-accent" />
-                     <span className="font-medium text-stone-800">{property.stats?.beds || property.beds} Beds</span>
+                  <div className="flex items-center gap-2">
+                     <Square className="w-4 h-4 text-accent shrink-0" />
+                     <span className="text-sm md:text-base font-medium text-stone-800">{property.stats?.beds || property.beds} Beds</span>
                   </div>
                </section>
 
                {/* Description */}
                <section>
-                  <h2 className="text-3xl font-serif font-bold text-stone-800 mb-6">The Space</h2>
-                  <p className="text-stone-600 leading-relaxed text-lg whitespace-pre-line">
+                  <h2 className="text-xl md:text-3xl font-serif font-bold text-stone-800 mb-4 md:mb-6">The Space</h2>
+                  <p className="text-stone-600 leading-relaxed text-sm md:text-base whitespace-pre-line">
                      {property.description || "No description available for this sanctuary yet."}
                   </p>
                </section>
@@ -349,10 +377,10 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
 
                {/* Amenities */}
                <section id="amenities">
-                  <h3 className="text-2xl font-serif font-bold text-stone-800 mb-8">What this sanctuary offers</h3>
+                  <h3 className="text-lg md:text-2xl font-serif font-bold text-stone-800 mb-5 md:mb-8">What this sanctuary offers</h3>
                   {property.amenities && property.amenities.length > 0 ? (
                      <div className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-8 md:gap-x-12">
                            {property.amenities.slice(0, 10).map((item: string, idx: number) => {
                               const getAmenityIcon = (name: string) => {
                                  const n = name.toLowerCase();
@@ -378,11 +406,11 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                               };
 
                               return (
-                                 <div key={idx} className="flex items-center gap-4 text-stone-700">
-                                    <div className="text-stone-500">
+                                 <div key={idx} className="flex items-center gap-3 text-stone-700">
+                                    <div className="text-stone-400 shrink-0 [&>svg]:w-4 [&>svg]:h-4 md:[&>svg]:w-5 md:[&>svg]:h-5">
                                        {getAmenityIcon(item)}
                                     </div>
-                                    <span className="text-lg font-light">{item}</span>
+                                    <span className="text-sm md:text-base font-light">{item}</span>
                                  </div>
                               );
                            })}
@@ -408,10 +436,10 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
 
                {/* Location - CLEAN UNOBSTRUCTED VERSION */}
                <section id="location">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
-                     <div className="space-y-4">
-                        <h3 className="text-2xl font-serif font-bold text-stone-800">Location</h3>
-                        <p className="text-stone-500 font-serif italic text-xl max-w-lg">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6 mb-5 md:mb-8">
+                     <div className="space-y-2 md:space-y-4">
+                        <h3 className="text-lg md:text-2xl font-serif font-bold text-stone-800">Location</h3>
+                        <p className="text-stone-500 font-serif italic text-sm md:text-xl max-w-lg">
                            {property.address || property.city || "Location details being curated..."}
                         </p>
                      </div>
@@ -426,7 +454,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                      </a>
                   </div>
 
-                  <div className="relative overflow-hidden rounded-[2.5rem] border border-stone-100 shadow-xl aspect-[21/9]">
+                  <div className="relative overflow-hidden rounded-2xl md:rounded-[2.5rem] border border-stone-100 shadow-xl aspect-[4/3] md:aspect-[21/9]">
                      <motion.img
                         initial={{ scale: 1 }}
                         whileInView={{ scale: 1 }}
@@ -442,8 +470,8 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
 
                {/* Reviews */}
                <section>
-                  <div className="flex justify-between items-center mb-10">
-                     <h3 className="text-2xl font-serif font-bold text-stone-800">Guest Experiences</h3>
+                  <div className="flex justify-between items-center mb-6 md:mb-10">
+                     <h3 className="text-lg md:text-2xl font-serif font-bold text-stone-800">Guest Experiences</h3>
                      <Link to={`/reviews?property=${property.id}`} className="text-xs font-bold uppercase tracking-widest text-accent hover:underline">View All Reviews</Link>
                   </div>
                   {propertyReviews && propertyReviews.length > 0 ? (
@@ -474,102 +502,95 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
 
             {/* Right Sidebar - Booking Widget (sticky on desktop only) */}
             <div className="w-full md:w-[350px] lg:w-[400px] shrink-0">
-               <div className="md:sticky md:top-24 bg-white rounded-3xl shadow-xl border border-stone-100 p-4 sm:p-6 lg:p-8">
-                  {property?.airbnb_url && (
-                     <div className="flex items-center gap-2 mb-4 bg-primary/5 p-2 rounded-lg border border-primary/10">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Direct booking coming soon</span>
+               <div className="md:sticky md:top-24 bg-white rounded-3xl shadow-xl border border-stone-100 p-4 sm:p-5">
+                  {/* Layout/style overrides for react-day-picker v9 */}
+                  <style>{`
+                    .st-cal .rdp-months { max-width: 100%; width: 100%; }
+                    .st-cal .rdp-month  { width: 100%; }
+                    .st-cal .rdp-month_grid { width: 100%; table-layout: fixed; }
+                    .st-cal .rdp-day { width: auto; }
+                    .st-cal .rdp-button_previous,
+                    .st-cal .rdp-button_next { border: 1px solid #e7e5e4; border-radius: 8px; background: white; transition: all 0.15s; }
+                    .st-cal .rdp-button_previous:hover,
+                    .st-cal .rdp-button_next:hover { background: #8A4630; border-color: #8A4630; }
+                    .st-cal .rdp-button_previous:hover .rdp-chevron,
+                    .st-cal .rdp-button_next:hover .rdp-chevron { fill: white; }
+                    .st-cal .rdp-weekday { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+                    .st-cal .rdp-day_button { font-size: 12px; }
+                    .st-cal .rdp-day_button:hover:not(:disabled) { background: #f0e8e4; color: #8A4630; }
+                    .st-cal .rdp-day_blocked .rdp-day_button { text-decoration: line-through; text-decoration-color: #c4a8a0; opacity: 0.4; cursor: not-allowed; }
+                    .st-cal .rdp-day_blocked .rdp-day_button:hover { background: none; color: inherit; }
+                  `}</style>
+
+                  {/* Price row */}
+                  <div className="flex items-baseline justify-between mb-3">
+                     <div>
+                        <span className="text-2xl font-serif italic text-stone-800">₹{price.toLocaleString()}</span>
+                        <span className="text-stone-400 text-xs ml-1">/ night</span>
                      </div>
-                  )}
-                  <div className="mb-6">
-                     <span className="text-3xl font-serif italic text-stone-800">₹{price.toLocaleString()}</span>
-                     <span className="text-stone-500 text-sm"> / night</span>
+                     {property?.airbnb_url && (
+                        <div className="flex items-center gap-1.5 bg-primary/5 px-2 py-1 rounded-lg border border-primary/10">
+                           <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
+                           <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary">Coming soon</span>
+                        </div>
+                     )}
                   </div>
 
-                  <div className="space-y-4 mb-8">
-                     <div className="p-3 border border-stone-200 rounded-xl bg-stone-50">
-                        <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 block mb-2">Selected Sanctuary</label>
-                        <div className="font-medium text-stone-800">{property.title}</div>
-                     </div>
-
-                     <div className="border border-stone-200 rounded-xl bg-white overflow-x-auto overflow-y-hidden flex justify-center w-full max-w-full">
-                        <style>{`
-                  .rdp-day_disabled {
-                    text-decoration: line-through !important;
-                    text-decoration-color: #8A4630 !important;
-                    text-decoration-thickness: 2px !important;
-                    opacity: 0.3 !important;
-                    color: #A8A29E !important;
-                    cursor: not-allowed !important;
-                  }
-                  .rdp-day_selected {
-                    background-color: #8A4630 !important;
-                    color: white !important;
-                  }
-                  .rdp-day_selected.rdp-day_disabled {
-                    background-color: #F5F5F4 !important;
-                    color: #A8A29E !important;
-                    text-decoration: line-through !important;
-                  }
-                `}</style>
-                        <DayPicker
-                           mode="range"
-                           selected={range}
-                           onSelect={(newRange) => {
-                              if (!newRange) {
-                                 setRange(undefined);
-                                 return;
-                              }
-
-                              // Prevent starting a stay on a blocked date
-                              if (newRange.from && blockedDates.some(bd => bd.getTime() === newRange.from!.getTime())) {
-                                 // If they clicked a blocked date as their first choice, ignore it
-                                 return;
-                              }
-
-                              if (newRange.from && newRange.to) {
-                                 // Check if any date BETWEEN from and to is blocked
-                                 const isMidRangeBlocked = blockedDates.some(bd => {
-                                    const date = bd.getTime();
-                                    // It's blocked if it's the start date OR any date BEFORE the end date
-                                    return date >= newRange.from!.getTime() && date < newRange.to!.getTime();
-                                 });
-
-                                 if (isMidRangeBlocked) {
-                                    // Reset to just the start date if they tried to jump over a block
-                                    setRange({ from: newRange.from, to: undefined });
-                                    return;
-                                 }
-                              }
-                              setRange(newRange);
-                           }}
-                           disabled={[{ before: today }]}
-                           modifiers={{
-                              blocked: blockedDates
-                           }}
-                           modifiersStyles={{
-                              blocked: {
-                                 textDecoration: 'line-through',
-                                 textDecorationColor: '#8A4630',
-                                 textDecorationThickness: '2px'
-                              }
-                           }}
-                           className="custom-calendar"
-                        />
-                     </div>
+                  {/* Calendar */}
+                  <div className="rounded-xl bg-stone-50 border border-stone-100 w-full overflow-hidden mb-3">
+                     <DayPicker
+                        mode="range"
+                        selected={range}
+                        onSelect={(newRange) => {
+                           if (!newRange) { setRange(undefined); return; }
+                           if (newRange.from && blockedDates.some(bd => bd.getTime() === newRange.from!.getTime())) return;
+                           if (newRange.from && newRange.to) {
+                              const blocked = blockedDates.some(bd => {
+                                 const t = bd.getTime();
+                                 return t >= newRange.from!.getTime() && t < newRange.to!.getTime();
+                              });
+                              if (blocked) { setRange({ from: newRange.from, to: undefined }); return; }
+                           }
+                           setRange(newRange);
+                        }}
+                        disabled={[{ before: today }]}
+                        modifiers={{ blocked: blockedDates }}
+                        modifiersClassNames={{ blocked: "rdp-day_blocked" }}
+                        className="st-cal"
+                        style={{
+                           "--rdp-accent-color": "#8A4630",
+                           "--rdp-accent-background-color": "#f5ede9",
+                           "--rdp-today-color": "#8A4630",
+                           "--rdp-range_middle-color": "#8A4630",
+                           "--rdp-day-height": "34px",
+                           "--rdp-day-width": "34px",
+                           "--rdp-day_button-height": "32px",
+                           "--rdp-day_button-width": "32px",
+                           "--rdp-day_button-border-radius": "8px",
+                           "--rdp-nav_button-height": "28px",
+                           "--rdp-nav_button-width": "28px",
+                           "--rdp-nav-height": "2rem",
+                           "--rdp-weekday-padding": "0.2rem 0",
+                           "--rdp-outside-opacity": "0.3",
+                           "--rdp-disabled-opacity": "0.3",
+                           fontSize: "12px",
+                           width: "100%",
+                        } as any}
+                     />
                   </div>
 
+                  {/* Total — slides in when dates are selected */}
                   {nights > 0 && (
                      <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="mb-6 space-y-3"
+                        className="mb-3 space-y-1.5"
                      >
-                        <div className="flex justify-between text-sm text-stone-600">
+                        <div className="flex justify-between text-xs text-stone-500">
                            <span>₹{price.toLocaleString()} × {nights} nights</span>
                            <span>₹{totalAmount.toLocaleString()}</span>
                         </div>
-                        <div className="pt-3 border-t border-stone-100 flex justify-between font-medium text-lg text-stone-800">
+                        <div className="pt-2 border-t border-stone-100 flex justify-between font-semibold text-sm text-stone-800">
                            <span>Total</span>
                            <span>₹{totalAmount.toLocaleString()}</span>
                         </div>
@@ -577,81 +598,98 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                   )}
 
                   <button
-                     className="w-full py-4 rounded-xl bg-accent text-white font-serif italic text-lg hover:bg-[#723a28] transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                     className="w-full py-3.5 rounded-xl bg-accent text-white font-serif italic text-base hover:bg-[#723a28] transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                      disabled={(nights === 0 && !property?.airbnb_url) || bookingLoading}
                      onClick={handleBooking}
                   >
                      {bookingLoading ? "Requesting..." : property?.airbnb_url ? "Book on Airbnb" : "Reserve Sanctuary"}
                   </button>
-                  <p className="text-center text-[10px] text-stone-400 mt-4 uppercase tracking-widest">You won't be charged yet</p>
+
+                  {/* WhatsApp enquiry */}
+                  <a
+                     href={`https://wa.me/917827467208?text=${encodeURIComponent(`Hi Ritu, I want to enquire about your property – ${property.title}`)}`}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="mt-2 w-full py-3 rounded-xl border border-[#25D366]/30 bg-[#25D366]/5 text-[#1a9e4d] font-medium text-sm hover:bg-[#25D366]/10 transition-colors flex items-center justify-center gap-2"
+                  >
+                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                     </svg>
+                     Enquire on WhatsApp
+                  </a>
+
+                  <p className="text-center text-[10px] text-stone-400 mt-2 uppercase tracking-widest">You won't be charged yet</p>
                </div>
             </div>
          </div>
          <Footer />
 
-         {/* Amenities Modal */}
+         {/* Amenities Modal — bottom sheet on mobile, centered dialog on desktop */}
          <AnimatePresence>
             {showAllAmenities && (
-               <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10">
+               <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-6 md:p-10">
                   <motion.div
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
                      exit={{ opacity: 0 }}
                      onClick={() => setShowAllAmenities(false)}
-                     className="absolute inset-0 bg-stone-900/90"
+                     className="absolute inset-0 bg-stone-900/70"
                   />
                   <motion.div
-                     initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                     exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                     className="relative w-full max-w-3xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                     initial={{ y: "100%" }}
+                     animate={{ y: 0 }}
+                     exit={{ y: "100%" }}
+                     transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                     className="relative w-full sm:max-w-2xl bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[85vh]"
                   >
-                     <div className="p-8 border-b border-stone-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                        <h3 className="text-2xl font-serif text-stone-800 italic">What this sanctuary offers</h3>
+                     {/* Drag handle */}
+                     <div className="sm:hidden w-10 h-1 bg-stone-200 rounded-full mx-auto mt-3 mb-1 shrink-0" />
+
+                     {/* Header */}
+                     <div className="px-5 py-4 sm:p-6 border-b border-stone-100 flex justify-between items-center bg-white sticky top-0 z-10 shrink-0">
+                        <h3 className="text-base sm:text-xl font-serif text-stone-800 italic">What this sanctuary offers</h3>
                         <button
                            onClick={() => setShowAllAmenities(false)}
-                           className="p-3 rounded-full hover:bg-stone-50 transition-colors"
+                           className="p-2 rounded-full hover:bg-stone-50 transition-colors"
                         >
-                           <X className="w-6 h-6 text-stone-400" />
+                           <X className="w-5 h-5 text-stone-400" />
                         </button>
                      </div>
-                     <div className="p-8 md:p-12 overflow-y-auto custom-scrollbar">
-                        <div className="space-y-12">
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                              {property.amenities.map((item: string, idx: number) => {
-                                 const getAmenityIcon = (name: string) => {
-                                    const n = name.toLowerCase();
-                                    if (n.includes('wifi')) return <Wifi className="w-6 h-6" />;
-                                    if (n.includes('tv')) return <Tv className="w-6 h-6" />;
-                                    if (n.includes('kitchen')) return <UtensilsCrossed className="w-6 h-6" />;
-                                    if (n.includes('washing machine')) return <WashingMachine className="w-6 h-6" />;
-                                    if (n.includes('air conditioning') || n.includes('ac')) return <Wind className="w-6 h-6" />;
-                                    if (n.includes('pool')) return <Waves className="w-6 h-6" />;
-                                    if (n.includes('parking')) return <Car className="w-6 h-6" />;
-                                    if (n.includes('gym')) return <Dumbbell className="w-6 h-6" />;
-                                    if (n.includes('work')) return <Briefcase className="w-6 h-6" />;
-                                    if (n.includes('shampoo')) return <Droplets className="w-6 h-6" />;
-                                    if (n.includes('hot water')) return <CloudRain className="w-6 h-6" />;
-                                    if (n.includes('bed linen')) return <Bed className="w-6 h-6" />;
-                                    if (n.includes('balcony') || n.includes('patio')) return <Layout className="w-6 h-6" />;
-                                    if (n.includes('lift')) return <ArrowUp className="w-6 h-6" />;
-                                    if (n.includes('camera') || n.includes('security')) return <Cctv className="w-6 h-6" />;
-                                    if (n.includes('smoke alarm')) return <Bell className="w-6 h-6" />;
-                                    if (n.includes('first aid')) return <PlusCircle className="w-6 h-6" />;
-                                    if (n.includes('fire extinguisher')) return <Flame className="w-6 h-6" />;
-                                    return <Check className="w-6 h-6" />;
-                                 };
 
-                                 return (
-                                    <div key={idx} className="flex items-center gap-5 text-stone-700 pb-4 border-b border-stone-50">
-                                       <div className="text-stone-400">
-                                          {getAmenityIcon(item)}
-                                       </div>
-                                       <span className="text-lg font-light">{item}</span>
-                                    </div>
-                                 );
-                              })}
-                           </div>
+                     {/* Amenity list */}
+                     <div className="overflow-y-auto overscroll-contain px-5 py-4 sm:p-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
+                           {property.amenities.map((item: string, idx: number) => {
+                              const getAmenityIcon = (name: string) => {
+                                 const n = name.toLowerCase();
+                                 if (n.includes('wifi')) return <Wifi className="w-4 h-4" />;
+                                 if (n.includes('tv')) return <Tv className="w-4 h-4" />;
+                                 if (n.includes('kitchen')) return <UtensilsCrossed className="w-4 h-4" />;
+                                 if (n.includes('washing machine')) return <WashingMachine className="w-4 h-4" />;
+                                 if (n.includes('air conditioning') || n.includes('ac')) return <Wind className="w-4 h-4" />;
+                                 if (n.includes('pool')) return <Waves className="w-4 h-4" />;
+                                 if (n.includes('parking')) return <Car className="w-4 h-4" />;
+                                 if (n.includes('gym')) return <Dumbbell className="w-4 h-4" />;
+                                 if (n.includes('work')) return <Briefcase className="w-4 h-4" />;
+                                 if (n.includes('shampoo')) return <Droplets className="w-4 h-4" />;
+                                 if (n.includes('hot water')) return <CloudRain className="w-4 h-4" />;
+                                 if (n.includes('bed linen')) return <Bed className="w-4 h-4" />;
+                                 if (n.includes('balcony') || n.includes('patio')) return <Layout className="w-4 h-4" />;
+                                 if (n.includes('lift')) return <ArrowUp className="w-4 h-4" />;
+                                 if (n.includes('camera') || n.includes('security')) return <Cctv className="w-4 h-4" />;
+                                 if (n.includes('smoke alarm')) return <Bell className="w-4 h-4" />;
+                                 if (n.includes('first aid')) return <PlusCircle className="w-4 h-4" />;
+                                 if (n.includes('fire extinguisher')) return <Flame className="w-4 h-4" />;
+                                 return <Check className="w-4 h-4" />;
+                              };
+
+                              return (
+                                 <div key={idx} className="flex items-center gap-3 py-3 border-b border-stone-100 text-stone-700">
+                                    <div className="text-stone-400 shrink-0">{getAmenityIcon(item)}</div>
+                                    <span className="text-sm font-light">{item}</span>
+                                 </div>
+                              );
+                           })}
                         </div>
                      </div>
                   </motion.div>

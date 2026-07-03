@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { MapPin, ArrowRight } from "lucide-react";
 import { publicService } from "../services/publicService";
-import { preloadPropertyImages, optimizeImageUrl } from "../utils/preload";
+import { preloadPropertyImages, optimizeImageUrl, markImageLoaded, imageLoadingAttr } from "../utils/preload";
 
 export default function PropertyCollection() {
   const [properties, setProperties] = useState<any[]>([]);
@@ -127,7 +127,8 @@ export default function PropertyCollection() {
                 className={`absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ${isActive ? 'scale-105' : 'scale-110'} ${p.isPlaceholder ? 'grayscale brightness-75 contrast-[1.1]' : ''}`}
                 referrerPolicy="no-referrer"
                 decoding="async"
-                loading={idx === 0 ? "eager" : "lazy"}
+                loading={idx === 0 ? "eager" : imageLoadingAttr(image)}
+                onLoad={() => markImageLoaded(image)}
               />
 
               {/* Content Overlays */}
