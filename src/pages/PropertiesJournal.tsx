@@ -92,20 +92,16 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
       <Navbar onBookClick={onBookClick} />
 
       {/* ── MOBILE: fixed full-screen, no vertical scroll ── */}
-      <div className="lg:hidden fixed inset-0 flex flex-col bg-background" style={{ paddingTop: "56px" }}>
+      <div className="lg:hidden fixed inset-0 flex flex-col bg-background" style={{ paddingTop: "72px" }}>
 
         {/* Header strip */}
-        <div className="px-5 pt-3 pb-3 shrink-0">
-          <div className="flex items-center justify-between mb-2.5">
-            <p className="text-[11px] font-bold uppercase tracking-[0.45em] text-stone-400">Our Properties</p>
-            <span className="text-[9px] text-stone-300 uppercase tracking-wider">{filteredProperties.length} stays</span>
-          </div>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        <div className="px-3 pt-3 pb-1 shrink-0">
+          <div className="flex flex-wrap justify-center gap-1.5 py-1">
             {filters.map(filter => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                className={`px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all duration-300 ${
                   activeFilter === filter
                     ? "bg-accent text-white shadow-sm shadow-accent/30"
                     : "bg-stone-100/80 text-stone-400"
