@@ -6,6 +6,7 @@ import Overview from "../components/admin/Overview";
 import ReviewManager from "../components/admin/ReviewManager";
 import PropertyEditor from "../components/admin/PropertyEditor";
 import CMSManager from "../components/admin/CMSManager";
+import ContactManager from "../components/admin/ContactManager";
 import ConfirmModal from "../components/admin/ConfirmModal";
 import FocusBox from "../components/FocusBox";
 import { adminService } from "../services/adminService";
@@ -106,6 +107,7 @@ export default function AdminDashboard() {
             {activeTab === "overview" && <Overview />}
             {activeTab === "reviews" && <ReviewManager />}
             {activeTab === "cms" && <CMSManager />}
+            {activeTab === "contact" && <ContactManager />}
           </div>
         )}
 
@@ -140,6 +142,7 @@ export default function AdminDashboard() {
 
           {activeTab === "reviews" && <div className="flex-grow overflow-y-auto"><ReviewManager /></div>}
           {activeTab === "cms" && <div className="flex-grow overflow-y-auto"><CMSManager /></div>}
+          {activeTab === "contact" && <div className="flex-grow overflow-y-auto"><ContactManager /></div>}
         </FocusBox>
       </main>
 

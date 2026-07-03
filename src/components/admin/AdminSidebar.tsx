@@ -1,9 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
-import { 
-  LayoutDashboard, 
-  Home, 
-  MessageSquare, 
-  LogOut 
+import {
+  LayoutDashboard,
+  Home,
+  MessageSquare,
+  Phone,
+  LogOut
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -18,6 +19,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarPr
     { id: "properties", label: "My Properties", icon: Home },
     { id: "reviews", label: "Guest Reviews", icon: MessageSquare },
     { id: "cms", label: "Home Settings", icon: LayoutDashboard },
+    { id: "contact", label: "Contact", icon: Phone },
   ];
 
   const handleLogout = () => {

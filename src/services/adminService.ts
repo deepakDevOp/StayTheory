@@ -81,5 +81,16 @@ export const adminService = {
   updateCMSContent: async (sectionKey: string, data: any) => {
     const response = await api.patch(`/cms/home/${sectionKey}`, data);
     return response.data;
-  }
+  },
+
+  // Contact settings
+  getContactSettings: async () => {
+    const response = await api.get("/contact");
+    return response.data;
+  },
+
+  updateContactSettings: async (data: any) => {
+    const response = await api.patch("/contact", data);
+    return response.data;
+  },
 };

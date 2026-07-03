@@ -52,5 +52,11 @@ export const publicService = {
   submitReview: async (data: any) => {
     const response = await api.post("/reviews", data);
     return response.data;
-  }
+  },
+
+  // Contact settings (public read)
+  getContactSettings: async () => {
+    const response = await api.get("/contact");
+    return response.data;
+  },
 };
