@@ -8,15 +8,15 @@ export default function Footer() {
           Stay Theory
         </div>
         
-        <div className="flex flex-wrap justify-center gap-10">
-          <Link to="/privacy"       className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Privacy</Link>
-          <Link to="/terms"         className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Terms</Link>
-          <Link to="/sustainability" className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Sustainability</Link>
-          <Link to="/contact"       className="font-serif text-[10px] tracking-widest uppercase text-stone-400 hover:text-accent transition-colors">Contact</Link>
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
+          <Link to="/privacy"        className="text-[10px] tracking-wider uppercase text-stone-400 hover:text-accent transition-colors">Privacy</Link>
+          <Link to="/terms"          className="text-[10px] tracking-wider uppercase text-stone-400 hover:text-accent transition-colors">Terms</Link>
+          <Link to="/sustainability" className="text-[10px] tracking-wider uppercase text-stone-400 hover:text-accent transition-colors">Sustainability</Link>
+          <Link to="/contact"        className="text-[10px] tracking-wider uppercase text-stone-400 hover:text-accent transition-colors">Contact</Link>
         </div>
-        
-        <div className="font-serif text-[10px] tracking-widest uppercase text-stone-400">
-          © 2024 STAY THEORY. A SANCTUARY FOR THE SENSES.
+
+        <div className="text-[10px] tracking-wider uppercase text-stone-400 text-center">
+          © 2024 Stay Theory. A sanctuary for the senses.
         </div>
       </div>
     </footer>

@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "motion/react";
+﻿import { motion, AnimatePresence } from "motion/react";
 import { X, ExternalLink, ShieldCheck, Globe } from "lucide-react";
 import api from "../services/api";
 

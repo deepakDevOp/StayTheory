@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Mail, Instagram, ExternalLink } from "lucide-react";
 import { motion } from "motion/react";

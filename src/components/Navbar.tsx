@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, useScroll } from "motion/react";
+﻿import { motion, AnimatePresence, useScroll } from "motion/react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Sparkles, Home, Mail, CalendarCheck, Instagram, ArrowRight } from "lucide-react";
@@ -128,7 +128,7 @@ export default function Navbar({ onBookClick }: NavbarProps) {
             >
               {/* ── Branded header with gradient ── */}
               <div className="relative px-5 pt-5 pb-6 overflow-hidden shrink-0"
-                style={{ background: "linear-gradient(135deg, #8A4630 0%, #6b3425 60%, #3d1e14 100%)" }}>
+                style={{ background: "linear-gradient(135deg, #8A4630 0%, #723a28 60%, #3d1e14 100%)" }}>
                 {/* Decorative circles */}
                 <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/5" />
                 <div className="absolute top-4 right-8 w-10 h-10 rounded-full bg-white/8" />
@@ -259,7 +259,7 @@ export default function Navbar({ onBookClick }: NavbarProps) {
                 <button
                   onClick={() => { setIsMenuOpen(false); onBookClick(); }}
                   className="w-full py-3.5 rounded-2xl font-bold text-[10px] uppercase tracking-[0.25em] flex items-center justify-center gap-2 transition-all active:scale-95 text-white shadow-lg shadow-primary/25"
-                  style={{ background: "linear-gradient(135deg, #8A4630 0%, #6b3425 100%)" }}
+                  style={{ background: "linear-gradient(135deg, #8A4630 0%, #723a28 100%)" }}
                 >
                   <CalendarCheck className="w-3.5 h-3.5" />
                   Book a Stay

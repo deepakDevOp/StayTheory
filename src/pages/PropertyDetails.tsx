@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -607,7 +607,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
 
                   {/* WhatsApp enquiry */}
                   <a
-                     href={`https://wa.me/917827467208?text=${encodeURIComponent(`Hi Ritu, I want to enquire about your property – ${property.title}`)}`}
+                     href={`https://wa.me/917827467208?text=${encodeURIComponent(`Hi Ritu, I want to enquire about your property ”“ ${property.title}`)}`}
                      target="_blank"
                      rel="noopener noreferrer"
                      className="mt-2 w-full py-3 rounded-xl border border-[#25D366]/30 bg-[#25D366]/5 text-[#1a9e4d] font-medium text-sm hover:bg-[#25D366]/10 transition-colors flex items-center justify-center gap-2"

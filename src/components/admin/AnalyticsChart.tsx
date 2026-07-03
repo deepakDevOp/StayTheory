@@ -1,4 +1,4 @@
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+﻿import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const data = [
   { date: "May 1", visitors: 820, bookings: 12 },
@@ -21,8 +21,8 @@ export default function AnalyticsChart({ data = [] }: { data?: any[] }) {
               <stop offset="95%" stopColor="#d6d3d1" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8a4630" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#8a4630" stopOpacity={0} />
+              <stop offset="5%" stopColor="#8A4630" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#8A4630" stopOpacity={0} />
             </linearGradient>
           </defs>
           <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#a8a29e' }} dy={10} />
@@ -32,7 +32,7 @@ export default function AnalyticsChart({ data = [] }: { data?: any[] }) {
             itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
             labelStyle={{ color: '#a8a29e', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}
           />
-          <Area type="monotone" dataKey="total" name="Total Activity" stroke="#8a4630" fillOpacity={1} fill="url(#colorBookings)" />
+          <Area type="monotone" dataKey="total" name="Total Activity" stroke="#8A4630" fillOpacity={1} fill="url(#colorBookings)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
