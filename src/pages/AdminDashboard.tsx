@@ -82,28 +82,56 @@ export default function AdminDashboard() {
     <div className="h-[100dvh] w-full bg-background flex flex-col md:flex-row overflow-hidden fixed inset-0">
       <AdminSidebar activeTab={activeTab} setActiveTab={handleTabChange} />
 
-      <main className="flex-grow flex flex-col min-w-0 overflow-y-auto md:overflow-hidden relative pb-[72px] md:pb-0">
-        <FocusBox className="max-w-7xl mx-auto w-full flex flex-col flex-grow px-4 md:px-12 lg:px-16 py-6 md:py-10 h-full min-h-0">
+      <main className="flex-grow flex flex-col min-w-0 overflow-hidden relative min-h-0">
+
+        {/* ── MOBILE: properties tab = full-screen 3D carousel ── */}
+        {activeTab === "properties" && (
+          <div className="md:hidden absolute inset-0 pb-[72px] flex flex-col">
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center italic text-stone-400">Loading...</div>
+            ) : (
+              <PropertyGrid
+                properties={properties}
+                onEdit={handleEditProperty}
+                onPhotos={handleManagePhotos}
+                onAddClick={handleAddProperty}
+              />
+            )}
+          </div>
+        )}
+
+        {/* ── MOBILE: other tabs = normal scrollable layout ── */}
+        {activeTab !== "properties" && (
+          <div className="md:hidden flex-grow overflow-y-auto px-4 py-6 pb-[86px]">
+            {activeTab === "overview" && <Overview />}
+            {activeTab === "reviews" && <ReviewManager />}
+            {activeTab === "cms" && <CMSManager />}
+          </div>
+        )}
+
+        {/* ── DESKTOP: all tabs via FocusBox ── */}
+        <FocusBox className="hidden md:flex max-w-7xl mx-auto w-full flex-col flex-grow px-12 lg:px-16 py-10 h-full min-h-0">
           {activeTab === "overview" && <div className="flex-grow overflow-y-auto pr-2"><Overview /></div>}
 
           {activeTab === "properties" && (
             <div className="flex-grow flex flex-col min-h-0 overflow-hidden">
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex-shrink-0">
-                <AdminHeader 
-                  title="My Properties" 
-                  subtitle="Curate descriptions, pricing, and amenities for each sanctuary." 
-                  showAddButton 
+                <AdminHeader
+                  title="My Properties"
+                  subtitle="Curate descriptions, pricing, and amenities for each sanctuary."
+                  showAddButton
                   onAddClick={handleAddProperty}
                 />
               </motion.div>
-              <div className="flex-grow flex items-center min-h-0">
+              <div className="flex-grow flex items-center min-h-0 overflow-hidden">
                 {loading ? (
                   <div className="w-full h-full flex items-center justify-center italic text-stone-400">Loading properties...</div>
                 ) : (
-                  <PropertyGrid 
-                    properties={properties} 
-                    onEdit={handleEditProperty} 
-                    onPhotos={handleManagePhotos} 
+                  <PropertyGrid
+                    properties={properties}
+                    onEdit={handleEditProperty}
+                    onPhotos={handleManagePhotos}
+                    onAddClick={handleAddProperty}
                   />
                 )}
               </div>
@@ -111,9 +139,7 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === "reviews" && <div className="flex-grow overflow-y-auto"><ReviewManager /></div>}
-          
           {activeTab === "cms" && <div className="flex-grow overflow-y-auto"><CMSManager /></div>}
-
         </FocusBox>
       </main>
 
