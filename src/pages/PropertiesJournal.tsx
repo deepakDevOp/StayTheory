@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { MapPin, Users, Star, ArrowRight, Shrub, LayoutGrid } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import PropertyCarousel from "../components/PropertyCarousel";
 import { publicService } from "../services/publicService";
 import { preloadPropertyImages } from "../utils/preload";
 
@@ -12,23 +11,183 @@ interface PropertiesJournalProps {
   onBookClick: (prop?: any) => void;
 }
 
+const swipePower = (offset: number, velocity: number) => Math.abs(offset) * velocity;
+
+function MobileSlider({ properties, activeIdx, setActiveIdx, navigate }: {
+  properties: any[];
+  activeIdx: number;
+  setActiveIdx: (i: number) => void;
+  navigate: (path: string) => void;
+}) {
+  const total = properties.length;
+
+  const prev = useCallback(() => setActiveIdx((activeIdx - 1 + total) % total), [activeIdx, total]);
+  const next = useCallback(() => setActiveIdx((activeIdx + 1) % total), [activeIdx, total]);
+
+  const variants = useMemo(() => ({
+    center:      { x: "0%",    scale: 1,    opacity: 1,    zIndex: 10, rotateY: 0 },
+    left:        { x: "-84%",  scale: 0.84, opacity: 0.45, zIndex: 5,  rotateY: 12 },
+    right:       { x: "84%",   scale: 0.84, opacity: 0.45, zIndex: 5,  rotateY: -12 },
+    hiddenLeft:  { x: "-120%", scale: 0.65, opacity: 0,    zIndex: 0,  rotateY: 20 },
+    hiddenRight: { x: "120%",  scale: 0.65, opacity: 0,    zIndex: 0,  rotateY: -20 },
+  }), []);
+
+  const getVariant = (idx: number) => {
+    let offset = idx - activeIdx;
+    if (offset < -total / 2) offset += total;
+    if (offset > total / 2) offset -= total;
+    if (offset === 0) return "center";
+    if (offset === -1) return "left";
+    if (offset === 1) return "right";
+    return offset < 0 ? "hiddenLeft" : "hiddenRight";
+  };
+
+  const active = properties[activeIdx];
+  const activeImage = active?.coverImage || active?.images?.find((i: any) => i.is_primary)?.url || active?.images?.[0]?.url || "";
+
+  return (
+    <div className="relative">
+      {/* Ambient blurred background — transitions with active card */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <AnimatePresence mode="sync">
+          <motion.img
+            key={activeIdx}
+            src={activeImage}
+            className="absolute inset-0 w-full h-full object-cover scale-125"
+            style={{ filter: "blur(48px)", opacity: 0 }}
+            animate={{ opacity: 0.28 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.9 }}
+            aria-hidden
+            decoding="async"
+          />
+        </AnimatePresence>
+        {/* Gradient fade to background at top and bottom */}
+        <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent" />
+      </div>
+
+      {/* Card stage */}
+      <div
+        className="relative flex items-center justify-center overflow-hidden"
+        style={{ height: "70dvh", perspective: "1100px" }}
+      >
+        {properties.map((property, idx) => {
+          const variant = getVariant(idx);
+          const isActive = variant === "center";
+          const image = property.coverImage || property.images?.find((i: any) => i.is_primary)?.url || property.images?.[0]?.url || "";
+          const priceVal = property.base_nightly_rate || 0;
+          const price = priceVal > 0 ? `₹${parseFloat(String(priceVal)).toLocaleString()}` : null;
+
+          return (
+            <motion.div
+              key={property.id}
+              className="absolute w-[84vw] h-[62dvh] rounded-[2rem] overflow-hidden cursor-pointer"
+              style={{ willChange: "transform, opacity", boxShadow: isActive ? "0 32px 80px rgba(0,0,0,0.45)" : "0 8px 24px rgba(0,0,0,0.2)" }}
+              variants={variants}
+              initial={false}
+              animate={variant}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              onClick={() => {
+                if (variant === "left") prev();
+                else if (variant === "right") next();
+                else navigate(`/property/${property.slug}`);
+              }}
+              drag={isActive ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.06}
+              dragMomentum={false}
+              onDragEnd={(_, { offset, velocity }) => {
+                const power = swipePower(offset.x, velocity.x);
+                if (power < -8000 || offset.x < -50) next();
+                else if (power > 8000 || offset.x > 50) prev();
+              }}
+            >
+              <img
+                src={image}
+                alt={property.title}
+                className="absolute inset-0 w-full h-full object-cover"
+                loading={idx === 0 ? "eager" : "lazy"}
+                decoding="async"
+                referrerPolicy="no-referrer"
+              />
+              {/* Gradient overlays */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/10 to-black/20" />
+
+              {/* Top badge */}
+              <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+                <span className="px-2.5 py-1 rounded-full bg-black/40 border border-white/15 text-white text-[8px] font-bold uppercase tracking-widest backdrop-blur-sm">
+                  {property.property_type || "Retreat"}
+                </span>
+                {price && (
+                  <span className="px-2.5 py-1 rounded-full bg-white/95 text-accent text-[10px] font-serif italic font-semibold shadow-lg">
+                    {price}<span className="text-[8px] font-sans not-italic text-stone-400 ml-0.5">/night</span>
+                  </span>
+                )}
+              </div>
+
+              {/* Bottom info — fades in only on active card */}
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 p-5"
+                animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 14 }}
+                transition={{ duration: 0.35, delay: isActive ? 0.1 : 0 }}
+              >
+                <p className="flex items-center gap-1.5 text-white/60 text-[9px] uppercase tracking-[0.3em] mb-1.5">
+                  <MapPin className="w-2.5 h-2.5" />{property.city}
+                </p>
+                <h3 className="text-white text-[22px] font-serif italic leading-tight mb-3">{property.title}</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-white/60">
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3 h-3" />
+                      <span className="text-[9px]">{property.max_guests || 2} guests</span>
+                    </div>
+                    <div className="w-px h-3 bg-white/20" />
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-amber-300 text-amber-300" />
+                      <span className="text-[9px] text-amber-300 font-bold">4.9</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
+                    <span className="text-white text-[9px] font-bold uppercase tracking-wider">View</span>
+                    <ArrowRight className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Dot indicators */}
+      {total > 1 && (
+        <div className="flex justify-center items-center gap-2 pb-4 pt-1">
+          {properties.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIdx(i)}
+              className="p-1.5 -m-1.5 cursor-pointer"
+              style={{ background: "none", border: "none" }}
+            >
+              <span
+                className="block h-1 rounded-full bg-accent transition-all duration-300"
+                style={{ width: i === activeIdx ? 20 : 6, opacity: i === activeIdx ? 1 : 0.25 }}
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PropertiesJournal({ onBookClick }: PropertiesJournalProps) {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [activeIdx, setActiveIdx] = useState(0);
   const navigate = useNavigate();
 
-  // Lock body scroll on mobile
-  useEffect(() => {
-    if (window.innerWidth < 1024) {
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-    }
-    return () => {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-    };
-  }, []);
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -91,20 +250,20 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
     <div className="bg-background min-h-screen flex flex-col">
       <Navbar onBookClick={onBookClick} />
 
-      {/* ── MOBILE: fixed full-screen, no vertical scroll ── */}
-      <div className="lg:hidden fixed inset-0 flex flex-col bg-background" style={{ paddingTop: "72px" }}>
+      {/* ── MOBILE: 3D hero-style slider + scrollable footer ── */}
+      <div className="lg:hidden flex flex-col bg-background">
 
-        {/* Header strip */}
-        <div className="px-3 pt-3 pb-1 shrink-0">
-          <div className="flex flex-wrap justify-center gap-1.5 py-1">
+        {/* Filter chips */}
+        <div className="px-4 pt-3 pb-2.5 border-b border-stone-100">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
             {filters.map(filter => (
               <button
                 key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                onClick={() => { setActiveFilter(filter); setActiveIdx(0); }}
+                className={`shrink-0 px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all duration-300 ${
                   activeFilter === filter
-                    ? "bg-accent text-white shadow-sm shadow-accent/30"
-                    : "bg-stone-100/80 text-stone-400"
+                    ? "bg-accent text-white shadow-sm shadow-accent/20"
+                    : "bg-stone-100 text-stone-400"
                 }`}
               >
                 {filter}
@@ -113,25 +272,23 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
           </div>
         </div>
 
-        {/* Shared carousel — fills remaining height */}
-        <PropertyCarousel
-          properties={filteredProperties}
-          onBookClick={onBookClick}
-          className="flex-1 min-h-0"
-        />
-
-        {/* Compact footer strip */}
-        <div className="shrink-0 border-t border-stone-100 bg-stone-50 px-5 py-3">
-          <div className="flex items-center justify-between">
-            <span className="font-serif italic text-accent text-sm">Stay Theory</span>
-            <div className="flex items-center gap-4">
-              <Link to="/privacy" className="text-[9px] tracking-wider uppercase text-stone-400 hover:text-accent transition-colors">Privacy</Link>
-              <Link to="/terms"   className="text-[9px] tracking-wider uppercase text-stone-400 hover:text-accent transition-colors">Terms</Link>
-              <Link to="/contact" className="text-[9px] tracking-wider uppercase text-stone-400 hover:text-accent transition-colors">Contact</Link>
-            </div>
+        {/* 3D Slider */}
+        {filteredProperties.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <Shrub className="w-10 h-10 text-stone-200 mb-4" />
+            <p className="text-lg font-serif italic text-accent">No sanctuaries found.</p>
           </div>
-          <p className="text-[8px] text-stone-300 uppercase tracking-wider mt-1">© 2024 Stay Theory. A sanctuary for the senses.</p>
-        </div>
+        ) : (
+          <MobileSlider
+            properties={filteredProperties}
+            activeIdx={activeIdx}
+            setActiveIdx={setActiveIdx}
+            navigate={navigate}
+          />
+        )}
+
+        {/* Dark footer — scroll down to see it */}
+        <Footer />
       </div>
 
       {/* ── DESKTOP: sidebar + scrollable grid ── */}
@@ -235,7 +392,9 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
         </main>
       </div>
 
-      <Footer />
+      <div className="hidden lg:block">
+        <Footer />
+      </div>
     </div>
   );
 }
