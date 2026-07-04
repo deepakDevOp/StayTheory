@@ -5,6 +5,17 @@ import { useNavigate } from "react-router-dom";
 import { publicService } from "../services/publicService";
 import { preloadPropertyImages, optimizeImageUrl, markImageLoaded, imageLoadingAttr } from "../utils/preload";
 
+function useIsVisible(ref: React.RefObject<HTMLElement | null>) {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    if (!ref.current) return;
+    const obs = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0 });
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [ref]);
+  return visible;
+}
+
 const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
@@ -15,6 +26,8 @@ export default function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const lastWheelTime = useRef(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const isVisible = useIsVisible(sectionRef);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,10 +67,10 @@ export default function Hero() {
   }, [properties.length]);
 
   useEffect(() => {
-    if (properties.length === 0) return;
+    if (properties.length === 0 || !isVisible) return;
     const timer = setInterval(nextSlide, 4000);
     return () => clearInterval(timer);
-  }, [nextSlide, properties.length]);
+  }, [nextSlide, properties.length, isVisible]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     if (Math.abs(e.deltaX) < Math.abs(e.deltaY) || Math.abs(e.deltaX) < 20) return;
@@ -107,6 +120,7 @@ export default function Hero() {
 
   return (
     <section
+      ref={sectionRef}
       className="relative h-[calc(100dvh-72px)] flex flex-col justify-center overflow-hidden bg-surface-dim/30"
       onWheel={handleWheel}
     >
@@ -212,9 +226,12 @@ export default function Hero() {
               <button
                 key={idx}
                 onClick={() => setActiveIndex(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${activeIndex === idx ? "w-8 bg-on-surface" : "w-2 bg-on-surface/30 hover:bg-on-surface/50"}`}
                 aria-label={`Go to slide ${idx + 1}`}
-              />
+                className="p-2 -m-2 cursor-pointer"
+                style={{ background: "none", border: "none" }}
+              >
+                <span className={`block h-1.5 rounded-full transition-all duration-300 ${activeIndex === idx ? "w-8 bg-white" : "w-2 bg-white/35 hover:bg-white/55"}`} />
+              </button>
             ))}
           </div>
         </>

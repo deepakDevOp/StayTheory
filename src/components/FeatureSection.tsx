@@ -44,12 +44,7 @@ export default function FeatureSection() {
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="flex items-center gap-4 mb-8">
-              <motion.div 
-                initial={{ width: 0 }}
-                whileInView={{ width: 48 }}
-                transition={{ duration: 1, delay: 0.5 }}
-                className="h-[1px] bg-primary/40" 
-              />
+              <div className="h-[1px] w-12 bg-primary/40" />
               <span className="uppercase text-[9px] tracking-[0.5em] font-bold text-primary opacity-70">The Interior</span>
             </div>
             
@@ -95,26 +90,22 @@ export default function FeatureSection() {
         <div className="lg:col-span-6 flex justify-center lg:justify-end relative">
           <div className="relative group">
             {/* Background Frame Ornament */}
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0, rotate: -2 }}
-              whileInView={{ scale: 1, opacity: 1, rotate: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute -top-10 -left-10 -right-10 -bottom-10 border border-primary/5 rounded-[3rem] -z-10" 
-            />
+            <div className="absolute -top-10 -left-10 -right-10 -bottom-10 border border-primary/5 rounded-[3rem] -z-10" />
 
-            <motion.div 
+            <motion.div
               className="relative rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)]"
-              initial={{ opacity: 0, scale: 0.9, rotateY: 10 }}
-              whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <motion.img 
-                src={displayContent.image_url} 
-                alt={displayContent.title} 
+              <img
+                src={displayContent.image_url}
+                alt={displayContent.title}
                 className="w-full max-w-[480px] aspect-[4/5] object-cover transition-transform duration-[3s] group-hover:scale-110"
                 referrerPolicy="no-referrer"
+                loading="lazy"
+                decoding="async"
               />
               {/* Subtle Overlay Shimmer */}
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />

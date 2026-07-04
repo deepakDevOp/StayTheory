@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { Link } from "react-router-dom";
 import { Mail, Instagram, ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
@@ -51,7 +51,7 @@ export default function Contact() {
 
   // Build contacts list dynamically from API data
   type ContactEntry = {
-    icon: React.ElementType;
+    icon: ComponentType<{ className?: string }>;
     label: string;
     value: string;
     sub: string;

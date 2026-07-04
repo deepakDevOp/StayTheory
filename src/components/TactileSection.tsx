@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Moon } from "lucide-react";
+import { motion } from "motion/react";
 import FocusBox from "./FocusBox";
 import api from "../services/api";
 
@@ -40,29 +41,94 @@ export default function TactileSection() {
   };
 
   return (
-    <section className="max-w-[1440px] mx-auto px-6 md:px-16 py-20 md:py-0 md:min-h-[calc(100vh-72px)] flex items-center">
-      <FocusBox className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center w-full">
-        <div className="md:col-span-7 relative">
-          <img 
-            src={displayMain.image_url} 
-            alt={displayMain.title} 
-            className="w-full md:max-h-[70vh] object-cover rounded-xl shadow-2xl"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-        <div className="md:col-span-5 flex flex-col gap-6">
-          <img 
-            src={displayDetail.image_url} 
-            alt="Detail of textures" 
-            className="w-full aspect-[4/3] md:aspect-video object-cover rounded-xl shadow-2xl"
-            referrerPolicy="no-referrer"
-          />
-          <div className="p-8 bg-surface-container-low rounded-xl border border-primary/5">
-            <Moon className="w-5 h-5 text-primary mb-3" />
-            <h3 className="text-xl font-serif mb-3">{displayDetail.title}</h3>
-            <p className="text-sm text-on-surface-variant leading-relaxed">
-              {displayDetail.subtitle}
-            </p>
+    <section className="relative py-16 md:py-0 md:min-h-[calc(100vh-72px)] flex items-center overflow-hidden bg-stone-950">
+      {/* Ambient glows */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-accent/10 rounded-full blur-[80px]" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-stone-900/50 rounded-full blur-[120px]" />
+      </div>
+
+      <FocusBox className="max-w-[1440px] mx-auto px-6 md:px-16 w-full relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 items-center w-full">
+
+          {/* Main image */}
+          <div className="md:col-span-7 relative">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/50 group"
+            >
+              <img
+                src={displayMain.image_url}
+                alt={displayMain.title}
+                className="w-full md:max-h-[62vh] object-cover transition-transform duration-[3s] group-hover:scale-105"
+                referrerPolicy="no-referrer"
+                loading="lazy"
+                decoding="async"
+              />
+              {/* Overlay gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-transparent to-transparent pointer-events-none" />
+
+              {/* Floating label */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="absolute bottom-4 left-4 right-4 flex items-center justify-between"
+              >
+                <div className="px-3 py-2 rounded-xl border border-white/15 bg-black/40 backdrop-blur-md">
+                  <p className="text-white text-[10px] font-bold uppercase tracking-widest">{displayMain.title}</p>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse-soft" />
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Right column */}
+          <div className="md:col-span-5 flex flex-col gap-4">
+            {/* Detail image */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative rounded-2xl overflow-hidden group shadow-2xl shadow-black/40"
+            >
+              <img
+                src={displayDetail.image_url}
+                alt="Detail of textures"
+                className="w-full aspect-[4/3] md:aspect-video object-cover transition-transform duration-[3s] group-hover:scale-110"
+                referrerPolicy="no-referrer"
+                loading="lazy"
+                decoding="async"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/50 to-transparent pointer-events-none" />
+            </motion.div>
+
+            {/* Text card */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.35 }}
+              className="p-5 rounded-2xl border border-white/8"
+              style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(168,94,70,0.08) 100%)" }}
+            >
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-7 h-7 rounded-full bg-amber-400/15 flex items-center justify-center">
+                  <Moon className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+                <span className="text-[9px] uppercase tracking-[0.35em] font-bold text-stone-500">Design Philosophy</span>
+              </div>
+              <h3 className="text-base md:text-lg font-serif text-white mb-2 italic">{displayDetail.title}</h3>
+              <p className="text-sm text-stone-400 leading-relaxed">
+                {displayDetail.subtitle}
+              </p>
+            </motion.div>
           </div>
         </div>
       </FocusBox>

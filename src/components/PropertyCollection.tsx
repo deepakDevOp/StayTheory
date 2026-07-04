@@ -91,8 +91,8 @@ export default function PropertyCollection() {
           return (
             <motion.div
               key={p.id}
-              className={`relative rounded-[2rem] md:rounded-[3rem] overflow-hidden ${p.isPlaceholder ? 'cursor-default' : 'cursor-pointer'} shadow-2xl shadow-black/5`}
-              style={{ willChange: "flex-grow" }}
+              className={`relative ${isActive ? 'rounded-[2rem]' : 'rounded-xl'} md:rounded-[3rem] overflow-hidden ${p.isPlaceholder ? 'cursor-default' : 'cursor-pointer'} shadow-2xl shadow-black/5`}
+              style={{ willChange: "flex-grow", minHeight: isActive ? undefined : '72px' }}
               onHoverStart={() => {
                 setActiveIndex(idx);
                 setIsHovered(true);
@@ -105,7 +105,7 @@ export default function PropertyCollection() {
               }}
               animate={{
                 flexGrow: isActive ? 6 : 1,
-                flexBasis: isActive ? '20%' : '5%'
+                flexBasis: isActive ? '20%' : '6%'
               }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -120,9 +120,9 @@ export default function PropertyCollection() {
                 }}
               />
 
-              {/* Image — no nested motion wrapper; CSS transition handles the subtle zoom */}
+              {/* Image — stable src (never changes with isActive) to prevent re-fetches on carousel advance */}
               <img
-                src={optimizeImageUrl(image, isActive ? 1200 : 600)}
+                src={optimizeImageUrl(image, 1200)}
                 alt={p.title}
                 className={`absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ${isActive ? 'scale-105' : 'scale-110'} ${p.isPlaceholder ? 'grayscale brightness-75 contrast-[1.1]' : ''}`}
                 referrerPolicy="no-referrer"

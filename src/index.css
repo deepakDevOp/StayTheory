@@ -1,9 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 html {
   scroll-behavior: smooth;
-  /* Prevent font inflation on iOS orientation change */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -21,6 +20,14 @@ html {
   --color-on-secondary: #ffffff;
   --color-background: #fff8f5;
   --color-accent: #A85E46;
+
+  /* Extended palette */
+  --color-gold: #C8963C;
+  --color-gold-light: #E8B84B;
+  --color-sage: #5E7A62;
+  --color-sage-light: #7EA882;
+  --color-coral: #D97060;
+  --color-plum: #7B4B6E;
 
   --font-serif: "Noto Serif", serif;
   --font-sans: "Plus Jakarta Sans", sans-serif;
@@ -41,16 +48,13 @@ html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    /* Prevent horizontal overflow on all pages */
     overflow-x: hidden;
   }
 
-  /* Smooth momentum scrolling on iOS */
   .overflow-y-auto, .overflow-x-auto, .overflow-auto {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* GPU compositing layer for explicitly animated elements only */
   .transform-gpu {
     will-change: transform;
     backface-visibility: hidden;
@@ -60,7 +64,6 @@ html {
     image-rendering: auto;
   }
 
-  /* Prevent iOS zoom on input focus — font-size must be ≥16px */
   input, textarea, select, [contenteditable="true"] {
     caret-color: auto;
     font-size: max(16px, 1em);
@@ -83,6 +86,88 @@ html {
   }
 }
 
+/* ─── Animations ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes scale-in {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-float       { animation: float 6s ease-in-out infinite; }
+.animate-float-slow  { animation: float-slow 8s ease-in-out infinite; }
+.animate-shimmer     { animation: shimmer 3s linear infinite; background-size: 200% auto; }
+.animate-pulse-soft  { animation: pulse-soft 3s ease-in-out infinite; }
+.animate-spin-slow   { animation: spin-slow 20s linear infinite; }
+.animate-scale-in    { animation: scale-in 0.4s ease-out forwards; }
+
+/* ─── Gradient text ─── */
+.gradient-text {
+  background: linear-gradient(135deg, #A85E46 0%, #C8963C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-gold {
+  background: linear-gradient(135deg, #C8963C 0%, #E8B84B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-sage {
+  background: linear-gradient(135deg, #5E7A62 0%, #7EA882 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glass effect ─── */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.glass-dark {
+  background: rgba(20, 15, 10, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ─── Gradient backgrounds ─── */
+.bg-warm-gradient {
+  background: linear-gradient(135deg, #1a0d08 0%, #3d1a10 35%, #6b2d1e 65%, #8A4630 100%);
+}
+.bg-nature-gradient {
+  background: linear-gradient(135deg, #0d1a10 0%, #1e3d20 40%, #2d5c30 70%, #3d7240 100%);
+}
+.bg-sunset-gradient {
+  background: linear-gradient(135deg, #1a0d08 0%, #3d200a 40%, #6b3010 70%, #8A4630 100%);
+}
+
+/* ─── Scrollbar hide ─── */
 .font-serif-italic {
   font-family: "Noto Serif", serif;
   font-style: italic;
@@ -95,3 +180,18 @@ html {
 .hide-scrollbar::-webkit-scrollbar, .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ─── Glowing accents ─── */
+.glow-accent {
+  box-shadow: 0 0 40px rgba(168, 94, 70, 0.3);
+}
+.glow-gold {
+  box-shadow: 0 0 40px rgba(200, 150, 60, 0.3);
+}
+
+/* ─── Section divider ─── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(168, 94, 70, 0.3), transparent);
+}
+
