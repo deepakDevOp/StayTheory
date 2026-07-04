@@ -299,26 +299,46 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
                     <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400">Select Dates</label>
                     {nights > 0 && <span className="text-[10px] bg-accent/10 text-accent px-2 py-1 rounded font-bold uppercase tracking-wider">{nights} Night{nights > 1 ? 's' : ''}</span>}
                   </div>
-                  <div className="booking-calendar border border-stone-100 rounded-xl bg-stone-50/50 overflow-hidden">
+                  <div className="booking-calendar px-1">
                     <style>{`
                       .booking-calendar .rdp-months { max-width: 100%; width: 100%; }
                       .booking-calendar .rdp-month  { width: 100%; }
-                      .booking-calendar .rdp-month_grid { width: 100%; table-layout: fixed; }
+                      .booking-calendar .rdp-month_grid { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 2px; }
                       .booking-calendar .rdp-day { width: auto; }
-                      .booking-calendar .rdp-weekday { font-size: 10px; font-weight: 700; text-transform: uppercase; }
-                      .booking-calendar .rdp-day_button:hover:not(:disabled) { background: #f0e8e4; color: #8A4630; }
-                      .booking-calendar .rdp-day_blocked .rdp-day_button { text-decoration: line-through; text-decoration-color: #c4a8a0; opacity: 0.4; cursor: not-allowed; }
-                      .booking-calendar .rdp-day_blocked .rdp-day_button:hover { background: none; }
+                      .booking-calendar .rdp-month_caption { padding: 0 0 8px 0; }
+                      .booking-calendar .rdp-caption_label { font-family: "Noto Serif", serif; font-style: italic; font-size: 16px; font-weight: 500; color: #1e1b18; letter-spacing: -0.01em; }
+                      .booking-calendar .rdp-nav { gap: 6px; }
+                      .booking-calendar .rdp-button_previous,
+                      .booking-calendar .rdp-button_next { width: 26px; height: 26px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; transition: background 0.15s, transform 0.1s; cursor: pointer; }
+                      .booking-calendar .rdp-button_previous:hover,
+                      .booking-calendar .rdp-button_next:hover { background: #f0e4df; transform: scale(1.1); }
+                      .booking-calendar .rdp-button_previous .rdp-chevron { fill: #8A4630; width: 14px; height: 14px; }
+                      .booking-calendar .rdp-button_next .rdp-chevron { fill: #8A4630; width: 14px; height: 14px; }
+                      .booking-calendar .rdp-weekday { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #c4b0a8; padding: 6px 0; }
+                      .booking-calendar .rdp-day_button { font-size: 12px; font-weight: 500; border-radius: 50%; transition: background 0.12s, color 0.12s, transform 0.1s; }
+                      .booking-calendar .rdp-day_button:hover:not(:disabled) { background: #f0e4df; color: #8A4630; transform: scale(1.05); }
+                      .booking-calendar .rdp-day_range_start .rdp-day_button,
+                      .booking-calendar .rdp-day_range_end .rdp-day_button { background: #8A4630 !important; color: white !important; box-shadow: 0 2px 8px rgba(138,70,48,0.35); }
+                      .booking-calendar .rdp-day_range_middle .rdp-day_button { border-radius: 0; }
+                      .booking-calendar .rdp-day_today:not(.rdp-day_range_start):not(.rdp-day_range_end) .rdp-day_button { font-weight: 800; color: #8A4630; text-decoration: underline; text-underline-offset: 3px; }
+                      .booking-calendar .rdp-day_blocked .rdp-day_button { opacity: 0.25; text-decoration: line-through; cursor: not-allowed; }
+                      .booking-calendar .rdp-day_blocked .rdp-day_button:hover { background: none !important; transform: none; color: inherit; }
+                      .booking-calendar .rdp-day_outside .rdp-day_button { opacity: 0.2; }
 
-                      /* ── Dark mode overrides ── */
-                      html.dark .booking-calendar { --rdp-accent-background-color: rgba(208,112,80,0.18); --rdp-range_middle-background-color: rgba(208,112,80,0.14); }
-                      html.dark .booking-calendar .rdp-month_caption { color: #f0e8e3; }
-                      html.dark .booking-calendar .rdp-weekday { color: #7a6a62; }
+                      /* ── Dark mode ── */
+                      html.dark .booking-calendar { --rdp-accent-background-color: rgba(208,112,80,0.09); }
+                      html.dark .booking-calendar .rdp-caption_label { color: #f0e8e3; }
+                      html.dark .booking-calendar .rdp-weekday { color: #5a4e48; }
                       html.dark .booking-calendar .rdp-day_button { color: #e4dcd6; }
-                      html.dark .booking-calendar .rdp-day_button:hover:not(:disabled) { background: rgba(208,112,80,0.15); color: #d07050; }
-                      html.dark .booking-calendar .rdp-day_outside .rdp-day_button { color: #4a3e38; }
-                      html.dark .booking-calendar .rdp-day_disabled .rdp-day_button { color: #3a3028; }
-                      html.dark .booking-calendar .rdp-day_blocked .rdp-day_button { color: #4a3e38; }
+                      html.dark .booking-calendar .rdp-button_previous:hover,
+                      html.dark .booking-calendar .rdp-button_next:hover { background: rgba(208,112,80,0.15); }
+                      html.dark .booking-calendar .rdp-button_previous .rdp-chevron,
+                      html.dark .booking-calendar .rdp-button_next .rdp-chevron { fill: #d07050; }
+                      html.dark .booking-calendar .rdp-day_button:hover:not(:disabled) { background: rgba(208,112,80,0.18); color: #d07050; }
+                      html.dark .booking-calendar .rdp-day_range_start .rdp-day_button,
+                      html.dark .booking-calendar .rdp-day_range_end .rdp-day_button { background: #d07050 !important; box-shadow: 0 2px 10px rgba(208,112,80,0.4); }
+                      html.dark .booking-calendar .rdp-day_today:not(.rdp-day_range_start):not(.rdp-day_range_end) .rdp-day_button { color: #d07050; }
+                      html.dark .booking-calendar .rdp-day_outside .rdp-day_button { opacity: 0.12; }
                     `}</style>
                     <DayPicker
                       mode="range"
@@ -341,17 +361,18 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
                       numberOfMonths={1}
                       style={{
                         "--rdp-accent-color": "#8A4630",
-                        "--rdp-accent-background-color": "#f5ede9",
+                        "--rdp-accent-background-color": "rgba(138,70,48,0.07)",
                         "--rdp-today-color": "#8A4630",
                         "--rdp-range_middle-color": "#8A4630",
+                        "--rdp-range_middle-background-color": "rgba(138,70,48,0.07)",
                         "--rdp-day-height": "36px",
                         "--rdp-day-width": "36px",
                         "--rdp-day_button-height": "34px",
                         "--rdp-day_button-width": "34px",
-                        "--rdp-day_button-border-radius": "8px",
-                        "--rdp-weekday-padding": "0.2rem 0",
-                        "--rdp-outside-opacity": "0.3",
-                        "--rdp-disabled-opacity": "0.3",
+                        "--rdp-day_button-border-radius": "50%",
+                        "--rdp-weekday-padding": "4px 0",
+                        "--rdp-outside-opacity": "0.2",
+                        "--rdp-disabled-opacity": "0.25",
                         width: "100%",
                         fontSize: "13px",
                       } as React.CSSProperties}

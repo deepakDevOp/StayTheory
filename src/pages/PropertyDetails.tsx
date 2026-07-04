@@ -271,8 +271,8 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                                     onLoad={() => markImageLoaded(img.url)}
                                  />
                                  {isLastInitial && (
-                                     <div className="absolute inset-0 bg-stone-900/60 flex flex-col items-center justify-center text-white group-hover:bg-stone-900/70 transition-all">
-                                        <span className="text-3xl font-serif italic mb-2">+{totalFiltered - 4}</span>
+                                    <div className="absolute inset-0 bg-stone-900/60 flex flex-col items-center justify-center text-white group-hover:bg-stone-900/70 transition-all">
+                                       <span className="text-3xl font-serif italic mb-2">+{totalFiltered - 4}</span>
                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em]">View All Photos</span>
                                     </div>
                                  )}
@@ -475,8 +475,8 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                      <h3 className="text-xl md:text-3xl font-serif font-bold text-stone-800 flex items-center gap-3">
                         Guest Experiences
                      </h3>
-                     <Link 
-                        to={`/reviews?property=${property.id}`} 
+                     <Link
+                        to={`/reviews?property=${property.id}`}
                         className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary border border-primary/20 px-5 py-2.5 rounded-full hover:bg-primary hover:text-white transition-all shadow-sm shrink-0"
                      >
                         View All Reviews
@@ -484,7 +484,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                   </div>
                   {propertyReviews && propertyReviews.length > 0 ? (
                      <div className="relative">
-                        <div 
+                        <div
                            className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-6 -mx-4 px-4 md:mx-0 md:px-0 no-scrollbar"
                            onScroll={(e) => {
                               const el = e.currentTarget;
@@ -495,38 +495,38 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                            }}
                         >
                            {propertyReviews.map((review: any, idx: number) => (
-                           <div key={idx} className="snap-center snap-always shrink-0 w-[85vw] sm:w-80 md:w-96 p-6 md:p-8 bg-white rounded-[2rem] border border-stone-100 flex flex-col shadow-xl shadow-stone-200/30 hover:shadow-2xl hover:shadow-stone-200/50 transition-all duration-300 relative overflow-hidden group">
-                              {/* Decorative quote mark */}
-                              <div className="absolute top-4 right-6 text-[5rem] font-serif text-stone-100 group-hover:text-primary/10 transition-colors pointer-events-none select-none leading-none">
-                                 "
-                              </div>
-                              
-                              <div className="flex gap-1 mb-5 relative z-10">
-                                 {[...Array(Number(review.rating) || 0)].map((_, i) => (
-                                    <Star key={i} className="w-3.5 h-3.5 fill-primary text-primary" />
-                                 ))}
-                              </div>
-                              <p className="text-stone-600 font-serif italic text-[15px] md:text-lg mb-6 leading-relaxed flex-grow relative z-10">"{review.comment || review.text}"</p>
-                              
-                              <div className="flex items-center gap-3 relative z-10">
-                                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                   {(review.author_name || review.author || "G")[0].toUpperCase()}
+                              <div key={idx} className="snap-center snap-always shrink-0 w-[85vw] sm:w-80 md:w-96 p-6 md:p-8 bg-white rounded-[2rem] border border-stone-100 flex flex-col shadow-xl shadow-stone-200/30 hover:shadow-2xl hover:shadow-stone-200/50 transition-all duration-300 relative overflow-hidden group">
+                                 {/* Decorative quote mark */}
+                                 <div className="absolute top-4 right-6 text-[5rem] font-serif text-stone-100 group-hover:text-primary/10 transition-colors pointer-events-none select-none leading-none">
+                                    "
                                  </div>
-                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-700">{review.author_name || review.author || "Guest"}</p>
-                                    <p className="text-[9px] text-stone-400 mt-0.5">Verified Stay</p>
+
+                                 <div className="flex gap-1 mb-5 relative z-10">
+                                    {[...Array(Number(review.rating) || 0)].map((_, i) => (
+                                       <Star key={i} className="w-3.5 h-3.5 fill-primary text-primary" />
+                                    ))}
+                                 </div>
+                                 <p className="text-stone-600 font-serif italic text-[15px] md:text-lg mb-6 leading-relaxed flex-grow relative z-10">"{review.comment || review.text}"</p>
+
+                                 <div className="flex items-center gap-3 relative z-10">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                       {(review.author_name || review.author || "G")[0].toUpperCase()}
+                                    </div>
+                                    <div>
+                                       <p className="text-[10px] font-bold uppercase tracking-widest text-stone-700">{review.author_name || review.author || "Guest"}</p>
+                                       <p className="text-[9px] text-stone-400 mt-0.5">Verified Stay</p>
+                                    </div>
                                  </div>
                               </div>
-                           </div>
-                        ))}
+                           ))}
                         </div>
-                        
+
                         {propertyReviews.length > 1 && (
                            <div className="flex justify-center gap-2 mt-2 mb-4">
                               {propertyReviews.map((_: any, i: number) => (
-                                 <div 
-                                    key={i} 
-                                    className={`h-1.5 rounded-full transition-all duration-300 ${i === activeReviewIndex ? "w-6 bg-primary" : "w-1.5 bg-stone-200"}`} 
+                                 <div
+                                    key={i}
+                                    className={`h-1.5 rounded-full transition-all duration-300 ${i === activeReviewIndex ? "w-6 bg-primary" : "w-1.5 bg-stone-200"}`}
                                  />
                               ))}
                            </div>
@@ -547,47 +547,67 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
             {/* Right Sidebar - Booking Widget (sticky on desktop only) */}
             <div className="w-full md:w-[350px] lg:w-[400px] shrink-0">
                <div className="md:sticky md:top-24 bg-white rounded-3xl shadow-xl border border-stone-100 p-4 sm:p-5">
-                  {/* Layout/style overrides for react-day-picker v9 */}
+                  {/* Calendar styles */}
                   <style>{`
+                    /* ── Layout ── */
                     .st-cal .rdp-months { max-width: 100%; width: 100%; }
                     .st-cal .rdp-month  { width: 100%; }
-                    .st-cal .rdp-month_grid { width: 100%; table-layout: fixed; }
+                    .st-cal .rdp-month_grid { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 2px; }
                     .st-cal .rdp-day { width: auto; }
-                    .st-cal .rdp-button_previous,
-                    .st-cal .rdp-button_next { border: 1px solid #e7e5e4; border-radius: 6px; background: white; transition: all 0.15s; width: 24px; height: 24px; padding: 0; display: flex; align-items: center; justify-content: center; }
-                    .st-cal .rdp-button_previous .rdp-chevron,
-                    .st-cal .rdp-button_next .rdp-chevron { width: 12px; height: 12px; }
-                    .st-cal .rdp-button_previous:hover,
-                    .st-cal .rdp-button_next:hover { background: #8A4630; border-color: #8A4630; }
-                    .st-cal .rdp-button_previous:hover .rdp-chevron,
-                    .st-cal .rdp-button_next:hover .rdp-chevron { fill: white; }
-                    .st-cal .rdp-weekday { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
-                    .st-cal .rdp-day_button { font-size: 12px; }
-                    .st-cal .rdp-day_button:hover:not(:disabled) { background: #f0e8e4; color: #8A4630; }
-                    .st-cal .rdp-day_blocked .rdp-day_button { text-decoration: line-through; text-decoration-color: #c4a8a0; opacity: 0.4; cursor: not-allowed; }
-                    .st-cal .rdp-day_blocked .rdp-day_button:hover { background: none; color: inherit; }
 
-                    /* ── Dark mode overrides ── */
-                    html.dark .st-cal { --rdp-accent-background-color: rgba(208,112,80,0.18); --rdp-range_middle-background-color: rgba(208,112,80,0.14); }
-                    html.dark .st-cal .rdp-month_caption { color: #f0e8e3; }
-                    html.dark .st-cal .rdp-weekday { color: #7a6a62; }
+                    /* ── Caption (month + year) ── */
+                    .st-cal .rdp-month_caption { padding: 0 0 8px 0; }
+                    .st-cal .rdp-caption_label { font-family: "Noto Serif", serif; font-style: italic; font-size: 16px; font-weight: 500; color: #1e1b18; letter-spacing: -0.01em; }
+
+                    /* ── Nav buttons ── */
+                    .st-cal .rdp-nav { gap: 6px; }
+                    .st-cal .rdp-button_previous,
+                    .st-cal .rdp-button_next { width: 26px; height: 26px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; transition: background 0.15s, transform 0.1s; cursor: pointer; }
+                    .st-cal .rdp-button_previous:hover,
+                    .st-cal .rdp-button_next:hover { background: #f0e4df; transform: scale(1.1); }
+                    .st-cal .rdp-button_previous .rdp-chevron { fill: #8A4630; width: 14px; height: 14px; }
+                    .st-cal .rdp-button_next .rdp-chevron { fill: #8A4630; width: 14px; height: 14px; }
+
+                    /* ── Weekday headers ── */
+                    .st-cal .rdp-weekday { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #c4b0a8; padding: 6px 0; }
+
+                    /* ── Day cells ── */
+                    .st-cal .rdp-day_button { font-size: 12px; font-weight: 500; border-radius: 50%; transition: background 0.12s, color 0.12s, transform 0.1s; }
+                    .st-cal .rdp-day_button:hover:not(:disabled) { background: #f0e4df; color: #8A4630; transform: scale(1.05); }
+
+                    /* ── Selected start/end ── */
+                    .st-cal .rdp-day_range_start .rdp-day_button,
+                    .st-cal .rdp-day_range_end .rdp-day_button { background: #8A4630 !important; color: white !important; box-shadow: 0 2px 8px rgba(138,70,48,0.35); }
+
+                    /* ── Range middle ── */
+                    .st-cal .rdp-day_range_middle .rdp-day_button { border-radius: 0; }
+
+                    /* ── Today indicator ── */
+                    .st-cal .rdp-day_today:not(.rdp-day_range_start):not(.rdp-day_range_end) .rdp-day_button { font-weight: 800; color: #8A4630; text-decoration: underline; text-underline-offset: 3px; }
+
+                    /* ── Blocked / disabled ── */
+                    .st-cal .rdp-day_blocked .rdp-day_button { opacity: 0.25; text-decoration: line-through; cursor: not-allowed; }
+                    .st-cal .rdp-day_blocked .rdp-day_button:hover { background: none !important; transform: none; color: inherit; }
+                    .st-cal .rdp-day_outside .rdp-day_button { opacity: 0.2; }
+
+                    /* ── Dark mode ── */
+                    html.dark .st-cal { --rdp-accent-background-color: rgba(208,112,80,0.09); }
+                    html.dark .st-cal .rdp-caption_label { color: #f0e8e3; }
+                    html.dark .st-cal .rdp-weekday { color: #5a4e48; }
                     html.dark .st-cal .rdp-day_button { color: #e4dcd6; }
-                    html.dark .st-cal .rdp-day_button:hover:not(:disabled) { background: rgba(208,112,80,0.15); color: #d07050; }
-                    html.dark .st-cal .rdp-button_previous,
-                    html.dark .st-cal .rdp-button_next { background: #241e19; border-color: #352a20; width: 24px; height: 24px; }
-                    html.dark .st-cal .rdp-button_previous .rdp-chevron,
-                    html.dark .st-cal .rdp-button_next .rdp-chevron { fill: #b8a89f; width: 12px; height: 12px; }
                     html.dark .st-cal .rdp-button_previous:hover,
-                    html.dark .st-cal .rdp-button_next:hover { background: #d07050; border-color: #d07050; }
-                    html.dark .st-cal .rdp-button_previous:hover .rdp-chevron,
-                    html.dark .st-cal .rdp-button_next:hover .rdp-chevron { fill: #fff; }
-                    html.dark .st-cal .rdp-day_outside .rdp-day_button { color: #4a3e38; }
-                    html.dark .st-cal .rdp-day_disabled .rdp-day_button { color: #3a3028; }
-                    html.dark .st-cal .rdp-day_blocked .rdp-day_button { color: #4a3e38; }
+                    html.dark .st-cal .rdp-button_next:hover { background: rgba(208,112,80,0.15); }
+                    html.dark .st-cal .rdp-button_previous .rdp-chevron,
+                    html.dark .st-cal .rdp-button_next .rdp-chevron { fill: #d07050; }
+                    html.dark .st-cal .rdp-day_button:hover:not(:disabled) { background: rgba(208,112,80,0.18); color: #d07050; }
+                    html.dark .st-cal .rdp-day_range_start .rdp-day_button,
+                    html.dark .st-cal .rdp-day_range_end .rdp-day_button { background: #d07050 !important; box-shadow: 0 2px 10px rgba(208,112,80,0.4); }
+                    html.dark .st-cal .rdp-day_today:not(.rdp-day_range_start):not(.rdp-day_range_end) .rdp-day_button { color: #d07050; }
+                    html.dark .st-cal .rdp-day_outside .rdp-day_button { opacity: 0.12; }
                   `}</style>
 
                   {/* Price row */}
-                  <div className="flex items-baseline justify-between mb-3">
+                  <div className="flex items-baseline justify-between mb-4">
                      <div>
                         <span className="text-2xl font-serif italic text-stone-800">₹{price.toLocaleString()}</span>
                         <span className="text-stone-400 text-xs ml-1">/ night</span>
@@ -601,7 +621,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                   </div>
 
                   {/* Calendar */}
-                  <div className="rounded-xl bg-stone-50 border border-stone-100 w-full overflow-hidden mb-3">
+                  <div className="w-full mb-3 px-1">
                      <DayPicker
                         mode="range"
                         selected={range}
@@ -623,21 +643,22 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                         className="st-cal"
                         style={{
                            "--rdp-accent-color": "#8A4630",
-                           "--rdp-accent-background-color": "#f5ede9",
+                           "--rdp-accent-background-color": "rgba(138,70,48,0.07)",
                            "--rdp-today-color": "#8A4630",
                            "--rdp-range_middle-color": "#8A4630",
-                           "--rdp-day-height": "34px",
-                           "--rdp-day-width": "34px",
-                           "--rdp-day_button-height": "32px",
-                           "--rdp-day_button-width": "32px",
-                           "--rdp-day_button-border-radius": "8px",
-                           "--rdp-nav_button-height": "24px",
-                           "--rdp-nav_button-width": "24px",
+                           "--rdp-range_middle-background-color": "rgba(138,70,48,0.07)",
+                           "--rdp-day-height": "36px",
+                           "--rdp-day-width": "36px",
+                           "--rdp-day_button-height": "34px",
+                           "--rdp-day_button-width": "34px",
+                           "--rdp-day_button-border-radius": "50%",
+                           "--rdp-nav_button-height": "26px",
+                           "--rdp-nav_button-width": "26px",
                            "--rdp-nav-height": "1.75rem",
-                           "--rdp-weekday-padding": "0.2rem 0",
-                           "--rdp-outside-opacity": "0.3",
-                           "--rdp-disabled-opacity": "0.3",
-                           fontSize: "12px",
+                           "--rdp-weekday-padding": "4px 0",
+                           "--rdp-outside-opacity": "0.2",
+                           "--rdp-disabled-opacity": "0.25",
+                           fontSize: "13px",
                            width: "100%",
                         } as any}
                      />
@@ -677,7 +698,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                      className="mt-2 w-full py-3 rounded-xl border border-[#25D366]/30 bg-[#25D366]/5 text-[#1a9e4d] font-medium text-sm hover:bg-[#25D366]/10 transition-colors flex items-center justify-center gap-2"
                   >
                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                      </svg>
                      Enquire on WhatsApp
                   </a>
