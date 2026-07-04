@@ -9,12 +9,12 @@ interface AdminHeaderProps {
 
 export default function AdminHeader({ title, subtitle, showAddButton, onAddClick }: AdminHeaderProps) {
   return (
-    <header className="flex flex-col md:flex-row md:justify-between items-start md:items-end gap-4 mb-6">
+    <header className="flex flex-col md:flex-row md:justify-between items-start md:items-end gap-3 mb-4 md:mb-6">
       <div>
-        <h1 className="text-3xl md:text-4xl font-serif italic text-on-surface leading-tight">
+        <h1 className="text-2xl md:text-4xl font-serif italic text-on-surface leading-tight">
           {title}
         </h1>
-        <p className="text-stone-400 mt-1 text-xs md:text-sm font-light">{subtitle}</p>
+        <p className="text-stone-400 mt-0.5 text-xs md:text-sm font-light">{subtitle}</p>
       </div>
       
       {showAddButton && (

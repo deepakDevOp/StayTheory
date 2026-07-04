@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -27,6 +27,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
    const [activeGalleryCategory, setActiveGalleryCategory] = useState("all");
    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
    const [showAllAmenities, setShowAllAmenities] = useState(false);
+   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
 
    useEffect(() => {
       window.scrollTo(0, 0);
@@ -470,23 +471,66 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
 
                {/* Reviews */}
                <section>
-                  <div className="flex justify-between items-center mb-6 md:mb-10">
-                     <h3 className="text-lg md:text-2xl font-serif font-bold text-stone-800">Guest Experiences</h3>
-                     <Link to={`/reviews?property=${property.id}`} className="text-xs font-bold uppercase tracking-widest text-accent hover:underline">View All Reviews</Link>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 md:mb-10">
+                     <h3 className="text-xl md:text-3xl font-serif font-bold text-stone-800 flex items-center gap-3">
+                        Guest Experiences
+                     </h3>
+                     <Link 
+                        to={`/reviews?property=${property.id}`} 
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary border border-primary/20 px-5 py-2.5 rounded-full hover:bg-primary hover:text-white transition-all shadow-sm shrink-0"
+                     >
+                        View All Reviews
+                     </Link>
                   </div>
                   {propertyReviews && propertyReviews.length > 0 ? (
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                        {propertyReviews.slice(0, 2).map((review: any, idx: number) => (
-                           <div key={idx} className="p-6 bg-stone-50/50 rounded-2xl border border-stone-100">
-                              <div className="flex gap-1 mb-3">
+                     <div className="relative">
+                        <div 
+                           className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-6 -mx-4 px-4 md:mx-0 md:px-0 no-scrollbar"
+                           onScroll={(e) => {
+                              const el = e.currentTarget;
+                              const scrollLeft = el.scrollLeft;
+                              const childWidth = el.scrollWidth / propertyReviews.length;
+                              const index = Math.min(propertyReviews.length - 1, Math.max(0, Math.round(scrollLeft / childWidth)));
+                              setActiveReviewIndex(index);
+                           }}
+                        >
+                           {propertyReviews.map((review: any, idx: number) => (
+                           <div key={idx} className="snap-center snap-always shrink-0 w-[85vw] sm:w-80 md:w-96 p-6 md:p-8 bg-white rounded-[2rem] border border-stone-100 flex flex-col shadow-xl shadow-stone-200/30 hover:shadow-2xl hover:shadow-stone-200/50 transition-all duration-300 relative overflow-hidden group">
+                              {/* Decorative quote mark */}
+                              <div className="absolute top-4 right-6 text-[5rem] font-serif text-stone-100 group-hover:text-primary/10 transition-colors pointer-events-none select-none leading-none">
+                                 "
+                              </div>
+                              
+                              <div className="flex gap-1 mb-5 relative z-10">
                                  {[...Array(Number(review.rating) || 0)].map((_, i) => (
-                                    <Star key={i} className="w-3 h-3 fill-accent text-accent" />
+                                    <Star key={i} className="w-3.5 h-3.5 fill-primary text-primary" />
                                  ))}
                               </div>
-                              <p className="text-stone-600 italic text-sm mb-4 leading-relaxed">"{review.comment || review.text}"</p>
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">— {review.author_name || review.author || "Guest"}</p>
+                              <p className="text-stone-600 font-serif italic text-[15px] md:text-lg mb-6 leading-relaxed flex-grow relative z-10">"{review.comment || review.text}"</p>
+                              
+                              <div className="flex items-center gap-3 relative z-10">
+                                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                   {(review.author_name || review.author || "G")[0].toUpperCase()}
+                                 </div>
+                                 <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-700">{review.author_name || review.author || "Guest"}</p>
+                                    <p className="text-[9px] text-stone-400 mt-0.5">Verified Stay</p>
+                                 </div>
+                              </div>
                            </div>
                         ))}
+                        </div>
+                        
+                        {propertyReviews.length > 1 && (
+                           <div className="flex justify-center gap-2 mt-2 mb-4">
+                              {propertyReviews.map((_: any, i: number) => (
+                                 <div 
+                                    key={i} 
+                                    className={`h-1.5 rounded-full transition-all duration-300 ${i === activeReviewIndex ? "w-6 bg-primary" : "w-1.5 bg-stone-200"}`} 
+                                 />
+                              ))}
+                           </div>
+                        )}
                      </div>
                   ) : (
                      <div className="p-12 bg-stone-50 rounded-3xl border border-dashed border-stone-200 text-center">

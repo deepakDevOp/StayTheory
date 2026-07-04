@@ -59,4 +59,15 @@ export const publicService = {
     const response = await api.get("/contact");
     return response.data;
   },
+
+  // Admin OTP auth
+  requestOtp: async (email: string, password: string) => {
+    const response = await api.post("/auth/otp/request", { email, password });
+    return response.data;
+  },
+
+  verifyOtp: async (email: string, otp: string) => {
+    const response = await api.post("/auth/otp/verify", { email, otp });
+    return response.data as { access_token: string; refresh_token: string; token_type: string };
+  },
 };

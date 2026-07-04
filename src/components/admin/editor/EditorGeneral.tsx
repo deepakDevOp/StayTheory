@@ -1,4 +1,4 @@
-import { IndianRupee, Plus, Trash2, Camera, LayoutGrid, Bed, Sofa, Trees, Utensils, Bath, Wind, ChevronDown, Check } from "lucide-react";
+import { IndianRupee, Plus, Trash2, Camera, LayoutGrid, Bed, Sofa, Trees, Utensils, Bath, Wind, ChevronDown, Check, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { optimizeImageUrl } from "../../../utils/preload";
@@ -16,6 +16,7 @@ const MASTER_CATEGORIES = [
   { id: "kitchen", label: "Kitchen", icon: Utensils },
   { id: "bathroom", label: "Bathroom", icon: Bath },
   { id: "balcony", label: "Balcony", icon: Wind },
+  { id: "rooftop", label: "Rooftop", icon: Sun },
   { id: "exterior", label: "Exterior", icon: Trees },
 ];
 
@@ -66,8 +67,11 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const inputCls = "w-full bg-white border border-stone-100 rounded-xl md:rounded-[1.5rem] px-4 md:px-8 py-3 md:py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium text-sm";
+  const labelCls = "text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1";
+
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-12">
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8 md:space-y-12">
       {/* Gallery Input */}
       <input 
         type="file" 
@@ -129,84 +133,58 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
 
       {/* Basic Identity */}
       <section>
-        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-8 flex items-center gap-3">
+        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-4 md:mb-8 flex items-center gap-3">
           <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Basic Identity
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Property Name</label>
-            <input 
-              type="text" 
-              value={formData.title} 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-10">
+          <div className="space-y-2">
+            <label className={labelCls}>Property Name</label>
+            <input type="text" value={formData.title}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, title: e.target.value }))}
-              placeholder="e.g. Moon Retreat"
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
+              placeholder="e.g. Moon Retreat" className={inputCls} />
           </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Subtitle / Catchphrase</label>
-            <input 
-              type="text" 
-              value={formData.subtitle} 
+          <div className="space-y-2">
+            <label className={labelCls}>Subtitle / Catchphrase</label>
+            <input type="text" value={formData.subtitle}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, subtitle: e.target.value }))}
-              placeholder="e.g. A Riverside Sanctuary"
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
+              placeholder="e.g. A Riverside Sanctuary" className={inputCls} />
           </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Base Nightly Rate</label>
+          <div className="space-y-2">
+            <label className={labelCls}>Base Nightly Rate</label>
             <div className="relative">
-              <IndianRupee className="absolute left-8 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300" />
-              <input 
-                type="text" 
-                value={formData.base_nightly_rate} 
+              <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300" />
+              <input type="text" value={formData.base_nightly_rate}
                 onChange={(e) => {
                   const val = e.target.value.replace(/\D/g, '');
                   setFormData((prev: any) => ({ ...prev, base_nightly_rate: val }));
                 }}
-                className="w-full bg-white border border-stone-100 rounded-[1.5rem] pl-16 pr-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-              />
+                className={inputCls + " pl-10 md:pl-12"} />
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-10">
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">City</label>
-            <input 
-              type="text" 
-              value={formData.city} 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-10 mt-4 md:mt-10">
+          <div className="space-y-2">
+            <label className={labelCls}>City</label>
+            <input type="text" value={formData.city}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, city: e.target.value }))}
-              placeholder="e.g. Udaipur"
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
+              placeholder="e.g. Udaipur" className={inputCls} />
           </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Property Type</label>
+          <div className="space-y-2">
+            <label className={labelCls}>Property Type</label>
             <div className="relative" ref={dropdownRef}>
-              <div 
-                onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-                className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium flex justify-between items-center cursor-pointer group"
-              >
+              <div onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                className={inputCls + " flex justify-between items-center cursor-pointer"}>
                 <span>{formData.property_type || "Select Type"}</span>
-                <ChevronDown className={`w-4 h-4 text-stone-300 transition-transform duration-500 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-stone-300 transition-transform duration-300 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
               </div>
-
               <AnimatePresence>
                 {isTypeDropdownOpen && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute top-full left-0 right-0 mt-3 bg-white border border-stone-100 rounded-[1.5rem] shadow-2xl overflow-hidden z-50 p-2"
-                  >
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-100 rounded-2xl shadow-2xl overflow-hidden z-50 p-1">
                     {PROPERTY_TYPES.map(type => (
-                      <button
-                        key={type}
-                        onClick={() => {
-                          setFormData((prev: any) => ({ ...prev, property_type: type }));
-                          setIsTypeDropdownOpen(false);
-                        }}
-                        className="w-full flex items-center justify-between px-6 py-4 rounded-xl hover:bg-stone-50 transition-colors text-sm"
-                      >
+                      <button key={type} onClick={() => { setFormData((prev: any) => ({ ...prev, property_type: type })); setIsTypeDropdownOpen(false); }}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-stone-50 transition-colors text-sm">
                         <span className={formData.property_type === type ? "text-primary font-bold" : "text-stone-600"}>{type}</span>
                         {formData.property_type === type && <Check className="w-4 h-4 text-primary" />}
                       </button>
@@ -216,77 +194,48 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
               </AnimatePresence>
             </div>
           </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Full Address</label>
-            <input 
-              type="text" 
-              value={formData.address} 
+          <div className="space-y-2">
+            <label className={labelCls}>Full Address</label>
+            <input type="text" value={formData.address}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, address: e.target.value }))}
-              placeholder="e.g. Near Lake Pichola, Udaipur"
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
+              placeholder="e.g. Near Lake Pichola, Udaipur" className={inputCls} />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mt-10">
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Max Guests</label>
-            <input 
-              type="number" 
-              value={formData.max_guests} 
-              onChange={(e) => setFormData((prev: any) => ({ ...prev, max_guests: parseInt(e.target.value) || 1 }))}
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
-          </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Bedrooms</label>
-            <input 
-              type="number" 
-              value={formData.bedrooms} 
-              onChange={(e) => setFormData((prev: any) => ({ ...prev, bedrooms: parseInt(e.target.value) || 1 }))}
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
-          </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Bathrooms</label>
-            <input 
-              type="number" 
-              value={formData.bathrooms} 
-              onChange={(e) => setFormData((prev: any) => ({ ...prev, bathrooms: parseInt(e.target.value) || 1 }))}
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
-          </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Total Beds</label>
-            <input 
-              type="number" 
-              value={formData.beds} 
-              onChange={(e) => setFormData((prev: any) => ({ ...prev, beds: parseInt(e.target.value) || 1 }))}
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-10 mt-4 md:mt-10">
+          {[
+            { label: "Max Guests", key: "max_guests" },
+            { label: "Bedrooms", key: "bedrooms" },
+            { label: "Bathrooms", key: "bathrooms" },
+            { label: "Total Beds", key: "beds" },
+          ].map(({ label, key }) => (
+            <div key={key} className="space-y-2">
+              <label className={labelCls}>{label}</label>
+              <input type="number" value={(formData as any)[key]}
+                onChange={(e) => setFormData((prev: any) => ({ ...prev, [key]: parseInt(e.target.value) || 1 }))}
+                className={inputCls + " text-center"} />
+            </div>
+          ))}
         </div>
 
-        <div className="mt-10 space-y-3">
-          <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Description</label>
-          <textarea 
-            rows={4}
-            value={formData.description} 
+        <div className="mt-4 md:mt-10 space-y-2">
+          <label className={labelCls}>Description</label>
+          <textarea rows={3}
+            value={formData.description}
             onChange={(e) => setFormData((prev: any) => ({ ...prev, description: e.target.value }))}
             placeholder="Tell the story of this sanctuary..."
-            className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium resize-none" 
-          />
+            className={inputCls + " resize-none"} />
         </div>
       </section>
       
       {/* Showcase Identity */}
       <section>
-        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-8 flex items-center gap-3">
+        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-4 md:mb-8 flex items-center gap-3">
           <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Main Showcase Identity
         </h3>
-        <div 
+        <div
           onClick={() => !uploading && document.getElementById('cover-upload')?.click()}
-          className="relative h-64 w-full bg-stone-100 rounded-[2.5rem] border-2 border-dashed border-stone-200 overflow-hidden group cursor-pointer hover:border-primary/30 transition-all"
+          className="relative h-48 md:h-64 w-full bg-stone-100 rounded-2xl md:rounded-[2.5rem] border-2 border-dashed border-stone-200 overflow-hidden group cursor-pointer hover:border-primary/30 transition-all"
         >
           {formData.coverImage ? (
             <>
@@ -318,50 +267,36 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
 
       {/* Location Identity */}
       <section>
-        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-8 flex items-center gap-3">
+        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-4 md:mb-8 flex items-center gap-3">
           <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Location Identity
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Google Maps URL</label>
-            <input 
-              type="text" 
-              value={formData.google_maps_url} 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
+          <div className="space-y-2">
+            <label className={labelCls}>Google Maps URL</label>
+            <input type="text" value={formData.google_maps_url}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, google_maps_url: e.target.value }))}
-              placeholder="e.g. https://goo.gl/maps/..."
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
+              placeholder="https://goo.gl/maps/..." className={inputCls} />
           </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Airbnb URL (Booking Redirection)</label>
-            <input 
-              type="text" 
-              value={formData.airbnb_url} 
+          <div className="space-y-2">
+            <label className={labelCls}>Airbnb URL</label>
+            <input type="text" value={formData.airbnb_url}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, airbnb_url: e.target.value }))}
-              placeholder="e.g. https://www.airbnb.com/rooms/..."
-              className="w-full bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 outline-none focus:ring-2 focus:ring-primary/10 transition-all shadow-sm text-on-surface font-medium" 
-            />
+              placeholder="https://www.airbnb.com/rooms/..." className={inputCls} />
           </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Location Map Screenshot</label>
-            <div className="flex gap-4">
-              <div 
-                onClick={() => !uploading && document.getElementById('map-upload')?.click()}
-                className="flex-grow bg-white border border-stone-100 rounded-[1.5rem] px-8 py-5 flex items-center justify-between cursor-pointer hover:bg-stone-50 transition-all group"
-              >
-                <span className="text-on-surface font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]">
-                  {formData.map_image ? "Image Selected" : "Upload Map Screenshot"}
-                </span>
-                <Camera className="w-5 h-5 text-stone-300 group-hover:text-primary transition-colors" />
+          <div className="space-y-2">
+            <label className={labelCls}>Location Map Screenshot</label>
+            <div className="flex gap-3">
+              <div onClick={() => !uploading && document.getElementById('map-upload')?.click()}
+                className={inputCls + " flex-1 flex items-center justify-between cursor-pointer hover:bg-stone-50"}>
+                <span className="truncate text-stone-500 text-sm">{formData.map_image ? "Image Selected" : "Upload Map Screenshot"}</span>
+                <Camera className="w-4 h-4 text-stone-300 shrink-0 ml-2" />
               </div>
               {formData.map_image && (
-                <div className="w-16 h-16 rounded-xl overflow-hidden border border-stone-100 shrink-0 shadow-sm relative group">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl overflow-hidden border border-stone-100 shrink-0 shadow-sm relative group">
                   <img src={formData.map_image} decoding="async" className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => setFormData((prev: any) => ({ ...prev, map_image: "" }))}
-                    className="absolute inset-0 bg-red-500/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                  >
-                    <Trash2 className="w-4 h-4 text-white" />
+                  <button onClick={() => setFormData((prev: any) => ({ ...prev, map_image: "" }))}
+                    className="absolute inset-0 bg-red-500/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <Trash2 className="w-3 h-3 text-white" />
                   </button>
                 </div>
               )}
@@ -371,8 +306,8 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
       </section>
 
       {/* Dynamic Room Configurator */}
-      <section className="bg-stone-100/50 p-10 rounded-[2.5rem] border border-stone-100">
-        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-stone-500 mb-8 flex items-center gap-3">
+      <section className="bg-stone-100/50 p-4 md:p-10 rounded-2xl md:rounded-[2.5rem] border border-stone-100">
+        <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-stone-500 mb-4 md:mb-8 flex items-center gap-3">
           <div className="w-1.5 h-1.5 bg-stone-300 rounded-full" /> Room Configuration (Select Applicable Areas)
         </h3>
         <div className="flex flex-wrap gap-4">
@@ -395,7 +330,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
 
       {/* Curated Gallery */}
       <section>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6 mb-4 md:mb-8">
           <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary flex items-center gap-3">
             <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Gallery Management
           </h3>

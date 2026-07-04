@@ -124,12 +124,11 @@ export default function ReviewManager() {
             {/* Story text */}
             <div className="bg-white rounded-2xl p-4 border border-stone-100">
               <label className="text-[9px] uppercase tracking-[0.3em] font-bold text-stone-300 block mb-2">The Story</label>
-              <textarea required rows={5} value={formData.text}
-                onChange={e => setFormData({ ...formData, text: e.target.value })}
-                className="w-full bg-stone-50 rounded-xl px-4 py-3 font-serif italic text-base focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none leading-relaxed"
-                placeholder="Share the guest's experience..."
+              <textarea required rows={5}
                 value={formData.comment}
-                onChange={e => setFormData({ ...formData, comment: e.target.value })} />
+                onChange={e => setFormData({ ...formData, comment: e.target.value })}
+                className="w-full bg-stone-50 rounded-xl px-4 py-3 font-serif italic text-base focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none leading-relaxed"
+                placeholder="Share the guest's experience..." />
             </div>
 
             <button type="submit" disabled={formLoading}

@@ -81,19 +81,23 @@ export default function Overview() {
       />
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8 mb-6 md:mb-12">
         {stats.map((stat: any, i: number) => {
           const Icon = ICON_MAP[stat.icon] || TrendingUp;
           return (
-            <div key={i} className="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[4rem] group-hover:scale-110 transition-transform duration-700" />
-              <Icon className="w-6 h-6 text-primary mb-4" />
-              <p className="text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2 font-bold">{stat.label}</p>
-              <div className="flex items-baseline gap-3">
-                <p className="text-4xl font-serif italic text-on-surface">{stat.value}</p>
-                <span className={`text-[10px] font-bold ${stat.trend === 'up' ? 'text-green-600' : 'text-stone-400'}`}>
-                  {stat.trendValue}
-                </span>
+            <div key={i} className="bg-white p-5 md:p-8 rounded-2xl md:rounded-[2rem] border border-stone-100 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-[3rem] group-hover:scale-110 transition-transform duration-700" />
+              <div className="flex items-center justify-between md:block">
+                <div>
+                  <Icon className="w-5 h-5 text-primary mb-0 md:mb-4" />
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-stone-400 mt-2 md:mt-0 md:mb-2 font-bold">{stat.label}</p>
+                </div>
+                <div className="flex items-baseline gap-2 md:mt-0">
+                  <p className="text-3xl md:text-4xl font-serif italic text-on-surface">{stat.value}</p>
+                  <span className={`text-[10px] font-bold ${stat.trend === 'up' ? 'text-green-600' : 'text-stone-400'}`}>
+                    {stat.trendValue}
+                  </span>
+                </div>
               </div>
             </div>
           );
@@ -101,15 +105,15 @@ export default function Overview() {
       </div>
 
       {/* Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-12">
         {/* Main Chart */}
-        <div className="lg:col-span-2 bg-white p-8 md:p-10 rounded-[2.5rem] border border-stone-100 shadow-sm flex flex-col">
-          <div className="flex justify-between items-start mb-8">
+        <div className="lg:col-span-2 bg-white p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] border border-stone-100 shadow-sm flex flex-col">
+          <div className="flex justify-between items-start mb-4 md:mb-8">
             <div>
-              <h3 className="text-xl font-serif italic text-on-surface">Traffic & Conversions</h3>
-              <p className="text-xs text-stone-400 mt-1">Comparing daily visitors to booking requests</p>
+              <h3 className="text-base md:text-xl font-serif italic text-on-surface">Traffic & Conversions</h3>
+              <p className="text-xs text-stone-400 mt-0.5">Daily visitors vs. booking requests</p>
             </div>
-            <select className="bg-stone-50 border border-stone-100 text-stone-500 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl outline-none">
+            <select className="bg-stone-50 border border-stone-100 text-stone-500 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-xl outline-none">
               <option>Last 7 Days</option>
               <option>Last 30 Days</option>
             </select>
@@ -120,46 +124,46 @@ export default function Overview() {
         </div>
 
         {/* Conversion Rate Spotlight */}
-        <div className="bg-primary text-white p-8 md:p-10 rounded-[2.5rem] shadow-xl relative overflow-hidden flex flex-col justify-between group">
+        <div className="bg-primary text-white p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] shadow-xl relative overflow-hidden flex flex-col justify-between group">
           <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
           <div className="relative z-10">
-            <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary-200 mb-2 text-white/70">Airbnb Click-Through Rate (CTR)</h3>
-            <p className="text-6xl font-serif italic mb-4">{conversionRate}%</p>
-            <p className="text-sm text-white/80 leading-relaxed">
-              Based on real visitor metrics, your Airbnb redirection click-through rate is tracking at <span className="font-bold text-white">{conversionRate}%</span>. <span className="font-bold text-white">{topProperty}</span> is currently driving the most click redirects.
+            <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold mb-1 text-white/70">Airbnb CTR</h3>
+            <p className="text-4xl md:text-6xl font-serif italic mb-2 md:mb-4">{conversionRate}%</p>
+            <p className="text-xs md:text-sm text-white/80 leading-relaxed">
+              <span className="font-bold text-white">{topProperty}</span> is driving the most Airbnb clicks at <span className="font-bold text-white">{conversionRate}%</span>.
             </p>
           </div>
           {Array.isArray(top_properties) && top_properties.length > 0 && (
-            <button 
+            <button
               onClick={() => setShowTrafficSources(true)}
-              className="relative z-10 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white hover:text-stone-200 transition-colors mt-8 self-start"
+              className="relative z-10 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white hover:text-stone-200 transition-colors mt-5 md:mt-8 self-start"
             >
-              Top Properties <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              Top Properties <ArrowRight className="w-4 h-4" />
             </button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-12">
         {/* Recent Activity */}
-        <div className="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-sm">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-serif italic text-on-surface">Recent Activity</h3>
+        <div className="bg-white p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] border border-stone-100 shadow-sm">
+          <div className="flex justify-between items-center mb-4 md:mb-8">
+            <h3 className="text-base md:text-xl font-serif italic text-on-surface">Recent Activity</h3>
             <button className="text-[10px] uppercase tracking-widest font-bold text-primary hover:underline">View All</button>
           </div>
-          <div className="space-y-8">
+          <div className="space-y-4 md:space-y-8">
             {recent_activity.length === 0 ? (
-              <div className="py-10 text-center">
-                <Clock className="w-10 h-10 text-stone-200 mx-auto mb-4" />
+              <div className="py-8 text-center">
+                <Clock className="w-8 h-8 text-stone-200 mx-auto mb-3" />
                 <p className="font-serif italic text-stone-400">No recent activity to report.</p>
               </div>
             ) : (
               recent_activity.map((item: any) => (
-                <div key={item.id} className="flex gap-6 items-start group">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
+                <div key={item.id} className="flex gap-4 md:gap-6 items-start group">
+                  <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
                     item.type === 'booking' ? 'bg-amber-400' : 'bg-primary'
                   }`} />
-                  <div className="flex-grow">
+                  <div className="flex-grow min-w-0">
                     <p className="text-sm font-medium text-on-surface group-hover:text-primary transition-colors cursor-pointer">
                       {item.message}
                     </p>
@@ -168,7 +172,7 @@ export default function Overview() {
                       <p className="text-xs text-stone-400">{item.time}</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-stone-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  <ChevronRight className="w-4 h-4 text-stone-200 shrink-0 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </div>
               ))
             )}
@@ -176,11 +180,11 @@ export default function Overview() {
         </div>
 
         {/* Quick Actions / Tips */}
-        <div className="flex flex-col gap-8">
-          <div className="bg-stone-900 p-10 rounded-[2.5rem] text-white relative overflow-hidden">
+        <div className="flex flex-col gap-4 md:gap-8">
+          <div className="bg-stone-900 p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] text-white relative overflow-hidden">
             <div className="relative z-10">
-              <h3 className="text-xl font-serif italic mb-2">Pro Tip</h3>
-              <p className="text-stone-400 text-sm leading-relaxed mb-6">
+              <h3 className="text-base md:text-xl font-serif italic mb-1 md:mb-2">Pro Tip</h3>
+              <p className="text-stone-400 text-sm leading-relaxed mb-4 md:mb-6">
                 Updated photos can increase booking requests by up to 40%. Add a new cinematic view of <span className="text-white italic font-serif">{randomPropertyTitle}</span> today.
               </p>
               <button className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary hover:text-white transition-colors">
@@ -190,12 +194,12 @@ export default function Overview() {
             <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
           </div>
 
-          <div className="bg-primary/5 p-10 rounded-[2.5rem] border border-primary/10">
-            <h3 className="text-xl font-serif italic text-primary mb-4">Need Help?</h3>
-            <p className="text-stone-600 text-sm leading-relaxed mb-6">
+          <div className="bg-primary/5 p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] border border-primary/10">
+            <h3 className="text-base md:text-xl font-serif italic text-primary mb-2 md:mb-4">Need Help?</h3>
+            <p className="text-stone-600 text-sm leading-relaxed mb-4 md:mb-6">
               If you have any issues with a guest or a booking, reach out to support.
             </p>
-            <button className="w-full py-4 bg-white border border-primary/20 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all">
+            <button className="w-full py-3 md:py-4 bg-white border border-primary/20 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all">
               Contact Support
             </button>
           </div>
