@@ -253,41 +253,44 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
       {/* ── MOBILE: 3D hero-style slider + scrollable footer ── */}
       <div className="lg:hidden flex flex-col bg-background">
 
-        {/* Filter chips */}
-        <div className="px-4 pt-3 pb-2.5 border-b border-stone-100">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            {filters.map(filter => (
-              <button
-                key={filter}
-                onClick={() => { setActiveFilter(filter); setActiveIdx(0); }}
-                className={`shrink-0 px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all duration-300 ${
-                  activeFilter === filter
-                    ? "bg-accent text-white shadow-sm shadow-accent/20"
-                    : "bg-stone-100 text-stone-400"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
+        {/* One-screen portion — footer stays below the fold */}
+        <div className="flex flex-col" style={{ minHeight: "calc(100dvh - 72px)" }}>
+          {/* Filter chips */}
+          <div className="px-4 pt-3 pb-2.5 border-b border-stone-100 shrink-0">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+              {filters.map(filter => (
+                <button
+                  key={filter}
+                  onClick={() => { setActiveFilter(filter); setActiveIdx(0); }}
+                  className={`shrink-0 px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                    activeFilter === filter
+                      ? "bg-accent text-white shadow-sm shadow-accent/20"
+                      : "bg-stone-100 text-stone-400"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* 3D Slider */}
+          {filteredProperties.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <Shrub className="w-10 h-10 text-stone-200 mb-4" />
+              <p className="text-lg font-serif italic text-accent">No sanctuaries found.</p>
+            </div>
+          ) : (
+            <MobileSlider
+              properties={filteredProperties}
+              activeIdx={activeIdx}
+              setActiveIdx={setActiveIdx}
+              navigate={navigate}
+            />
+          )}
         </div>
 
-        {/* 3D Slider */}
-        {filteredProperties.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <Shrub className="w-10 h-10 text-stone-200 mb-4" />
-            <p className="text-lg font-serif italic text-accent">No sanctuaries found.</p>
-          </div>
-        ) : (
-          <MobileSlider
-            properties={filteredProperties}
-            activeIdx={activeIdx}
-            setActiveIdx={setActiveIdx}
-            navigate={navigate}
-          />
-        )}
-
-        {/* Dark footer — scroll down to see it */}
+        {/* Dark footer — only visible on scroll */}
         <Footer />
       </div>
 
