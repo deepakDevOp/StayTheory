@@ -165,10 +165,7 @@ export default function AdminLogin() {
 
   return (
     <div
-      className="h-[100dvh] overflow-hidden flex items-center justify-center px-4"
-      style={{
-        background: "linear-gradient(135deg, #fdf8f5 0%, #f5ede6 50%, #fdf8f5 100%)",
-      }}
+      className="h-[100dvh] overflow-hidden flex items-center justify-center px-4 bg-background"
     >
       {/* Background decorative circles */}
       <div className="fixed top-1/4 -left-24 w-72 h-72 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />

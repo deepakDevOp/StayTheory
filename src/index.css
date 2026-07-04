@@ -195,3 +195,79 @@ html {
   background: linear-gradient(to right, transparent, rgba(168, 94, 70, 0.3), transparent);
 }
 
+/* ─── Dark Mode ─── */
+html.dark {
+  color-scheme: dark;
+
+  /* Semantic tokens */
+  --color-background:         #0f0c0a;
+  --color-surface:            #1c1714;
+  --color-surface-dim:        #0a0806;
+  --color-surface-bright:     #241e19;
+  --color-on-surface:         #f0e8e3;
+  --color-on-surface-variant: #b8a89f;
+  --color-primary:            #d07050;
+  --color-primary-container:  #b85a3a;
+  --color-accent:             #d07050;
+}
+
+/* Background overrides */
+html.dark .bg-white          { background-color: #1c1714 !important; }
+html.dark .bg-stone-50       { background-color: #171210 !important; }
+html.dark .bg-stone-100      { background-color: #201a15 !important; }
+html.dark .bg-stone-200      { background-color: #2a2018 !important; }
+
+/* Semi-transparent backgrounds */
+html.dark .bg-stone-50\/50   { background-color: rgba(23,18,16,0.5) !important; }
+html.dark .bg-stone-50\/30   { background-color: rgba(23,18,16,0.3) !important; }
+html.dark .bg-white\/95      { background-color: rgba(28,23,20,0.95) !important; }
+html.dark .bg-white\/90      { background-color: rgba(28,23,20,0.90) !important; }
+html.dark .bg-white\/80      { background-color: rgba(28,23,20,0.80) !important; }
+
+/* Text overrides */
+html.dark .text-stone-950    { color: #f8f2ef !important; }
+html.dark .text-stone-900    { color: #f0e8e3 !important; }
+html.dark .text-stone-800    { color: #e4dcd6 !important; }
+html.dark .text-stone-700    { color: #d0c8c0 !important; }
+html.dark .text-stone-600    { color: #b8b0a8 !important; }
+html.dark .text-stone-500    { color: #9c9490 !important; }
+html.dark .text-stone-400    { color: #7a726e !important; }
+html.dark .text-stone-300    { color: #5a524e !important; }
+
+/* Border overrides */
+html.dark .border-stone-50   { border-color: #201a15 !important; }
+html.dark .border-stone-100  { border-color: #2a2018 !important; }
+html.dark .border-stone-200  { border-color: #352a20 !important; }
+html.dark .border-stone-300  { border-color: #4a3a2e !important; }
+
+/* Dividers / HR */
+html.dark hr,
+html.dark .divide-stone-100 > * + * { border-color: #2a2018 !important; }
+
+/* Input & form elements */
+html.dark input:not([type="range"]),
+html.dark textarea,
+html.dark select {
+  background-color: #201a15 !important;
+  color: #f0e8e3 !important;
+  border-color: #352a20 !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder { color: #5a524e !important; }
+
+/* Scrollbar (Webkit) */
+html.dark ::-webkit-scrollbar-track { background: #0f0c0a; }
+html.dark ::-webkit-scrollbar-thumb { background: #352a20; border-radius: 4px; }
+
+/* Shadows */
+html.dark .shadow-sm   { box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important; }
+html.dark .shadow-md   { box-shadow: 0 4px 8px rgba(0,0,0,0.5) !important; }
+html.dark .shadow-lg   { box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important; }
+html.dark .shadow-xl   { box-shadow: 0 12px 36px rgba(0,0,0,0.7) !important; }
+html.dark .shadow-2xl  { box-shadow: 0 24px 56px rgba(0,0,0,0.8) !important; }
+
+/* Glass */
+html.dark .glass {
+  background: rgba(28, 23, 20, 0.75) !important;
+}
+

@@ -554,7 +554,9 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                     .st-cal .rdp-month_grid { width: 100%; table-layout: fixed; }
                     .st-cal .rdp-day { width: auto; }
                     .st-cal .rdp-button_previous,
-                    .st-cal .rdp-button_next { border: 1px solid #e7e5e4; border-radius: 8px; background: white; transition: all 0.15s; }
+                    .st-cal .rdp-button_next { border: 1px solid #e7e5e4; border-radius: 6px; background: white; transition: all 0.15s; width: 24px; height: 24px; padding: 0; display: flex; align-items: center; justify-content: center; }
+                    .st-cal .rdp-button_previous .rdp-chevron,
+                    .st-cal .rdp-button_next .rdp-chevron { width: 12px; height: 12px; }
                     .st-cal .rdp-button_previous:hover,
                     .st-cal .rdp-button_next:hover { background: #8A4630; border-color: #8A4630; }
                     .st-cal .rdp-button_previous:hover .rdp-chevron,
@@ -564,6 +566,24 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                     .st-cal .rdp-day_button:hover:not(:disabled) { background: #f0e8e4; color: #8A4630; }
                     .st-cal .rdp-day_blocked .rdp-day_button { text-decoration: line-through; text-decoration-color: #c4a8a0; opacity: 0.4; cursor: not-allowed; }
                     .st-cal .rdp-day_blocked .rdp-day_button:hover { background: none; color: inherit; }
+
+                    /* ── Dark mode overrides ── */
+                    html.dark .st-cal { --rdp-accent-background-color: rgba(208,112,80,0.18); --rdp-range_middle-background-color: rgba(208,112,80,0.14); }
+                    html.dark .st-cal .rdp-month_caption { color: #f0e8e3; }
+                    html.dark .st-cal .rdp-weekday { color: #7a6a62; }
+                    html.dark .st-cal .rdp-day_button { color: #e4dcd6; }
+                    html.dark .st-cal .rdp-day_button:hover:not(:disabled) { background: rgba(208,112,80,0.15); color: #d07050; }
+                    html.dark .st-cal .rdp-button_previous,
+                    html.dark .st-cal .rdp-button_next { background: #241e19; border-color: #352a20; width: 24px; height: 24px; }
+                    html.dark .st-cal .rdp-button_previous .rdp-chevron,
+                    html.dark .st-cal .rdp-button_next .rdp-chevron { fill: #b8a89f; width: 12px; height: 12px; }
+                    html.dark .st-cal .rdp-button_previous:hover,
+                    html.dark .st-cal .rdp-button_next:hover { background: #d07050; border-color: #d07050; }
+                    html.dark .st-cal .rdp-button_previous:hover .rdp-chevron,
+                    html.dark .st-cal .rdp-button_next:hover .rdp-chevron { fill: #fff; }
+                    html.dark .st-cal .rdp-day_outside .rdp-day_button { color: #4a3e38; }
+                    html.dark .st-cal .rdp-day_disabled .rdp-day_button { color: #3a3028; }
+                    html.dark .st-cal .rdp-day_blocked .rdp-day_button { color: #4a3e38; }
                   `}</style>
 
                   {/* Price row */}
@@ -611,9 +631,9 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                            "--rdp-day_button-height": "32px",
                            "--rdp-day_button-width": "32px",
                            "--rdp-day_button-border-radius": "8px",
-                           "--rdp-nav_button-height": "28px",
-                           "--rdp-nav_button-width": "28px",
-                           "--rdp-nav-height": "2rem",
+                           "--rdp-nav_button-height": "24px",
+                           "--rdp-nav_button-width": "24px",
+                           "--rdp-nav-height": "1.75rem",
                            "--rdp-weekday-padding": "0.2rem 0",
                            "--rdp-outside-opacity": "0.3",
                            "--rdp-disabled-opacity": "0.3",

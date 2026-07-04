@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Sparkles, Home, Mail, CalendarCheck, ArrowRight } from "lucide-react";
 import { publicService } from "../services/publicService";
+import ThemeToggle from "./ThemeToggle";
+import { useTheme } from "../hooks/useTheme";
 
 const InstagramIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -28,6 +30,7 @@ export default function Navbar({ onBookClick }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const [contact, setContact] = useState<{ instagram?: string; whatsapp?: string; email?: string }>({});
+  const { isDark } = useTheme();
 
   useEffect(() => {
     publicService.getContactSettings()
@@ -57,8 +60,10 @@ export default function Navbar({ onBookClick }: NavbarProps) {
       <motion.nav
         animate={{
           background: isScrolled || isMenuOpen
-            ? "rgba(255, 248, 245, 0.98)"
-            : "linear-gradient(to bottom, rgba(255, 248, 245, 0.9) 0%, rgba(255, 248, 245, 0) 100%)",
+            ? isDark ? "rgba(15, 12, 10, 0.97)" : "rgba(255, 248, 245, 0.98)"
+            : isDark
+              ? "linear-gradient(to bottom, rgba(15, 12, 10, 0.85) 0%, rgba(15, 12, 10, 0) 100%)"
+              : "linear-gradient(to bottom, rgba(255, 248, 245, 0.9) 0%, rgba(255, 248, 245, 0) 100%)",
           backdropFilter: isScrolled || isMenuOpen ? "blur(12px)" : "blur(4px)",
           boxShadow: isScrolled ? "0 4px 20px -5px rgba(138, 70, 48, 0.1)" : "none",
           borderBottom: isScrolled || isMenuOpen ? "1px solid rgba(138, 70, 48, 0.05)" : "1px solid rgba(138, 70, 48, 0)",
@@ -96,6 +101,7 @@ export default function Navbar({ onBookClick }: NavbarProps) {
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <button onClick={onBookClick}
             className="hidden md:block bg-primary-container text-on-primary-container px-8 py-3 rounded-full font-semibold text-xs uppercase tracking-wider hover:opacity-80 transition-all active:scale-95 whitespace-nowrap">
             Book Now
@@ -310,9 +316,12 @@ export default function Navbar({ onBookClick }: NavbarProps) {
                   Book a Stay
                 </button>
 
-                <p className="text-center text-[8px] text-stone-300 uppercase tracking-widest mt-3">
-                  © {new Date().getFullYear()} Stay Theory
-                </p>
+                <div className="flex items-center justify-between mt-3">
+                  <p className="text-[8px] text-stone-300 uppercase tracking-widest">
+                    © {new Date().getFullYear()} Stay Theory
+                  </p>
+                  <ThemeToggle />
+                </div>
               </motion.div>
             </motion.div>
           </>

@@ -309,6 +309,16 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
                       .booking-calendar .rdp-day_button:hover:not(:disabled) { background: #f0e8e4; color: #8A4630; }
                       .booking-calendar .rdp-day_blocked .rdp-day_button { text-decoration: line-through; text-decoration-color: #c4a8a0; opacity: 0.4; cursor: not-allowed; }
                       .booking-calendar .rdp-day_blocked .rdp-day_button:hover { background: none; }
+
+                      /* ── Dark mode overrides ── */
+                      html.dark .booking-calendar { --rdp-accent-background-color: rgba(208,112,80,0.18); --rdp-range_middle-background-color: rgba(208,112,80,0.14); }
+                      html.dark .booking-calendar .rdp-month_caption { color: #f0e8e3; }
+                      html.dark .booking-calendar .rdp-weekday { color: #7a6a62; }
+                      html.dark .booking-calendar .rdp-day_button { color: #e4dcd6; }
+                      html.dark .booking-calendar .rdp-day_button:hover:not(:disabled) { background: rgba(208,112,80,0.15); color: #d07050; }
+                      html.dark .booking-calendar .rdp-day_outside .rdp-day_button { color: #4a3e38; }
+                      html.dark .booking-calendar .rdp-day_disabled .rdp-day_button { color: #3a3028; }
+                      html.dark .booking-calendar .rdp-day_blocked .rdp-day_button { color: #4a3e38; }
                     `}</style>
                     <DayPicker
                       mode="range"

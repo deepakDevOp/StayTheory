@@ -6,6 +6,7 @@ import {
   Phone,
   LogOut
 } from "lucide-react";
+import ThemeToggle from "../ThemeToggle";
 
 interface AdminSidebarProps {
   activeTab: string;
@@ -31,12 +32,13 @@ export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarPr
     <>
       {/* Mobile Top Header */}
       <div className="md:hidden flex items-center justify-between px-6 py-4 bg-white border-b border-stone-100 flex-shrink-0 z-20">
-        <div>
-          <Link to="/" className="text-xl font-serif italic text-primary">StayTheory</Link>
+        <Link to="/" className="text-xl font-serif italic text-primary">StayTheory</Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button onClick={handleLogout} className="p-2 text-stone-400 hover:text-red-500 transition-colors">
+            <LogOut className="w-5 h-5" />
+          </button>
         </div>
-        <button onClick={handleLogout} className="p-2 text-stone-400 hover:text-red-500 transition-colors">
-          <LogOut className="w-5 h-5" />
-        </button>
       </div>
 
       {/* Desktop Sidebar */}
@@ -63,11 +65,12 @@ export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarPr
         ))}
       </nav>
 
-      <div className="p-8 border-t border-stone-100">
+      <div className="p-8 border-t border-stone-100 flex items-center justify-between">
         <button onClick={handleLogout} className="flex items-center gap-3 text-stone-400 hover:text-red-500 transition-colors group">
           <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">Logout</span>
         </button>
+        <ThemeToggle />
       </div>
       </aside>
 
