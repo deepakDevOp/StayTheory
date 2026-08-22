@@ -17,10 +17,10 @@ export function useTheme() {
     const next = !document.documentElement.classList.contains("dark");
     if (next) {
       document.documentElement.classList.add("dark");
-      localStorage.setItem("st_theme", "dark");
+      sessionStorage.setItem("st_theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
-      localStorage.setItem("st_theme", "light");
+      sessionStorage.setItem("st_theme", "light");
     }
     setIsDark(next);
     window.dispatchEvent(new Event("themechange"));

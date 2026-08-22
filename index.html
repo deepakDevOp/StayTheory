@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script>
       (function () {
-        if (localStorage.getItem('st_theme') === 'dark') {
+        if (sessionStorage.getItem('st_theme') !== 'light') {
           document.documentElement.classList.add('dark');
         }
       })();
