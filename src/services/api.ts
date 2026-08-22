@@ -1,8 +1,14 @@
 import axios from "axios";
 
-let API_BASE_URL = import.meta.env.VITE_API_URL;
-if (API_BASE_URL.includes("localhost") && window.location.hostname !== "localhost") {
-  API_BASE_URL = "/api/v1";
+// The backend URL is entirely env-driven — set VITE_API_URL once per
+// environment (local .env for dev, the hosting platform's env vars for
+// staging/production) and nothing else needs to change. Fail fast at
+// startup if it's missing rather than silently sending requests nowhere.
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+if (!API_BASE_URL) {
+  throw new Error(
+    "VITE_API_URL is not set. Define it in .env (local) or your hosting platform's environment variables (production) — e.g. http://localhost:8000/api/v1 or https://api.staytheory.com/api/v1."
+  );
 }
 
 const api = axios.create({
@@ -69,7 +75,7 @@ api.interceptors.response.use(
       const { data } = await axios.post(
         `${API_BASE_URL}/auth/refresh`,
         { refresh_token: refreshToken },
-        { headers: { "X-API-Key": (import.meta as any).env.VITE_PUBLIC_API_KEY } }
+        { headers: { "X-API-Key": import.meta.env.VITE_PUBLIC_API_KEY } }
       );
       localStorage.setItem("staytheory_token", data.access_token);
       localStorage.setItem("staytheory_refresh_token", data.refresh_token);
