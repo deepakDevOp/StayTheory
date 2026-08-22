@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Mail, Lock, ArrowRight, RotateCcw, ShieldCheck, Loader2, Eye, EyeOff } from "lucide-react";
 import { publicService } from "../services/publicService";
+import { useNoIndex } from "../hooks/useNoIndex";
 
 type Step = "email" | "otp" | "success";
 
@@ -31,6 +32,7 @@ function loadSession(): { email: string; sentAt: number } | null {
 }
 
 export default function AdminLogin() {
+  useNoIndex();
   const navigate = useNavigate();
 
   // Restore OTP step if page was reloaded mid-flow

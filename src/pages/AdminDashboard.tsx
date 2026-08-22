@@ -10,8 +10,10 @@ import ContactManager from "../components/admin/ContactManager";
 import ConfirmModal from "../components/admin/ConfirmModal";
 import FocusBox from "../components/FocusBox";
 import { adminService } from "../services/adminService";
+import { useNoIndex } from "../hooks/useNoIndex";
 
 export default function AdminDashboard() {
+  useNoIndex();
   const [activeTab, setActiveTab] = useState("overview");
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
