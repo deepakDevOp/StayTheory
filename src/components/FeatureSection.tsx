@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import FocusBox from "./FocusBox";
 import api from "../services/api";
+import { optimizeImageUrl } from "../utils/preload";
 
 export default function FeatureSection() {
   const [content, setContent] = useState<any>(null);
@@ -100,7 +101,7 @@ export default function FeatureSection() {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
               <img
-                src={displayContent.image_url}
+                src={optimizeImageUrl(displayContent.image_url, 600)}
                 alt={displayContent.title}
                 className="w-full max-w-[480px] aspect-[4/5] object-cover transition-transform duration-[3s] group-hover:scale-110"
                 referrerPolicy="no-referrer"

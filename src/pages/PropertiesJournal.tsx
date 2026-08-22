@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { publicService } from "../services/publicService";
-import { preloadPropertyImages } from "../utils/preload";
+import { preloadPropertyImages, getCachedProperties, setCachedProperties, fetchPropertiesDeduped, optimizeImageUrl } from "../utils/preload";
+import { useRevalidateOnFocus } from "../hooks/useRevalidateOnFocus";
 
 interface PropertiesJournalProps {
   onBookClick: (prop?: any) => void;
@@ -189,11 +190,10 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
   const navigate = useNavigate();
 
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      setLoading(true);
+  const fetchProperties = useCallback(async (opts?: { showLoading?: boolean }) => {
+      if (opts?.showLoading) setLoading(true);
       try {
-        const data = await publicService.getProperties();
+        const data = await fetchPropertiesDeduped(() => publicService.getProperties());
         if (!data || data.length === 0) {
           const demoProperties = [
             {
@@ -223,15 +223,28 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
         } else {
           setProperties(data);
           preloadPropertyImages(data);
+          setCachedProperties(data);
         }
       } catch (error) {
         console.error("Failed to fetch journal properties:", error);
       } finally {
-        setLoading(false);
+        if (opts?.showLoading) setLoading(false);
       }
-    };
-    fetchProperties();
   }, []);
+
+  useEffect(() => {
+    const cached = getCachedProperties();
+    if (cached && cached.length > 0) {
+      setProperties(cached);
+      setLoading(false);
+      fetchProperties(); // silent background refresh
+    } else {
+      fetchProperties({ showLoading: true });
+    }
+  }, [fetchProperties]);
+
+  // Picks up admin edits made elsewhere while this page was left open.
+  useRevalidateOnFocus(() => fetchProperties());
 
   const filters = ["all", "villa", "apartment", "sanctuary"];
   const filteredProperties = activeFilter === "all"
@@ -351,8 +364,9 @@ export default function PropertiesJournal({ onBookClick }: PropertiesJournalProp
                     className="group cursor-pointer flex flex-col"
                   >
                     <div className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] mb-4 shadow-2xl shadow-stone-900/5 group-hover:shadow-stone-900/20 transition-all duration-1000">
-                      <img src={image} alt={property.title}
+                      <img src={optimizeImageUrl(image, 800)} alt={property.title}
                         className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                        loading="lazy"
                         referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                       <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">

@@ -5,6 +5,7 @@ import { DayPicker, DateRange } from 'react-day-picker';
 import { format, differenceInCalendarDays } from 'date-fns';
 import 'react-day-picker/style.css';
 import { publicService } from '../services/publicService';
+import { optimizeImageUrl } from '../utils/preload';
 
 const availableProperties = [
   {
@@ -234,10 +235,10 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
                     >
                       {selectedProperty ? (
                         <div className="flex items-center gap-4">
-                          <img 
-                            src={selectedProperty.images?.[0]?.url || selectedProperty.coverImage || ""} 
-                            alt={selectedProperty.title} 
-                            className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" 
+                          <img
+                            src={optimizeImageUrl(selectedProperty.images?.[0]?.url || selectedProperty.coverImage || "", 96)}
+                            alt={selectedProperty.title}
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm"
                           />
                           <div className="text-left">
                             <div className="font-serif italic font-medium text-stone-800 text-base md:text-lg">{selectedProperty.title}</div>
@@ -278,7 +279,7 @@ export default function BookingModal({ isOpen, onClose, onRedirect }: BookingMod
                                 }}
                                 className={`w-full p-3 flex items-center gap-4 rounded-lg hover:bg-stone-50 transition-colors ${selectedPropertyId === prop.id ? 'bg-stone-50' : ''}`}
                               >
-                                 <img src={prop.images?.[0]?.url || prop.coverImage || ""} className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" />
+                                 <img src={optimizeImageUrl(prop.images?.[0]?.url || prop.coverImage || "", 96)} loading="lazy" className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover shadow-sm" />
                                  <div className="text-left flex-1">
                                    <div className={`font-serif italic text-sm md:text-base ${selectedPropertyId === prop.id ? 'text-accent font-semibold' : 'text-stone-800'}`}>{prop.title}</div>
                                    <div className="text-[10px] md:text-xs text-stone-500 tracking-wide">₹{(prop.base_nightly_rate || 0).toLocaleString()} / night</div>

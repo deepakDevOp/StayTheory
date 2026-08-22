@@ -3,6 +3,7 @@ import { Moon } from "lucide-react";
 import { motion } from "motion/react";
 import FocusBox from "./FocusBox";
 import api from "../services/api";
+import { optimizeImageUrl } from "../utils/preload";
 
 export default function TactileSection() {
   const [mainContent, setMainContent] = useState<any>(null);
@@ -62,7 +63,7 @@ export default function TactileSection() {
               className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/50 group"
             >
               <img
-                src={displayMain.image_url}
+                src={optimizeImageUrl(displayMain.image_url, 900)}
                 alt={displayMain.title}
                 className="w-full md:max-h-[62vh] object-cover transition-transform duration-[3s] group-hover:scale-105"
                 referrerPolicy="no-referrer"
@@ -99,7 +100,7 @@ export default function TactileSection() {
               className="relative rounded-2xl overflow-hidden group shadow-2xl shadow-black/40"
             >
               <img
-                src={displayDetail.image_url}
+                src={optimizeImageUrl(displayDetail.image_url, 600)}
                 alt="Detail of textures"
                 className="w-full aspect-[4/3] md:aspect-video object-cover transition-transform duration-[3s] group-hover:scale-110"
                 referrerPolicy="no-referrer"

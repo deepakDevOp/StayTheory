@@ -3,7 +3,8 @@ import { motion } from "motion/react";
 import { MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { publicService } from "../services/publicService";
-import { preloadPropertyImages, optimizeImageUrl, markImageLoaded, imageLoadingAttr } from "../utils/preload";
+import { preloadPropertyImages, optimizeImageUrl, markImageLoaded, imageLoadingAttr, getCachedProperties, setCachedProperties, fetchPropertiesDeduped } from "../utils/preload";
+import { useRevalidateOnFocus } from "../hooks/useRevalidateOnFocus";
 
 function useIsVisible(ref: React.RefObject<HTMLElement | null>) {
   const [visible, setVisible] = useState(true);
@@ -30,31 +31,43 @@ export default function Hero() {
   const isVisible = useIsVisible(sectionRef);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      setLoading(true);
-      try {
-        const data = await publicService.getProperties();
-        const mapped = data.slice(0, 5).map((p: any) => ({
-          id: p.id,
-          slug: p.slug,
-          title: p.title,
-          location: p.city || "Destination",
-          description: p.subtitle || p.description?.substring(0, 100) + "...",
-          image: p.images?.find((img: any) => img.is_primary)?.url || p.images?.[0]?.url || p.coverImage || "",
-          isPlaceholder: false
-        }));
+  const mapForHero = (data: any[]) => data.slice(0, 5).map((p: any) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    location: p.city || "Destination",
+    description: p.subtitle || p.description?.substring(0, 100) + "...",
+    image: p.images?.find((img: any) => img.is_primary)?.url || p.images?.[0]?.url || p.coverImage || "",
+    isPlaceholder: false
+  }));
 
-        setProperties(mapped);
-        preloadPropertyImages(data.slice(0, 5));
-      } catch (error) {
-        console.error("Failed to fetch hero properties:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProperties();
+  const fetchProperties = useCallback(async (opts?: { showLoading?: boolean }) => {
+    if (opts?.showLoading) setLoading(true);
+    try {
+      const data = await fetchPropertiesDeduped(() => publicService.getProperties());
+      setProperties(mapForHero(data));
+      preloadPropertyImages(data.slice(0, 5));
+      setCachedProperties(data);
+    } catch (error) {
+      console.error("Failed to fetch hero properties:", error);
+    } finally {
+      if (opts?.showLoading) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const cached = getCachedProperties();
+    if (cached) {
+      setProperties(mapForHero(cached));
+      setLoading(false);
+      fetchProperties(); // silent background refresh
+    } else {
+      fetchProperties({ showLoading: true });
+    }
+  }, [fetchProperties]);
+
+  // Picks up admin edits made elsewhere while the home page was left open.
+  useRevalidateOnFocus(() => fetchProperties());
 
   const nextSlide = useCallback(() => {
     if (properties.length === 0) return;
@@ -197,22 +210,40 @@ export default function Hero() {
                   <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent pointer-events-none z-20" />
 
                   {isVisible && (
-                    <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 text-center pointer-events-none z-30">
+                    <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-16 text-center pointer-events-none z-30 bg-gradient-to-t from-stone-900/95 via-stone-900/40 to-transparent">
                       <motion.div
                         initial={false}
-                        animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 16 }}
-                        transition={{ duration: 0.4, delay: isActive ? 0.15 : 0 }}
+                        animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 24 }}
+                        transition={{ duration: 0.6, delay: isActive ? 0.2 : 0, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        className="max-w-4xl mx-auto"
                       >
-                        <div className="flex items-center justify-center gap-2 mb-2 md:mb-4 text-white/80">
-                          <MapPin className="w-3 h-3 md:w-4 md:h-4" />
-                          <span className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-semibold">{prop.location}</span>
-                        </div>
-                        <h2 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-serif italic mb-3 md:mb-6 leading-tight drop-shadow-lg">
+                        <motion.div 
+                          className="flex items-center justify-center gap-2 mb-3 md:mb-5 text-white/90"
+                          initial={false}
+                          animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 10 }}
+                          transition={{ duration: 0.5, delay: isActive ? 0.3 : 0 }}
+                        >
+                          <MapPin className="w-3 h-3 md:w-4 md:h-4 text-accent" />
+                          <span className="text-[10px] md:text-sm uppercase tracking-[0.25em] font-semibold">{prop.location}</span>
+                        </motion.div>
+                        
+                        <motion.h2 
+                          className="text-white text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-serif italic mb-4 md:mb-8 leading-[1.1] drop-shadow-2xl"
+                          initial={false}
+                          animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 20 }}
+                          transition={{ duration: 0.6, delay: isActive ? 0.4 : 0 }}
+                        >
                           {prop.title}
-                        </h2>
-                        <p className="text-white/80 text-xs md:text-base font-light max-w-2xl mx-auto drop-shadow-md line-clamp-2 md:line-clamp-none">
+                        </motion.h2>
+                        
+                        <motion.p 
+                          className="text-white/85 text-sm md:text-lg lg:text-xl font-light max-w-2xl mx-auto drop-shadow-md line-clamp-2 md:line-clamp-3 leading-relaxed"
+                          initial={false}
+                          animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 15 }}
+                          transition={{ duration: 0.6, delay: isActive ? 0.5 : 0 }}
+                        >
                           {prop.description}
-                        </p>
+                        </motion.p>
                       </motion.div>
                     </div>
                   )}

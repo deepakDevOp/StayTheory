@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Quote, Star, Sparkles } from "lucide-react";
 import FocusBox from "./FocusBox";
 import api from "../services/api";
+import { optimizeImageUrl } from "../utils/preload";
 
 export default function HostSection() {
   const [content, setContent] = useState<any>(null);
@@ -116,7 +117,7 @@ export default function HostSection() {
 
             <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl shadow-accent/10">
               <img
-                src={display.image_url}
+                src={optimizeImageUrl(display.image_url, 700)}
                 alt={`${display.title} — Your Host`}
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"

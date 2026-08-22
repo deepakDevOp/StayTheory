@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -13,7 +13,8 @@ import "react-day-picker/style.css";
 import { addDays, differenceInCalendarDays, parseISO } from "date-fns";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { preloadPropertyImages, markImageLoaded, imageLoadingAttr } from "../utils/preload";
+import { preloadPropertyImages, markImageLoaded, imageLoadingAttr, optimizeImageUrl, getCachedPropertyDetail, setCachedPropertyDetail, getCachedProperties } from "../utils/preload";
+import { useRevalidateOnFocus } from "../hooks/useRevalidateOnFocus";
 
 export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?: any) => void }) {
    const { id: slug } = useParams();
@@ -29,41 +30,92 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
    const [showAllAmenities, setShowAllAmenities] = useState(false);
    const [activeReviewIndex, setActiveReviewIndex] = useState(0);
 
+   const fetchData = useCallback(async (opts?: { showLoading?: boolean }) => {
+      if (!slug) return;
+      if (opts?.showLoading) setLoading(true);
+      try {
+         const prop = await publicService.getPropertyBySlug(slug);
+         if (prop) {
+            setProperty(prop);
+            preloadPropertyImages(prop);
+            // Fetch reviews for this property
+            const reviews = await publicService.getPropertyReviews(prop.id);
+            setPropertyReviews(reviews);
+
+            // Load blocked dates from the property availability data
+            let blocked: Date[] = [];
+            if (prop.availability && Array.isArray(prop.availability)) {
+               blocked = prop.availability.map((a: any) => {
+                  // Ensure we handle both string and date objects
+                  const d = typeof a.date === 'string' ? parseISO(a.date) : new Date(a.date);
+                  d.setHours(0, 0, 0, 0);
+                  return d;
+               });
+               setBlockedDates(blocked);
+            }
+
+            setCachedPropertyDetail(slug, { property: prop, reviews, blockedDates: blocked });
+         }
+      } catch (error) {
+         console.error("Failed to load property data:", error);
+      } finally {
+         if (opts?.showLoading) setLoading(false);
+      }
+   }, [slug]);
+
+   // Seeds property + blocked dates from the already-fetched properties list
+   // (from /properties or the homepage) when this exact property hasn't been
+   // opened before. The list response carries the same fields (images,
+   // price, availability) as the detail endpoint — only reviews are missing
+   // — so this lets a first-ever click into a property render instantly
+   // instead of showing the loading skeleton, which is the common case when
+   // browsing through the listing (each click is a *different* property, so
+   // the per-slug detail cache alone rarely has a hit).
+   const seedFromListCache = useCallback(() => {
+      const list = getCachedProperties();
+      const match = list?.find((p: any) => p.slug === slug);
+      if (!match) return null;
+
+      let blocked: Date[] = [];
+      if (match.availability && Array.isArray(match.availability)) {
+         blocked = match.availability.map((a: any) => {
+            const d = typeof a.date === 'string' ? parseISO(a.date) : new Date(a.date);
+            d.setHours(0, 0, 0, 0);
+            return d;
+         });
+      }
+      return { property: match, blockedDates: blocked };
+   }, [slug]);
+
    useEffect(() => {
       window.scrollTo(0, 0);
-      const fetchData = async () => {
-         if (!slug) return;
-         setLoading(true);
-         try {
-            const prop = await publicService.getPropertyBySlug(slug);
-            if (prop) {
-               setProperty(prop);
-               preloadPropertyImages(prop);
-               // Fetch reviews for this property
-               const reviews = await publicService.getPropertyReviews(prop.id);
-               setPropertyReviews(reviews);
+      if (!slug) return;
 
-               // Load blocked dates from the property availability data
-               if (prop.availability && Array.isArray(prop.availability)) {
-                  console.log("DEBUG: Raw availability data:", prop.availability);
-                  const blocked = prop.availability.map((a: any) => {
-                     // Ensure we handle both string and date objects
-                     const d = typeof a.date === 'string' ? parseISO(a.date) : new Date(a.date);
-                     d.setHours(0, 0, 0, 0);
-                     return d;
-                  });
-                  console.log("DEBUG: Parsed blocked dates:", blocked);
-                  setBlockedDates(blocked);
-               }
-            }
-         } catch (error) {
-            console.error("Failed to load property data:", error);
-         } finally {
-            setLoading(false);
+      // Serve instantly from cache (stale-while-revalidate) so returning to a
+      // property already visited this session skips the loading skeleton and
+      // avoids re-showing images as if they were never loaded.
+      const cached = getCachedPropertyDetail(slug);
+      if (cached) {
+         setProperty(cached.property);
+         setPropertyReviews(cached.reviews);
+         setBlockedDates(cached.blockedDates);
+         setLoading(false);
+         fetchData(); // silent background refresh
+      } else {
+         const seed = seedFromListCache();
+         if (seed) {
+            setProperty(seed.property);
+            setBlockedDates(seed.blockedDates);
+            setLoading(false); // render instantly with list data; reviews trickle in
+            fetchData(); // silent background fetch to fill in reviews + confirm full detail
+         } else {
+            fetchData({ showLoading: true });
          }
-      };
-      fetchData();
-   }, [slug]);
+      }
+   }, [slug, fetchData, seedFromListCache]);
+
+   // Picks up admin edits made elsewhere while this page was left open.
+   useRevalidateOnFocus(() => { if (slug) fetchData(); });
 
    useEffect(() => {
       if (lightboxIndex !== null) {
@@ -167,7 +219,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
          {/* Hero Section */}
          <div className="relative h-[55vh] sm:h-[60vh] md:h-[72vh] w-full">
             <img
-               src={property.coverImage || normalizedImages[0]?.url}
+               src={optimizeImageUrl(property.coverImage || normalizedImages[0]?.url, 1600)}
                alt={property.title}
                className="w-full h-full object-cover"
                loading="eager"
@@ -263,7 +315,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                                  onClick={() => setLightboxIndex(normalizedImages.indexOf(img))}
                               >
                                  <img
-                                    src={img.url}
+                                    src={optimizeImageUrl(img.url, 800)}
                                     className="w-full h-52 sm:h-52 md:h-64 object-cover transition-transform duration-500 group-hover:scale-105"
                                     alt={`Property Image ${idx + 1}`}
                                     loading={idx < 2 ? "eager" : imageLoadingAttr(img.url)}
@@ -307,7 +359,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                         {/* Preload adjacent images as hidden elements so the browser caches them */}
                         {[-1, 1].map(offset => {
                            const adjIdx = (lightboxIndex! + offset + normalizedImages.length) % normalizedImages.length;
-                           return <link key={offset} rel="preload" as="image" href={normalizedImages[adjIdx]?.url} />;
+                           return <link key={offset} rel="preload" as="image" href={optimizeImageUrl(normalizedImages[adjIdx]?.url, 1920)} />;
                         })}
 
                         {/* Main Image */}
@@ -317,7 +369,7 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                               initial={{ opacity: 0, scale: 0.95 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ duration: 0.25 }}
-                              src={normalizedImages[lightboxIndex].url}
+                              src={optimizeImageUrl(normalizedImages[lightboxIndex].url, 1920)}
                               className="max-w-full max-h-full object-contain shadow-2xl"
                               decoding="async"
                            />

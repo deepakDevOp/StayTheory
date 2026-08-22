@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { Star, ArrowLeft, Quote, MessageCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { publicService } from "../services/publicService";
+import { getCachedData, setCachedData } from "../utils/preload";
+import { useRevalidateOnFocus } from "../hooks/useRevalidateOnFocus";
 
 interface AllReviewsProps {
   onBookClick: () => void;
@@ -27,33 +29,54 @@ export default function AllReviews({ onBookClick }: AllReviewsProps) {
   const [propertyTitle, setPropertyTitle] = useState<string | null>(null);
   const [propertySlug, setPropertySlug] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        if (propertyIdFilter) {
-          const [propReviews, properties] = await Promise.all([
-            publicService.getPropertyReviews(propertyIdFilter),
-            publicService.getProperties()
-          ]);
-          setReviews(propReviews);
-          const prop = properties.find((p: any) => p.id === propertyIdFilter);
-          if (prop) {
-            setPropertyTitle(prop.title);
-            setPropertySlug(prop.slug);
-          }
-        } else {
-          const data = await publicService.getAllReviews();
-          setReviews(data);
+  const cacheKey = `allReviews:${propertyIdFilter || "all"}`;
+
+  const fetchData = useCallback(async (opts?: { showLoading?: boolean }) => {
+    if (opts?.showLoading) setLoading(true);
+    try {
+      if (propertyIdFilter) {
+        const [propReviews, properties] = await Promise.all([
+          publicService.getPropertyReviews(propertyIdFilter),
+          publicService.getProperties()
+        ]);
+        setReviews(propReviews);
+        const prop = properties.find((p: any) => p.id === propertyIdFilter);
+        let title: string | null = null;
+        let slug: string | null = null;
+        if (prop) {
+          title = prop.title;
+          slug = prop.slug;
+          setPropertyTitle(title);
+          setPropertySlug(slug);
         }
-      } catch (error) {
-        console.error("Failed to fetch reviews:", error);
-      } finally {
-        setLoading(false);
+        setCachedData(cacheKey, { reviews: propReviews, propertyTitle: title, propertySlug: slug });
+      } else {
+        const data = await publicService.getAllReviews();
+        setReviews(data);
+        setCachedData(cacheKey, { reviews: data, propertyTitle: null, propertySlug: null });
       }
-    };
-    fetchData();
-  }, [propertyIdFilter]);
+    } catch (error) {
+      console.error("Failed to fetch reviews:", error);
+    } finally {
+      if (opts?.showLoading) setLoading(false);
+    }
+  }, [propertyIdFilter, cacheKey]);
+
+  useEffect(() => {
+    const cached = getCachedData<{ reviews: any[]; propertyTitle: string | null; propertySlug: string | null }>(cacheKey);
+    if (cached) {
+      setReviews(cached.reviews);
+      setPropertyTitle(cached.propertyTitle);
+      setPropertySlug(cached.propertySlug);
+      setLoading(false);
+      fetchData(); // silent background refresh
+    } else {
+      fetchData({ showLoading: true });
+    }
+  }, [cacheKey, fetchData]);
+
+  // Picks up admin edits made elsewhere while this page was left open.
+  useRevalidateOnFocus(() => fetchData());
 
   if (loading) return (
     <div className="min-h-screen bg-background flex items-center justify-center">

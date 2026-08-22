@@ -5,6 +5,8 @@ import { motion } from "motion/react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { publicService } from "../services/publicService";
+import { getCachedData, setCachedData } from "../utils/preload";
+import { useRevalidateOnFocus } from "../hooks/useRevalidateOnFocus";
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -24,12 +26,27 @@ export default function Contact() {
   const [contactSettings, setContactSettings] = useState<ContactSettings>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchContactSettings = () => {
     publicService.getContactSettings()
-      .then(data => setContactSettings(data))
+      .then(data => {
+        setContactSettings(data);
+        setCachedData("contactSettings", data);
+      })
       .catch(() => {/* silently ignore — page still renders */})
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    const cached = getCachedData<ContactSettings>("contactSettings");
+    if (cached) {
+      setContactSettings(cached);
+      setLoading(false);
+    }
+    fetchContactSettings();
   }, []);
+
+  // Picks up admin edits made elsewhere while this page was left open.
+  useRevalidateOnFocus(fetchContactSettings);
 
   useEffect(() => {
     window.scrollTo(0, 0);

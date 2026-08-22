@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { MapPin, ArrowRight } from "lucide-react";
 import { publicService } from "../services/publicService";
-import { preloadPropertyImages, optimizeImageUrl, markImageLoaded, imageLoadingAttr } from "../utils/preload";
+import { preloadPropertyImages, optimizeImageUrl, markImageLoaded, imageLoadingAttr, getCachedProperties, setCachedProperties, fetchPropertiesDeduped } from "../utils/preload";
+import { useRevalidateOnFocus } from "../hooks/useRevalidateOnFocus";
 
 export default function PropertyCollection() {
   const [properties, setProperties] = useState<any[]>([]);
@@ -12,22 +13,34 @@ export default function PropertyCollection() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      setLoading(true);
-      try {
-        const data = await publicService.getProperties();
-        const validData = Array.isArray(data) ? data : [];
-        setProperties(validData.slice(0, 5));
-        preloadPropertyImages(validData.slice(0, 5));
-      } catch (error) {
-        console.error("Failed to fetch public properties:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProperties();
+  const fetchProperties = useCallback(async (opts?: { showLoading?: boolean }) => {
+    if (opts?.showLoading) setLoading(true);
+    try {
+      const data = await fetchPropertiesDeduped(() => publicService.getProperties());
+      const validData = Array.isArray(data) ? data : [];
+      setProperties(validData.slice(0, 5));
+      preloadPropertyImages(validData.slice(0, 5));
+      setCachedProperties(validData);
+    } catch (error) {
+      console.error("Failed to fetch public properties:", error);
+    } finally {
+      if (opts?.showLoading) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const cached = getCachedProperties();
+    if (cached) {
+      setProperties(cached.slice(0, 5));
+      setLoading(false);
+      fetchProperties(); // silent background refresh
+    } else {
+      fetchProperties({ showLoading: true });
+    }
+  }, [fetchProperties]);
+
+  // Picks up admin edits made elsewhere while the home page was left open.
+  useRevalidateOnFocus(() => fetchProperties());
 
   const nextSlide = useCallback(() => {
     if (!isHovered && properties.length > 0) {
@@ -82,49 +95,40 @@ export default function PropertyCollection() {
         </Link>
       </div>
 
-      <div className="flex flex-col md:flex-row flex-1 w-full gap-4 md:gap-5 min-h-0 overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 flex-1 w-full gap-4 md:gap-5 min-h-[60vh] max-h-[80vh] overflow-hidden">
         {Array.isArray(properties) && properties.map((p, idx) => {
-          const isActive = activeIndex === idx;
           const image = p.images?.find((img: any) => img.is_primary)?.url || p.images?.[0]?.url || p.coverImage || "";
           const location = p.city || "India";
+
+          // Make the first item large, others small
+          const isLarge = idx === 0;
 
           return (
             <motion.div
               key={p.id}
-              className={`relative ${isActive ? 'rounded-[2rem]' : 'rounded-xl'} md:rounded-[3rem] overflow-hidden ${p.isPlaceholder ? 'cursor-default' : 'cursor-pointer'} shadow-2xl shadow-black/5`}
-              style={{ willChange: "flex-grow", minHeight: isActive ? undefined : '72px' }}
-              onHoverStart={() => {
-                setActiveIndex(idx);
-                setIsHovered(true);
-              }}
+              className={`relative rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group shadow-2xl shadow-black/5 ${
+                isLarge ? 'md:col-span-2 md:row-span-2' : 'md:col-span-1 md:row-span-1'
+              } ${p.isPlaceholder ? 'cursor-default' : 'cursor-pointer'}`}
+              onHoverStart={() => setIsHovered(true)}
               onHoverEnd={() => setIsHovered(false)}
               onClick={() => {
                 if (!p.isPlaceholder) {
                   navigate(`/property/${p.slug}`);
                 }
               }}
-              animate={{
-                flexGrow: isActive ? 6 : 1,
-                flexBasis: isActive ? '20%' : '6%'
-              }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ scale: 0.98 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
-              {/* Gradient overlay — plain div, no motion needed for opacity transition */}
+              {/* Gradient overlay */}
               <div
-                className="absolute inset-0 z-10 transition-opacity duration-500"
-                style={{
-                  background: isActive
-                    ? 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.85) 100%)'
-                    : 'rgba(0,0,0,0.45)',
-                  opacity: isActive ? 1 : 0.6
-                }}
+                className="absolute inset-0 z-10 bg-gradient-to-t from-stone-900/90 via-stone-900/10 to-transparent opacity-80 group-hover:opacity-95 transition-opacity duration-500"
               />
 
-              {/* Image — stable src (never changes with isActive) to prevent re-fetches on carousel advance */}
+              {/* Image */}
               <img
-                src={optimizeImageUrl(image, 1200)}
+                src={optimizeImageUrl(image, isLarge ? 1400 : 800)}
                 alt={p.title}
-                className={`absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ${isActive ? 'scale-105' : 'scale-110'} ${p.isPlaceholder ? 'grayscale brightness-75 contrast-[1.1]' : ''}`}
+                className={`absolute inset-0 w-full h-full object-cover object-center transition-all duration-700 scale-105 group-hover:scale-110 group-hover:saturate-150 ${p.isPlaceholder ? 'grayscale brightness-75 contrast-[1.1]' : ''}`}
                 referrerPolicy="no-referrer"
                 decoding="async"
                 loading={idx === 0 ? "eager" : imageLoadingAttr(image)}
@@ -132,81 +136,35 @@ export default function PropertyCollection() {
               />
 
               {/* Content Overlays */}
-              <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 md:p-10 pointer-events-none">
-                <AnimatePresence mode="wait">
-                  {isActive ? (
-                    <motion.div
-                      key="active-info"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 16 }}
-                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                      className="text-white"
-                    >
-                      <div className="flex items-center gap-3 mb-4 flex-wrap">
-                        <div className="px-3 py-1 rounded-full bg-stone-900/40 border border-white/20 flex items-center gap-2">
-                          <MapPin className="w-3 h-3 text-primary" />
-                          <span className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold text-white">{location}</span>
-                        </div>
-                        {(p.isPlaceholder || p.airbnb_url) && (
-                          <div className="px-3 py-1 rounded-full bg-primary border border-primary/30">
-                            <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-primary-light whitespace-nowrap">
-                              {p.airbnb_url ? "Direct Booking Coming Soon" : "Coming Soon"}
-                            </span>
-                          </div>
-                        )}
+              <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 md:p-8 pointer-events-none transform transition-transform duration-500 translate-y-2 group-hover:translate-y-0">
+                <div className="text-white">
+                  <div className="flex items-center gap-3 mb-3 flex-wrap">
+                    <div className="px-3 py-1 rounded-full glass-premium border border-white/20 flex items-center gap-2">
+                      <MapPin className="w-3 h-3 text-white" />
+                      <span className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold text-white shadow-sm">{location}</span>
+                    </div>
+                    {(p.isPlaceholder || p.airbnb_url) && (
+                      <div className="px-3 py-1 rounded-full bg-primary/90 backdrop-blur-md border border-primary/30">
+                        <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-white whitespace-nowrap">
+                          {p.airbnb_url ? "Direct Booking Coming Soon" : "Coming Soon"}
+                        </span>
                       </div>
+                    )}
+                  </div>
 
-                      <h3 className="text-3xl md:text-4xl lg:text-5xl font-serif mb-2 leading-tight">
-                        {p.title}
-                      </h3>
-
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: 40 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="h-[2px] bg-primary mb-4"
-                      />
-
-                      {!p.isPlaceholder && (
-                        <p className="text-white/70 text-sm max-w-sm font-light leading-relaxed mb-4 hidden lg:block">
-                          A curated sanctuary designed for ultimate serenity and architectural beauty.
-                        </p>
-                      )}
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="inactive-info"
-                      className="text-white hidden md:block md:-rotate-90 md:origin-bottom-left md:absolute md:bottom-12 md:left-12 whitespace-nowrap"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 0.7 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <h3 className="text-xl font-serif tracking-widest uppercase text-[11px] opacity-60">
-                        {p.title}
-                      </h3>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {!isActive && (
-                  <div className="text-white md:hidden font-serif text-xl tracking-wide opacity-80 mb-2">
+                  <h3 className={`font-serif mb-2 leading-tight ${isLarge ? 'text-3xl md:text-5xl lg:text-6xl' : 'text-2xl md:text-3xl'}`}>
                     {p.title}
-                  </div>
-                )}
-              </div>
+                  </h3>
 
-              {isActive && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="absolute top-6 right-6 md:top-10 md:right-10 z-30"
-                >
-                  <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-stone-900/40">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  </div>
-                </motion.div>
-              )}
+                  <div className="h-[2px] bg-white/40 w-12 mb-3 group-hover:w-24 group-hover:bg-primary transition-all duration-500" />
+
+                  {!p.isPlaceholder && isLarge && (
+                    <p className="text-white/80 text-sm max-w-md font-light leading-relaxed hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                      A curated sanctuary designed for ultimate serenity and architectural beauty. Explore the details.
+                    </p>
+                  )}
+                </div>
+              </div>
             </motion.div>
           );
         })}

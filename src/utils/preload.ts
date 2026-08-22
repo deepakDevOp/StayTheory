@@ -57,15 +57,97 @@ export function imageLoadingAttr(url: string, fallback: "lazy" | "eager" = "lazy
 // ---------------------------------------------------------------------------
 // Preload helpers
 // ---------------------------------------------------------------------------
-export const preloadImages = (images: string[]) => {
+export const preloadImages = (images: string[], width = 1200) => {
   if (!images || !Array.isArray(images)) return;
   images.forEach((url) => {
     if (!url || isImageCached(url)) return;
     const img = new Image();
-    img.src = optimizeCloudinaryUrl(url, 1200);
+    img.src = optimizeCloudinaryUrl(url, width);
     img.onload = () => markImageLoaded(url);
   });
 };
+
+// ---------------------------------------------------------------------------
+// Property detail cache (stale-while-revalidate)
+//
+// Keeps the last-fetched property + reviews + blocked dates in memory keyed
+// by slug, so navigating away (e.g. back to the home page) and returning to
+// the same property renders instantly from cache instead of showing the full
+// loading skeleton and re-requesting everything. A background refetch still
+// runs to keep the data fresh.
+// ---------------------------------------------------------------------------
+export interface PropertyDetailCacheEntry {
+  property: any;
+  reviews: any[];
+  blockedDates: Date[];
+  ts: number;
+}
+
+const _propertyDetailCache = new Map<string, PropertyDetailCacheEntry>();
+
+export function getCachedPropertyDetail(slug: string): PropertyDetailCacheEntry | undefined {
+  return _propertyDetailCache.get(slug);
+}
+
+export function setCachedPropertyDetail(slug: string, entry: Omit<PropertyDetailCacheEntry, "ts">): void {
+  _propertyDetailCache.set(slug, { ...entry, ts: Date.now() });
+}
+
+// ---------------------------------------------------------------------------
+// Properties list cache (stale-while-revalidate)
+//
+// The home page mounts Hero + PropertyCollection (and App itself) each of
+// which independently fetch the full properties list. Navigating away and
+// back to "/" remounts them, re-triggering the fetch + loading skeleton
+// every time. Cache the last response so a remount renders instantly, while
+// a background refetch keeps it current.
+// ---------------------------------------------------------------------------
+let _propertiesListCache: { data: any[]; ts: number } | null = null;
+
+export function getCachedProperties(): any[] | undefined {
+  return _propertiesListCache?.data;
+}
+
+export function setCachedProperties(data: any[]): void {
+  _propertiesListCache = { data, ts: Date.now() };
+}
+
+// ---------------------------------------------------------------------------
+// Single-flight request dedup
+//
+// Hero, PropertyCollection, App, and PropertiesJournal each fetch the same
+// properties list on their own mount. On first load of "/" all three mount
+// within the same tick and would otherwise fire 3 identical network
+// requests. Wrapping the fetch call in this lets whichever caller goes first
+// own the actual request — everyone else just awaits that same promise.
+// ---------------------------------------------------------------------------
+let _inFlightPropertiesFetch: Promise<any[]> | null = null;
+
+export function fetchPropertiesDeduped(fetcher: () => Promise<any[]>): Promise<any[]> {
+  if (_inFlightPropertiesFetch) return _inFlightPropertiesFetch;
+  _inFlightPropertiesFetch = fetcher().finally(() => {
+    _inFlightPropertiesFetch = null;
+  });
+  return _inFlightPropertiesFetch;
+}
+
+// ---------------------------------------------------------------------------
+// Generic keyed data cache (stale-while-revalidate)
+//
+// Same pattern as the properties list cache above, but for any other page
+// data (reviews, contact settings, etc.) keyed by an arbitrary string so a
+// remounted page renders instantly from the last response instead of
+// showing a loading state, while a background refetch keeps it current.
+// ---------------------------------------------------------------------------
+const _dataCache = new Map<string, { data: any; ts: number }>();
+
+export function getCachedData<T = any>(key: string): T | undefined {
+  return _dataCache.get(key)?.data;
+}
+
+export function setCachedData(key: string, data: any): void {
+  _dataCache.set(key, { data, ts: Date.now() });
+}
 
 export const preloadPropertyImages = (properties: any | any[]) => {
   if (!properties) return;
@@ -78,5 +160,7 @@ export const preloadPropertyImages = (properties: any | any[]) => {
     if (p.map_image) urlsToPreload.push(p.map_image);
   });
 
-  preloadImages(urlsToPreload);
+  // Preload at the same width the property detail hero renders (1600px) so
+  // this warm-up produces the exact URL the detail page will request.
+  preloadImages(urlsToPreload, 1600);
 };
