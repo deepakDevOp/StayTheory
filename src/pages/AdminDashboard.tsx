@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import AdminHeader from "../components/admin/AdminHeader";
 import PropertyGrid from "../components/admin/PropertyGrid";
@@ -14,6 +15,18 @@ import { useNoIndex } from "../hooks/useNoIndex";
 
 export default function AdminDashboard() {
   useNoIndex();
+  const navigate = useNavigate();
+
+  // The backend rejects every admin request without a valid token anyway,
+  // but this stops the dashboard shell (sidebar, tabs, branding) from
+  // rendering at all for a logged-out visitor while the first API call is
+  // still in flight.
+  const [hasToken] = useState(() => !!localStorage.getItem("staytheory_token"));
+
+  useEffect(() => {
+    if (!hasToken) navigate("/admin/login", { replace: true });
+  }, [hasToken, navigate]);
+
   const [activeTab, setActiveTab] = useState("overview");
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,8 +48,8 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (hasToken) fetchData();
+  }, [hasToken, fetchData]);
 
   const handleTabChange = useCallback((tab: string) => {
     if (isEditorOpen) {
@@ -80,6 +93,8 @@ export default function AdminDashboard() {
   const handleManagePhotos = useCallback((id: string) => {
     console.log("Managing photos for:", id);
   }, []);
+
+  if (!hasToken) return null;
 
   return (
     <div className="h-[100dvh] w-full bg-background flex flex-col md:flex-row overflow-hidden fixed inset-0">
