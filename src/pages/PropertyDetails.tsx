@@ -489,16 +489,19 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
 
                {/* Location - CLEAN UNOBSTRUCTED VERSION */}
                {(() => {
-                  // Precise coordinates (set once in the admin panel from
-                  // Google Maps' own "copy coordinates" feature) pin the map
-                  // exactly. Without them, fall back to a plain text search
-                  // on the address/city — much less precise (e.g. a whole
-                  // city rather than a specific building), but better than
-                  // nothing for properties that haven't had a pin set yet.
+                  // Priority: a registered Google Maps place name (most
+                  // precise — resolved via Google's own place database, and
+                  // shows the business name label) > precise coordinates
+                  // (from the admin's right-click "copy coordinates", can
+                  // vary slightly by a few meters depending on exactly where
+                  // was clicked) > a plain text address/city search (least
+                  // precise — e.g. a whole city rather than a specific
+                  // building, but better than nothing for properties that
+                  // haven't had a pin set yet).
                   const hasCoords = property.latitude != null && property.longitude != null;
-                  const mapsQuery = hasCoords
-                     ? `${property.latitude},${property.longitude}`
-                     : (property.address || property.city || 'Udaipur');
+                  const mapsQuery = property.map_place_name
+                     || (hasCoords ? `${property.latitude},${property.longitude}` : null)
+                     || (property.address || property.city || 'Udaipur');
                   const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
 
                   return (

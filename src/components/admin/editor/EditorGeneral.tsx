@@ -414,10 +414,12 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
         </div>
       </section>
 
-      {/* External Links & Location Pin — the property page's live map uses
-          these exact coordinates when set, falling back to a plain text
-          search on the address/city above when they're not (which is much
-          less precise, since "Gurugram" alone can't pinpoint a building). */}
+      {/* External Links & Location Pin — the property page's live map uses,
+          in order: the Google Maps place name (most precise and shows the
+          business name label — use this when the property is already a
+          registered listing on Google Maps), then precise coordinates,
+          then a plain text search on the address/city (least precise,
+          since e.g. "Gurugram" alone can't pinpoint a building). */}
       <section>
         <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-4 md:mb-8 flex items-center gap-3">
           <div className="w-1.5 h-1.5 bg-primary rounded-full" /> External Links & Location Pin
@@ -430,7 +432,16 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
               placeholder="https://www.airbnb.com/rooms/..." className={inputCls} />
           </div>
           <div className="space-y-2">
-            <label className={labelCls}>Precise Coordinates (optional)</label>
+            <label className={labelCls}>Google Maps Place Name (preferred)</label>
+            <input type="text" value={formData.map_place_name}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, map_place_name: e.target.value }))}
+              placeholder="Stay Theory - Moon Retreat" className={inputCls} />
+            <p className="text-[10px] ml-1 text-stone-400">
+              If this property is already listed on Google Maps, paste its exact listing name here — more reliable than coordinates, and shows the name label on the map.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <label className={labelCls}>Precise Coordinates (fallback)</label>
             <input type="text" value={coordsInput}
               onChange={(e) => handleCoordsChange(e.target.value)}
               placeholder="28.4285203, 77.1104201"
@@ -438,7 +449,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             <p className={`text-[10px] ml-1 ${coordsError ? "text-red-500" : "text-stone-400"}`}>
               {coordsError
                 ? "Format should be \"latitude, longitude\", e.g. 28.4285203, 77.1104201"
-                : "On Google Maps, right-click the exact spot → click the coordinates that appear → paste here."}
+                : "Only used if there's no place name above. On Google Maps, right-click the exact spot → click the coordinates that appear → paste here."}
             </p>
           </div>
         </div>
