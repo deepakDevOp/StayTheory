@@ -177,6 +177,7 @@ export default function AdminDashboard() {
                     onEdit={handleEditProperty}
                     onPhotos={handleManagePhotos}
                     onAddClick={handleAddProperty}
+                    onDelete={handleDeleteProperty}
                   />
                 )}
               </div>
