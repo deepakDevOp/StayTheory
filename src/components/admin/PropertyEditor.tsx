@@ -22,40 +22,39 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
   const [loading, setLoading] = useState(false);
   const [showDiscard, setShowDiscard] = useState(false);
 
-  // Unified Form State
-  const [formData, setFormData] = useState({
-    title: property?.title || "",
-    subtitle: property?.subtitle || "",
-    description: property?.description || "",
-    base_nightly_rate: property?.base_nightly_rate || "0",
-    max_guests: property?.max_guests || 2,
-    bedrooms: property?.bedrooms || 1,
-    bathrooms: property?.bathrooms || 1,
-    beds: property?.beds || 1,
-    property_type: property?.property_type || "Villa",
-    city: property?.city || "",
-    address: property?.address || "",
-    google_maps_url: property?.google_maps_url || "",
-    airbnb_url: property?.airbnb_url || "",
-    map_image: property?.map_image || "",
-    coverImage: property?.images?.find((img: any) => img.is_primary)?.url || property?.images?.[0]?.url || "",
-    amenities: property?.amenities || [],
-    rules: property?.rules || [],
-    availability: property?.availability?.map((a: any) => a.date) || [],
-    images: property?.images || [] // This will be an array of {url: string}
+  // Unified Form State — shared shape so "add new" and "edit" always agree on
+  // what a blank vs. populated form looks like.
+  const buildFormData = (prop: any) => ({
+    title: prop?.title || "",
+    subtitle: prop?.subtitle || "",
+    description: prop?.description || "",
+    base_nightly_rate: prop?.base_nightly_rate ? String(prop.base_nightly_rate) : "0",
+    max_guests: prop?.max_guests || 2,
+    bedrooms: prop?.bedrooms || 1,
+    bathrooms: prop?.bathrooms || 1,
+    beds: prop?.beds || prop?.bedrooms || 1,
+    property_type: prop?.property_type || "Villa",
+    city: prop?.city || "",
+    address: prop?.address || "",
+    google_maps_url: prop?.google_maps_url || "",
+    airbnb_url: prop?.airbnb_url || "",
+    map_image: prop?.map_image || "",
+    coverImage: prop?.images?.find((img: any) => img.is_primary)?.url || prop?.images?.[0]?.url || "",
+    amenities: prop?.amenities || [],
+    rules: prop?.rules || [],
+    availability: prop?.availability?.map((a: any) => a.date) || [],
+    images: prop?.images || [] // This will be an array of {url: string}
   });
 
-  useEffect(() => {
-    if (property) {
-      setFormData({
-        ...formData,
-        ...property,
-        coverImage: property.images?.find((img: any) => img.is_primary)?.url || property.images?.[0]?.url || "",
-        availability: property.availability?.map((a: any) => a.date) || [],
-        base_nightly_rate: property.base_nightly_rate ? String(property.base_nightly_rate) : "0",
-        beds: property.beds || property.bedrooms || 1
-      });
+  const [formData, setFormData] = useState(() => buildFormData(property));
 
+  useEffect(() => {
+    // Always resets — with a property, populates from it; without one
+    // (opening "Add New"), resets back to a blank form instead of leaving
+    // whatever the previously-edited property left in state.
+    setFormData(buildFormData(property));
+
+    if (property) {
       // Preload all images silently into browser cache
       if (property.images && Array.isArray(property.images)) {
         property.images.forEach((img: any) => {
@@ -150,6 +149,17 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
     }
   };
 
+  // Any close path that isn't "Save" must discard the draft, not just hide
+  // the modal — this component stays mounted across opens/closes (it just
+  // returns null while closed), so without this, unsaved edits (like a
+  // removed photo) would silently persist in formData and reappear "gone"
+  // the next time this same property is reopened, even though nothing was
+  // ever actually deleted from the backend.
+  const handleDiscardClose = () => {
+    setFormData(buildFormData(property));
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   const tabs = [
@@ -166,7 +176,7 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
         className="fixed inset-0 z-[100] flex items-center justify-center md:p-4"
       >
         {/* Deep Backdrop for silhouette */}
-        <div className="absolute inset-0 bg-stone-900/95" onClick={onClose} />
+        <div className="absolute inset-0 bg-stone-900/95" onClick={handleDiscardClose} />
 
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
@@ -194,7 +204,7 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
                 ))}
               </div>
             </div>
-            <button onClick={onClose} className="p-3 md:p-4 hover:bg-stone-50 rounded-full transition-all group absolute top-4 right-4 md:static">
+            <button onClick={handleDiscardClose} className="p-3 md:p-4 hover:bg-stone-50 rounded-full transition-all group absolute top-4 right-4 md:static">
               <X className="w-5 h-5 md:w-6 md:h-6 text-stone-300 group-hover:text-stone-900 group-hover:rotate-90 transition-all duration-500" />
             </button>
           </div>
@@ -216,6 +226,12 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
                   availability: prev.availability.includes(dateStr)
                     ? prev.availability.filter(d => d !== dateStr)
                     : [...prev.availability, dateStr]
+                }))}
+                onSelectRange={(dates) => setFormData(prev => ({
+                  ...prev,
+                  // Adds the whole range without flipping already-blocked
+                  // days back off (unlike onToggleDate, which flips one day).
+                  availability: Array.from(new Set([...prev.availability, ...dates]))
                 }))}
               />
             )}
@@ -263,7 +279,7 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
                       Keep Editing
                     </button>
                     <button
-                      onClick={() => { setShowDiscard(false); onClose(); }}
+                      onClick={() => { setShowDiscard(false); handleDiscardClose(); }}
                       className="flex-1 py-3 rounded-2xl bg-red-500 text-white text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-transform"
                     >
                       Discard

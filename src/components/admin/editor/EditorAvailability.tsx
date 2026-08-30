@@ -5,11 +5,48 @@ import { useState } from "react";
 interface EditorAvailabilityProps {
   blockedDates: string[];
   onToggleDate: (dateStr: string) => void;
+  onSelectRange: (dates: string[]) => void;
 }
 
-export default function EditorAvailability({ blockedDates, onToggleDate }: EditorAvailabilityProps) {
+// Every date string (inclusive) between two "YYYY-MM-DD" dates, in either order.
+function getDatesBetween(aStr: string, bStr: string): string[] {
+  const a = new Date(aStr + "T00:00:00");
+  const b = new Date(bStr + "T00:00:00");
+  const start = a <= b ? a : b;
+  const end = a <= b ? b : a;
+  const dates: string[] = [];
+  const cur = new Date(start);
+  while (cur <= end) {
+    const yyyy = cur.getFullYear();
+    const mm = String(cur.getMonth() + 1).padStart(2, "0");
+    const dd = String(cur.getDate()).padStart(2, "0");
+    dates.push(`${yyyy}-${mm}-${dd}`);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return dates;
+}
+
+export default function EditorAvailability({ blockedDates, onToggleDate, onSelectRange }: EditorAvailabilityProps) {
   const realCurrentDate = new Date();
   const [currentDate, setCurrentDate] = useState(new Date());
+  // First click sets the range anchor; a second click on a different date
+  // blocks everything in between. Clicking the anchor again just toggles
+  // that single day, matching the previous one-click behavior.
+  const [rangeStart, setRangeStart] = useState<string | null>(null);
+
+  const handleDayClick = (dateStr: string) => {
+    if (!rangeStart) {
+      setRangeStart(dateStr);
+      return;
+    }
+    if (rangeStart === dateStr) {
+      onToggleDate(dateStr);
+      setRangeStart(null);
+      return;
+    }
+    onSelectRange(getDatesBetween(rangeStart, dateStr));
+    setRangeStart(null);
+  };
 
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -44,7 +81,9 @@ export default function EditorAvailability({ blockedDates, onToggleDate }: Edito
         </h3>
         <div className="bg-amber-50 px-4 py-2 rounded-full flex items-center gap-2 border border-amber-100 shadow-sm">
           <AlertCircle className="w-4 h-4 text-amber-500" />
-          <p className="text-[9px] font-bold text-amber-700 uppercase tracking-widest">Interactive Calendar</p>
+          <p className="text-[9px] font-bold text-amber-700 uppercase tracking-widest">
+            {rangeStart ? "Now pick an end date to block the range" : "Click a start date, then an end date to block a range"}
+          </p>
         </div>
       </div>
 
@@ -88,6 +127,7 @@ export default function EditorAvailability({ blockedDates, onToggleDate }: Edito
             const day = i + 1;
             const dateStr = formatDate(day);
             const isBlocked = blockedDates.includes(dateStr);
+            const isRangeAnchor = rangeStart === dateStr;
 
             const isPast = currentYear < realCurrentDate.getFullYear() ||
               (currentYear === realCurrentDate.getFullYear() && currentMonth < realCurrentDate.getMonth()) ||
@@ -97,12 +137,14 @@ export default function EditorAvailability({ blockedDates, onToggleDate }: Edito
               <button
                 key={i}
                 disabled={isPast}
-                onClick={() => onToggleDate(dateStr)}
+                onClick={() => handleDayClick(dateStr)}
                 className={`h-10 md:h-12 w-full rounded-2xl flex items-center justify-center text-sm font-medium transition-all duration-300 active:scale-95 ${isPast
                   ? 'text-stone-300 bg-stone-50/50 cursor-not-allowed'
-                  : isBlocked
-                    ? 'bg-primary text-white shadow-lg shadow-primary/40 scale-105 ring-2 ring-primary ring-offset-2'
-                    : 'bg-white text-stone-600 border-2 border-stone-100 hover:border-primary/30 hover:bg-stone-50 hover:-translate-y-1'
+                  : isRangeAnchor
+                    ? 'bg-amber-400 text-white shadow-lg shadow-amber-400/40 scale-105 ring-2 ring-amber-400 ring-offset-2'
+                    : isBlocked
+                      ? 'bg-primary text-white shadow-lg shadow-primary/40 scale-105 ring-2 ring-primary ring-offset-2'
+                      : 'bg-white text-stone-600 border-2 border-stone-100 hover:border-primary/30 hover:bg-stone-50 hover:-translate-y-1'
                   }`}
               >
                 {day}

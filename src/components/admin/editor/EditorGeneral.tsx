@@ -1,7 +1,8 @@
-import { IndianRupee, Plus, Trash2, Camera, LayoutGrid, Bed, Sofa, Trees, Utensils, Bath, Wind, ChevronDown, Check, Sun } from "lucide-react";
+import { IndianRupee, Plus, Minus, Trash2, Camera, LayoutGrid, Bed, Sofa, Trees, Utensils, Bath, Wind, ChevronDown, Check, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { optimizeImageUrl } from "../../../utils/preload";
+import ConfirmModal from "../ConfirmModal";
 
 interface EditorGeneralProps {
   formData: any;
@@ -36,6 +37,7 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
   }, [formData.images]);
   const [uploading, setUploading] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -204,16 +206,35 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-10 mt-4 md:mt-10">
           {[
-            { label: "Max Guests", key: "max_guests" },
-            { label: "Bedrooms", key: "bedrooms" },
-            { label: "Bathrooms", key: "bathrooms" },
-            { label: "Total Beds", key: "beds" },
-          ].map(({ label, key }) => (
+            { label: "Max Guests", key: "max_guests", min: 1 },
+            { label: "Bedrooms", key: "bedrooms", min: 0 },
+            { label: "Bathrooms", key: "bathrooms", min: 0 },
+            { label: "Total Beds", key: "beds", min: 0 },
+          ].map(({ label, key, min }) => (
             <div key={key} className="space-y-2">
               <label className={labelCls}>{label}</label>
-              <input type="number" value={(formData as any)[key]}
-                onChange={(e) => setFormData((prev: any) => ({ ...prev, [key]: parseInt(e.target.value) || 1 }))}
-                className={inputCls + " text-center"} />
+              <div className={inputCls + " !py-2 flex items-center justify-between gap-2"}>
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev: any) => ({ ...prev, [key]: Math.max(min, (parseInt(prev[key]) || min) - 1) }))}
+                  className="w-8 h-8 shrink-0 rounded-full bg-stone-100 text-stone-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <input
+                  type="number"
+                  value={(formData as any)[key]}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, [key]: Math.max(min, parseInt(e.target.value) || min) }))}
+                  className="w-full text-center bg-transparent outline-none font-medium [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev: any) => ({ ...prev, [key]: (parseInt(prev[key]) || min) + 1 }))}
+                  className="w-8 h-8 shrink-0 rounded-full bg-stone-100 text-stone-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -403,19 +424,33 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
                   </div>
                 )}
 
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button
-                    onClick={() => setFormData((prev: any) => ({ ...prev, images: prev.images.filter((i: any) => i.url !== img.url) }))}
-                    className="p-3 bg-stone-800/80 rounded-full text-white hover:bg-red-500 transition-all hover:scale-110 shadow-lg"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
+                <div className="absolute inset-0 bg-black/20 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none" />
+                {/* Always visible — hover-only would never show on touch devices (tablets/phones), where the admin panel is also used. */}
+                <button
+                  onClick={() => setImageToDelete(img)}
+                  className="absolute top-2 right-2 z-10 p-2 bg-stone-900/80 rounded-full text-white hover:bg-red-500 transition-all hover:scale-110 shadow-lg"
+                  title="Remove photo"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
       </section>
+
+      <ConfirmModal
+        isOpen={!!imageToDelete}
+        onClose={() => setImageToDelete(null)}
+        onConfirm={() => {
+          setFormData((prev: any) => ({ ...prev, images: prev.images.filter((i: any) => i.url !== imageToDelete.url) }));
+          setImageToDelete(null);
+        }}
+        title="Remove this photo?"
+        message="It will be removed from the gallery once you save. The image itself is only deleted from storage after you click Save Sanctuary — nothing is lost until then."
+        confirmLabel="Remove Photo"
+        cancelLabel="Keep It"
+      />
     </motion.div>
   );
 }

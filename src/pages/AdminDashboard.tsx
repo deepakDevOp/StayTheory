@@ -64,6 +64,7 @@ export default function AdminDashboard() {
     if (pendingTab) {
       setActiveTab(pendingTab);
       setIsEditorOpen(false);
+      setSelectedProperty(null);
       setPendingTab(null);
     }
     setShowExitConfirm(false);
@@ -164,9 +165,9 @@ export default function AdminDashboard() {
       </main>
 
       {/* Editor Modal */}
-      <PropertyEditor 
-        isOpen={isEditorOpen} 
-        onClose={() => setIsEditorOpen(false)} 
+      <PropertyEditor
+        isOpen={isEditorOpen}
+        onClose={() => { setIsEditorOpen(false); setSelectedProperty(null); }}
         property={selectedProperty}
         onSaveSuccess={fetchData}
       />

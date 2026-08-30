@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, X } from "lucide-react";
 
@@ -22,17 +23,23 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
   if (!isOpen) return null;
 
-  return (
+  // Rendered via a portal straight to document.body: this modal gets used
+  // from places nested inside transformed/scrollable ancestors (e.g. the
+  // property editor's animated modal + its overflow-y-auto content area),
+  // and `position: fixed` is relative to the nearest transformed ancestor,
+  // not the viewport, once one exists in the chain. A portal sidesteps that
+  // entirely so this always centers on the real screen.
+  return createPortal(
     <AnimatePresence>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       >
         <div className="absolute inset-0 bg-stone-900/90" onClick={onClose} />
-        
-        <motion.div 
+
+        <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -41,18 +48,18 @@ export default function ConfirmModal({
           <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
-          
+
           <h3 className="text-2xl font-serif italic text-on-surface mb-3">{title}</h3>
           <p className="text-stone-500 text-sm leading-relaxed mb-8">{message}</p>
-          
+
           <div className="flex flex-col gap-3">
-            <button 
+            <button
               onClick={onConfirm}
               className="w-full py-4 bg-stone-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 transition-all"
             >
               {confirmLabel}
             </button>
-            <button 
+            <button
               onClick={onClose}
               className="w-full py-4 bg-stone-50 text-stone-400 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-stone-100 transition-all"
             >
@@ -61,6 +68,7 @@ export default function ConfirmModal({
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
