@@ -117,6 +117,12 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
         });
       }
 
+      // Persist the admin's arranged sequence — the array order here reflects
+      // whatever they set via the reorder controls in the gallery, so write
+      // it out as real, distinct `order` values instead of leaving every
+      // image at its previous (often identical) value.
+      finalImages = finalImages.map((img, idx) => ({ ...img, order: idx }));
+
       const payload = {
         ...formData,
         slug,

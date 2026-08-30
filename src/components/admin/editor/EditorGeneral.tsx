@@ -1,8 +1,14 @@
-import { IndianRupee, Plus, Minus, Trash2, Camera, LayoutGrid, Bed, Sofa, Trees, Utensils, Bath, Wind, ChevronDown, Check, Sun } from "lucide-react";
+import { IndianRupee, Plus, Minus, Trash2, GripVertical, Camera, LayoutGrid, Bed, Sofa, Trees, Utensils, Bath, Wind, ChevronDown, Check, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { optimizeImageUrl } from "../../../utils/preload";
 import ConfirmModal from "../ConfirmModal";
+import {
+  DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface EditorGeneralProps {
   formData: any;
@@ -22,6 +28,67 @@ const MASTER_CATEGORIES = [
 ];
 
 const PROPERTY_TYPES = ["Villa", "Apartment", "Cottage", "Studio", "Boutique Hotel", "Private Sanctuary"];
+
+function SortableImageTile({ img, idx, showCategoryBadge, onDelete }: {
+  img: any;
+  idx: number;
+  showCategoryBadge: boolean;
+  onDelete: (img: any) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: img.url });
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: isDragging ? 0.4 : 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.2 }}
+      className="aspect-square bg-stone-200 rounded-[2rem] relative group overflow-hidden touch-none"
+    >
+      {/* Serve gallery thumbnails at 400px — avoids decoding multi-MB originals at 200px display size */}
+      <img
+        src={optimizeImageUrl(img.url, 400)}
+        alt="Gallery item"
+        decoding="async"
+        loading={idx < 8 ? "eager" : "lazy"}
+        className="w-full h-full object-cover pointer-events-none"
+      />
+
+      {showCategoryBadge && (
+        <div className="absolute top-4 left-4 z-10">
+          <span className="bg-white shadow-md text-[8px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg text-stone-600 border border-stone-100">
+            {img.category}
+          </span>
+        </div>
+      )}
+
+      <div className="absolute inset-0 bg-black/20 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+      {/* Always visible — hover-only would never show on touch devices (tablets/phones), where the admin panel is also used. */}
+      <button
+        onClick={() => onDelete(img)}
+        className="absolute top-2 right-2 z-10 p-2 bg-stone-900/80 rounded-full text-white hover:bg-red-500 transition-all hover:scale-110 shadow-lg"
+        title="Remove photo"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+
+      {/* Drag handle — sets the sequence photos appear in on the public
+          property page (see PropertyEditor's save, which writes this
+          display order out as each image's `order` field). */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="absolute bottom-2 left-2 z-10 p-2 bg-stone-900/80 rounded-full text-white shadow-lg cursor-grab active:cursor-grabbing touch-none"
+        title="Drag to reorder"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+    </motion.div>
+  );
+}
 
 export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: EditorGeneralProps) {
   const [activePhotoTab, setActivePhotoTab] = useState("main");
@@ -48,6 +115,40 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
     if (activePhotoTab === "main") return formData.images;
     return formData.images.filter((img: any) => img.category === activePhotoTab);
   }, [formData.images, activePhotoTab]);
+
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // A small delay (rather than distance) on touch lets a plain tap still
+    // work for taps/scrolling, only starting a drag once you actually hold.
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } })
+  );
+
+  // Drag-reorders within the currently displayed (category-filtered) view,
+  // then writes that new order back into the underlying full images array —
+  // that array's order is what gets saved and is what the public property
+  // page displays photos in.
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setFormData((prev: any) => {
+      const visible = activePhotoTab === "main"
+        ? prev.images
+        : prev.images.filter((i: any) => i.category === activePhotoTab);
+      const oldIndex = visible.findIndex((i: any) => i.url === active.id);
+      const newIndex = visible.findIndex((i: any) => i.url === over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      const reordered = arrayMove(visible, oldIndex, newIndex);
+
+      // Drop the reordered subset back into the same full-array slots it
+      // came from, in sequence, leaving other categories' images untouched.
+      let subsetIdx = 0;
+      const newImages = prev.images.map((img: any) =>
+        (activePhotoTab === "main" || img.category === activePhotoTab) ? reordered[subsetIdx++] : img
+      );
+      return { ...prev, images: newImages };
+    });
+  };
 
   const toggleCategory = (id: string) => {
     if (id === "main") return; // Main is always required
@@ -372,71 +473,47 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Only show upload button if not in Main Gallery */}
-          {activePhotoTab !== "main" && (
-            <div 
-              onClick={() => !uploading && fileInputRef.current?.click()}
-              className={`aspect-square bg-white rounded-[2rem] border-2 border-dashed border-stone-200 flex flex-col items-center justify-center gap-3 text-stone-400 hover:border-primary/30 hover:text-primary transition-all cursor-pointer group ${uploading ? 'opacity-50 cursor-wait' : ''}`}
-            >
-              <div className="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center group-hover:bg-primary/5 transition-colors">
-                <Plus className={`w-6 h-6 transition-transform ${uploading ? 'animate-spin' : 'group-hover:rotate-90'}`} />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-center px-4">
-                {uploading ? "Uploading..." : `Add to ${MASTER_CATEGORIES.find(c => c.id === activePhotoTab)?.label}`}
-              </span>
-            </div>
-          )}
+        <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={displayImages.map((img: any) => img.url)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Only show upload button if not in Main Gallery */}
+              {activePhotoTab !== "main" && (
+                <div
+                  onClick={() => !uploading && fileInputRef.current?.click()}
+                  className={`aspect-square bg-white rounded-[2rem] border-2 border-dashed border-stone-200 flex flex-col items-center justify-center gap-3 text-stone-400 hover:border-primary/30 hover:text-primary transition-all cursor-pointer group ${uploading ? 'opacity-50 cursor-wait' : ''}`}
+                >
+                  <div className="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center group-hover:bg-primary/5 transition-colors">
+                    <Plus className={`w-6 h-6 transition-transform ${uploading ? 'animate-spin' : 'group-hover:rotate-90'}`} />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-center px-4">
+                    {uploading ? "Uploading..." : `Add to ${MASTER_CATEGORIES.find(c => c.id === activePhotoTab)?.label}`}
+                  </span>
+                </div>
+              )}
 
-          <AnimatePresence mode="popLayout">
-            {displayImages.length === 0 && !uploading && (
-              <div className={`col-span-2 md:col-span-3 flex items-center px-6 ${activePhotoTab === "main" ? "md:col-span-4" : ""}`}>
-                <p className="text-stone-300 italic text-sm font-serif">
-                  {activePhotoTab === "main"
-                    ? "Upload photos to specific categories (Bedroom, Living, etc.) to see them appear here in the Main Gallery."
-                    : "This category is empty. Select it and upload your first photo to bring this sanctuary to life."}
-                </p>
-              </div>
-            )}
-            {displayImages.map((img: any, idx: number) => (
-              <motion.div
-                key={img.url}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                className="aspect-square bg-stone-200 rounded-[2rem] relative group overflow-hidden"
-              >
-                {/* Serve gallery thumbnails at 400px — avoids decoding multi-MB originals at 200px display size */}
-                <img
-                  src={optimizeImageUrl(img.url, 400)}
-                  alt="Gallery item"
-                  decoding="async"
-                  loading={idx < 8 ? "eager" : "lazy"}
-                  className="w-full h-full object-cover"
-                />
-
-                {activePhotoTab === "main" && (
-                  <div className="absolute top-4 left-4 z-10">
-                    <span className="bg-white shadow-md text-[8px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg text-stone-600 border border-stone-100">
-                      {img.category}
-                    </span>
+              <AnimatePresence mode="popLayout">
+                {displayImages.length === 0 && !uploading && (
+                  <div className={`col-span-2 md:col-span-3 flex items-center px-6 ${activePhotoTab === "main" ? "md:col-span-4" : ""}`}>
+                    <p className="text-stone-300 italic text-sm font-serif">
+                      {activePhotoTab === "main"
+                        ? "Upload photos to specific categories (Bedroom, Living, etc.) to see them appear here in the Main Gallery."
+                        : "This category is empty. Select it and upload your first photo to bring this sanctuary to life."}
+                    </p>
                   </div>
                 )}
-
-                <div className="absolute inset-0 bg-black/20 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none" />
-                {/* Always visible — hover-only would never show on touch devices (tablets/phones), where the admin panel is also used. */}
-                <button
-                  onClick={() => setImageToDelete(img)}
-                  className="absolute top-2 right-2 z-10 p-2 bg-stone-900/80 rounded-full text-white hover:bg-red-500 transition-all hover:scale-110 shadow-lg"
-                  title="Remove photo"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                {displayImages.map((img: any, idx: number) => (
+                  <SortableImageTile
+                    key={img.url}
+                    img={img}
+                    idx={idx}
+                    showCategoryBadge={activePhotoTab === "main"}
+                    onDelete={setImageToDelete}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          </SortableContext>
+        </DndContext>
       </section>
 
       <ConfirmModal
