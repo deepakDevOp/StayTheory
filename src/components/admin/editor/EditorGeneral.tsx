@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { optimizeImageUrl } from "../../../utils/preload";
 import ConfirmModal from "../ConfirmModal";
 import {
-  DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors,
+  DndContext, closestCenter, PointerSensor, useSensor, useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
@@ -37,15 +37,26 @@ function SortableImageTile({ img, idx, showCategoryBadge, onDelete }: {
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: img.url });
 
+  // A plain div, not motion.div — Framer Motion sets up its own internal
+  // pointer/gesture handling on motion.* elements, which competes with
+  // dnd-kit's own pointer listeners on the same node and is why dragging
+  // wasn't activating reliably. dnd-kit's own transform/transition (from
+  // useSortable) fully covers the drag animation we need here.
+  //
+  // {...attributes}/{...listeners} live on the grip handle below, NOT this
+  // outer div. Putting them on the whole tile meant touch-scrolling and
+  // dnd-kit's drag were both trying to own the same gesture with no
+  // touch-action boundary between them, which is what caused the
+  // flicker/snap-back — the tile's CSS transform kept getting fought over
+  // between the browser's native scroll handling and dnd-kit. A dedicated
+  // handle with touch-action: none scoped to just that small element avoids
+  // the conflict entirely while leaving the rest of the tile fully
+  // scrollable.
   return (
-    <motion.div
+    <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: isDragging ? 0.4 : 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.2 }}
-      className="aspect-square bg-stone-200 rounded-[2rem] relative group overflow-hidden touch-none"
+      className={`aspect-square bg-stone-200 rounded-[2rem] relative group overflow-hidden transition-opacity duration-200 ${isDragging ? "opacity-40" : "opacity-100"}`}
     >
       {/* Serve gallery thumbnails at 400px — avoids decoding multi-MB originals at 200px display size */}
       <img
@@ -64,20 +75,9 @@ function SortableImageTile({ img, idx, showCategoryBadge, onDelete }: {
         </div>
       )}
 
-      <div className="absolute inset-0 bg-black/20 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none" />
-
-      {/* Always visible — hover-only would never show on touch devices (tablets/phones), where the admin panel is also used. */}
-      <button
-        onClick={() => onDelete(img)}
-        className="absolute top-2 right-2 z-10 p-2 bg-stone-900/80 rounded-full text-white hover:bg-red-500 transition-all hover:scale-110 shadow-lg"
-        title="Remove photo"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
-
-      {/* Drag handle — sets the sequence photos appear in on the public
-          property page (see PropertyEditor's save, which writes this
-          display order out as each image's `order` field). */}
+      {/* Drag handle — press and drag this to reorder. touch-none is scoped
+          to just this small element, so it doesn't block scrolling the
+          gallery when you touch anywhere else on the photo. */}
       <button
         {...attributes}
         {...listeners}
@@ -86,7 +86,20 @@ function SortableImageTile({ img, idx, showCategoryBadge, onDelete }: {
       >
         <GripVertical className="w-4 h-4" />
       </button>
-    </motion.div>
+
+      <div className="absolute inset-0 bg-black/20 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+      {/* Always visible — hover-only would never show on touch devices (tablets/phones), where the admin panel is also used.
+          Stops the pointerdown from bubbling to the tile so tapping delete never gets mistaken for the start of a drag. */}
+      <button
+        onClick={() => onDelete(img)}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute top-2 right-2 z-10 p-2 bg-stone-900/80 rounded-full text-white hover:bg-red-500 transition-all hover:scale-110 shadow-lg"
+        title="Remove photo"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
   );
 }
 
@@ -116,11 +129,13 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
     return formData.images.filter((img: any) => img.category === activePhotoTab);
   }, [formData.images, activePhotoTab]);
 
+  // Dragging is triggered only from the dedicated grip handle (see
+  // SortableImageTile), not the whole tile. A handle press unambiguously
+  // means "drag" — no delay needed to disambiguate from scrolling, since
+  // scrolling never starts from that handle. A small distance threshold
+  // just avoids treating a plain tap as a drag.
   const dndSensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    // A small delay (rather than distance) on touch lets a plain tap still
-    // work for taps/scrolling, only starting a drag once you actually hold.
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
   );
 
   // Drag-reorders within the currently displayed (category-filtered) view,
