@@ -118,6 +118,37 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
   const [uploading, setUploading] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [imageToDelete, setImageToDelete] = useState<any>(null);
+
+  // Precise map pin — stored as parsed lat/lng floats in formData, but
+  // edited here as the single "lat, lng" string Google Maps gives you when
+  // you right-click a spot and copy its coordinates (its own native format,
+  // so admins can paste directly without reformatting anything).
+  const [coordsInput, setCoordsInput] = useState(() =>
+    formData.latitude != null && formData.longitude != null
+      ? `${formData.latitude}, ${formData.longitude}`
+      : ""
+  );
+  const [coordsError, setCoordsError] = useState(false);
+
+  const handleCoordsChange = (value: string) => {
+    setCoordsInput(value);
+    if (!value.trim()) {
+      setCoordsError(false);
+      setFormData((prev: any) => ({ ...prev, latitude: null, longitude: null }));
+      return;
+    }
+    const match = value.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if (match) {
+      const lat = parseFloat(match[1]);
+      const lng = parseFloat(match[2]);
+      if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        setCoordsError(false);
+        setFormData((prev: any) => ({ ...prev, latitude: lat, longitude: lng }));
+        return;
+      }
+    }
+    setCoordsError(true);
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -221,25 +252,6 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
             setUploading(true);
             try {
               await onPhotoUpload(files[0], 'cover_internal');
-            } finally {
-              setUploading(false);
-            }
-          }
-        }}
-        className="hidden"
-        accept="image/*"
-      />
-
-      {/* Map Screenshot Input */}
-      <input 
-        type="file"
-        id="map-upload"
-        onChange={async (e) => {
-          const files = e.target.files;
-          if (files && files.length > 0) {
-            setUploading(true);
-            try {
-              await onPhotoUpload(files[0], 'map_internal');
             } finally {
               setUploading(false);
             }
@@ -402,18 +414,15 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
         </div>
       </section>
 
-      {/* Location Identity */}
+      {/* External Links & Location Pin — the property page's live map uses
+          these exact coordinates when set, falling back to a plain text
+          search on the address/city above when they're not (which is much
+          less precise, since "Gurugram" alone can't pinpoint a building). */}
       <section>
         <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-4 md:mb-8 flex items-center gap-3">
-          <div className="w-1.5 h-1.5 bg-primary rounded-full" /> Location Identity
+          <div className="w-1.5 h-1.5 bg-primary rounded-full" /> External Links & Location Pin
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
-          <div className="space-y-2">
-            <label className={labelCls}>Google Maps URL</label>
-            <input type="text" value={formData.google_maps_url}
-              onChange={(e) => setFormData((prev: any) => ({ ...prev, google_maps_url: e.target.value }))}
-              placeholder="https://goo.gl/maps/..." className={inputCls} />
-          </div>
           <div className="space-y-2">
             <label className={labelCls}>Airbnb URL</label>
             <input type="text" value={formData.airbnb_url}
@@ -421,23 +430,16 @@ export default function EditorGeneral({ formData, setFormData, onPhotoUpload }: 
               placeholder="https://www.airbnb.com/rooms/..." className={inputCls} />
           </div>
           <div className="space-y-2">
-            <label className={labelCls}>Location Map Screenshot</label>
-            <div className="flex gap-3">
-              <div onClick={() => !uploading && document.getElementById('map-upload')?.click()}
-                className={inputCls + " flex-1 flex items-center justify-between cursor-pointer hover:bg-stone-50"}>
-                <span className="truncate text-stone-500 text-sm">{formData.map_image ? "Image Selected" : "Upload Map Screenshot"}</span>
-                <Camera className="w-4 h-4 text-stone-300 shrink-0 ml-2" />
-              </div>
-              {formData.map_image && (
-                <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl overflow-hidden border border-stone-100 shrink-0 shadow-sm relative group">
-                  <img src={formData.map_image} decoding="async" className="w-full h-full object-cover" />
-                  <button onClick={() => setFormData((prev: any) => ({ ...prev, map_image: "" }))}
-                    className="absolute inset-0 bg-red-500/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                    <Trash2 className="w-3 h-3 text-white" />
-                  </button>
-                </div>
-              )}
-            </div>
+            <label className={labelCls}>Precise Coordinates (optional)</label>
+            <input type="text" value={coordsInput}
+              onChange={(e) => handleCoordsChange(e.target.value)}
+              placeholder="28.4285203, 77.1104201"
+              className={inputCls + (coordsError ? " ring-2 ring-red-300" : "")} />
+            <p className={`text-[10px] ml-1 ${coordsError ? "text-red-500" : "text-stone-400"}`}>
+              {coordsError
+                ? "Format should be \"latitude, longitude\", e.g. 28.4285203, 77.1104201"
+                : "On Google Maps, right-click the exact spot → click the coordinates that appear → paste here."}
+            </p>
           </div>
         </div>
       </section>

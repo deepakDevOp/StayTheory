@@ -488,36 +488,64 @@ export default function PropertyDetails({ onBookClick }: { onBookClick?: (prop?:
                <hr className="border-stone-200" />
 
                {/* Location - CLEAN UNOBSTRUCTED VERSION */}
-               <section id="location">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6 mb-5 md:mb-8">
-                     <div className="space-y-2 md:space-y-4">
-                        <h3 className="text-lg md:text-2xl font-serif font-bold text-stone-800">Location</h3>
-                        <p className="text-stone-500 font-serif italic text-sm md:text-xl max-w-lg">
-                           {property.address || property.city || "Location details being curated..."}
-                        </p>
-                     </div>
-                     <a
-                        href={property.google_maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.address || property.city || 'Udaipur')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent hover:underline flex items-center gap-2"
-                     >
-                        OPEN IN GOOGLE MAPS
-                        <ArrowRight className="w-4 h-4" />
-                     </a>
-                  </div>
+               {(() => {
+                  // Precise coordinates (set once in the admin panel from
+                  // Google Maps' own "copy coordinates" feature) pin the map
+                  // exactly. Without them, fall back to a plain text search
+                  // on the address/city — much less precise (e.g. a whole
+                  // city rather than a specific building), but better than
+                  // nothing for properties that haven't had a pin set yet.
+                  const hasCoords = property.latitude != null && property.longitude != null;
+                  const mapsQuery = hasCoords
+                     ? `${property.latitude},${property.longitude}`
+                     : (property.address || property.city || 'Udaipur');
+                  const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
 
-                  <div className="relative overflow-hidden rounded-2xl md:rounded-[2.5rem] border border-stone-100 shadow-xl aspect-[4/3] md:aspect-[21/9]">
-                     <motion.img
-                        initial={{ scale: 1 }}
-                        whileInView={{ scale: 1 }}
-                        src={property.map_image || "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=2000"}
-                        alt="Location Map"
-                        className="w-full h-full object-cover transition-transform duration-[4s] ease-out"
-                        referrerPolicy="no-referrer"
-                     />
-                  </div>
-               </section>
+                  return (
+                     <section id="location">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6 mb-5 md:mb-8">
+                           <div className="space-y-2 md:space-y-4">
+                              <h3 className="text-lg md:text-2xl font-serif font-bold text-stone-800">Location</h3>
+                              <p className="text-stone-500 font-serif italic text-sm md:text-xl max-w-lg">
+                                 {property.address || property.city || "Location details being curated..."}
+                              </p>
+                           </div>
+                           <a
+                              href={mapsSearchUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent hover:underline flex items-center gap-2"
+                           >
+                              OPEN IN GOOGLE MAPS
+                              <ArrowRight className="w-4 h-4" />
+                           </a>
+                        </div>
+
+                        <div className="relative overflow-hidden rounded-2xl md:rounded-[2.5rem] border border-stone-100 shadow-xl aspect-[4/3] md:aspect-[21/9]">
+                           {import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY ? (
+                              <iframe
+                                 title="Property location map"
+                                 src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY}&q=${encodeURIComponent(mapsQuery)}`}
+                                 className="w-full h-full border-0"
+                                 loading="lazy"
+                                 referrerPolicy="no-referrer-when-downgrade"
+                                 allowFullScreen
+                              />
+                           ) : (
+                              <a
+                                 href={mapsSearchUrl}
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-stone-50 text-stone-400 hover:text-accent transition-colors"
+                              >
+                                 <MapPin className="w-8 h-8" />
+                                 <span className="text-[10px] font-bold uppercase tracking-[0.2em]">View on Google Maps</span>
+                              </a>
+                           )}
+                        </div>
+                     </section>
+                  );
+               })()}
 
                <hr className="border-stone-200" />
 

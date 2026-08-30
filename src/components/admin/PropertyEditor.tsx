@@ -36,9 +36,9 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
     property_type: prop?.property_type || "Villa",
     city: prop?.city || "",
     address: prop?.address || "",
-    google_maps_url: prop?.google_maps_url || "",
     airbnb_url: prop?.airbnb_url || "",
-    map_image: prop?.map_image || "",
+    latitude: prop?.latitude ?? null,
+    longitude: prop?.longitude ?? null,
     coverImage: prop?.images?.find((img: any) => img.is_primary)?.url || prop?.images?.[0]?.url || "",
     amenities: prop?.amenities || [],
     rules: prop?.rules || [],
@@ -64,19 +64,13 @@ export default function PropertyEditor({ isOpen, onClose, property, onSaveSucces
           }
         });
       }
-      if (property.map_image) {
-        const imgEl = new Image();
-        imgEl.src = property.map_image;
-      }
     }
   }, [property]);
 
   const handlePhotoUpload = async (file: File, category: string) => {
     try {
       const { url, public_id } = await adminService.uploadMedia(file);
-      if (category === 'map_internal') {
-        setFormData(prev => ({ ...prev, map_image: url }));
-      } else if (category === 'cover_internal') {
+      if (category === 'cover_internal') {
         setFormData(prev => ({ ...prev, coverImage: url }));
       } else {
         setFormData(prev => ({
