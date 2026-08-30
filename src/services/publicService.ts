@@ -24,7 +24,7 @@ export const publicService = {
 
   // Bookings
   createBooking: async (data: any) => {
-    const response = await api.post("/bookings", data);
+    const response = await api.post("/bookings/", data);
     return response.data;
   },
   
@@ -50,7 +50,7 @@ export const publicService = {
   },
   
   submitReview: async (data: any) => {
-    const response = await api.post("/reviews", data);
+    const response = await api.post("/reviews/", data);
     return response.data;
   },
 

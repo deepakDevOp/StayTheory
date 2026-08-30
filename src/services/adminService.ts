@@ -14,7 +14,7 @@ export const adminService = {
   },
   
   createProperty: async (data: any) => {
-    const response = await api.post("/properties", data);
+    const response = await api.post("/properties/", data);
     return response.data;
   },
   
