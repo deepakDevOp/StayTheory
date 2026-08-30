@@ -34,6 +34,8 @@ export default function AdminDashboard() {
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -95,6 +97,28 @@ export default function AdminDashboard() {
     console.log("Managing photos for:", id);
   }, []);
 
+  const handleDeleteProperty = useCallback((property: any) => {
+    setDeleteTarget(property);
+  }, []);
+
+  const confirmDeleteProperty = useCallback(async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await adminService.deleteProperty(deleteTarget.id);
+      if (selectedProperty?.id === deleteTarget.id) {
+        setIsEditorOpen(false);
+        setSelectedProperty(null);
+      }
+      await fetchData();
+    } catch (error) {
+      console.error("Failed to delete property:", error);
+    } finally {
+      setIsDeleting(false);
+      setDeleteTarget(null);
+    }
+  }, [deleteTarget, selectedProperty, fetchData]);
+
   if (!hasToken) return null;
 
   return (
@@ -114,6 +138,7 @@ export default function AdminDashboard() {
                 onEdit={handleEditProperty}
                 onPhotos={handleManagePhotos}
                 onAddClick={handleAddProperty}
+                onDelete={handleDeleteProperty}
               />
             )}
           </div>
@@ -181,6 +206,17 @@ export default function AdminDashboard() {
         message="You are currently editing a sanctuary. If you leave now, your changes will be discarded. Would you like to continue?"
         confirmLabel="Discard & Exit"
         cancelLabel="Stay and Edit"
+      />
+
+      {/* Delete Property Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => { if (!isDeleting) setDeleteTarget(null); }}
+        onConfirm={confirmDeleteProperty}
+        title="Delete Sanctuary"
+        message={`This will permanently delete "${deleteTarget?.title || "this property"}" along with all its photos, bookings, and reviews. This action cannot be undone.`}
+        confirmLabel={isDeleting ? "Deleting..." : "Delete Permanently"}
+        cancelLabel="Cancel"
       />
 
       {/* Placeholder for other tabs */}

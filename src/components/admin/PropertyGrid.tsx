@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { Settings, MapPin, Users, TrendingUp, Plus } from "lucide-react";
+import { Settings, MapPin, Users, TrendingUp, Plus, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 
 const swipePower = (offset: number, velocity: number) => Math.abs(offset) * velocity;
@@ -10,9 +10,10 @@ interface PropertyGridProps {
   onEdit: (p: any) => void;
   onPhotos: (p: any) => void;
   onAddClick?: () => void;
+  onDelete?: (p: any) => void;
 }
 
-export default function PropertyGrid({ properties, onEdit, onPhotos, onAddClick }: PropertyGridProps) {
+export default function PropertyGrid({ properties, onEdit, onPhotos, onAddClick, onDelete }: PropertyGridProps) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   const next = useCallback(() => {
@@ -186,12 +187,23 @@ export default function PropertyGrid({ properties, onEdit, onPhotos, onAddClick 
                         <span className="text-[9px] uppercase tracking-wider">{property.max_guests} guests</span>
                       </>}
                     </div>
-                    <button
-                      onClick={e => { e.stopPropagation(); onEdit(property); }}
-                      className="px-5 py-2.5 bg-white text-stone-900 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-xl active:scale-95 transition-transform"
-                    >
-                      Manage
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {onDelete && (
+                        <button
+                          onClick={e => { e.stopPropagation(); onDelete(property); }}
+                          className="p-2.5 bg-white/15 backdrop-blur-sm text-white rounded-xl shadow-xl active:scale-95 transition-transform"
+                          aria-label="Delete property"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={e => { e.stopPropagation(); onEdit(property); }}
+                        className="px-5 py-2.5 bg-white text-stone-900 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-xl active:scale-95 transition-transform"
+                      >
+                        Manage
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               </motion.div>
@@ -264,9 +276,16 @@ export default function PropertyGrid({ properties, onEdit, onPhotos, onAddClick 
                         <span className="text-xs uppercase tracking-widest font-medium truncate">{property.city || "—"}</span>
                       </div>
                     </div>
-                    <button onClick={() => onEdit(property)} className="p-2 text-stone-200 hover:text-primary transition-colors shrink-0">
-                      <Settings className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {onDelete && (
+                        <button onClick={() => onDelete(property)} className="p-2 text-stone-200 hover:text-red-500 transition-colors" aria-label="Delete property">
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
+                      <button onClick={() => onEdit(property)} className="p-2 text-stone-200 hover:text-primary transition-colors">
+                        <Settings className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between mt-8">
                     <div>
